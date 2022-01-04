@@ -1,0 +1,44 @@
+{% set name = "GES-comp-echem" %}
+{% set version = "0.1.0a" %}
+
+
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+
+
+source:
+  url: https://github.com/GES-compchem/{{ name }}/archive/refs/tags/{{ version }}.zip
+
+build:
+  noarch: python
+  number: 0
+
+
+
+requirements:
+  host:
+    - python>=3.8
+    - pip
+    - setuptools
+
+  run:
+    - python>=3.8
+
+
+about:
+  home: The package home page
+  license: UNKNOWN
+  license_family: OTHER
+  license_file:
+  summary: ""
+  doc_url:
+  dev_url:
+
+
+
+extra:
+  recipe-maintainers:
+    - GES-compchem
