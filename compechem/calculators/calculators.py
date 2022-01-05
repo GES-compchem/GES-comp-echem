@@ -2,14 +2,11 @@ import os
 from rdkit import Chem
 from tempfile import TemporaryDirectory
 
-from rdkit.Chem import inchi
-
 parent_dir = os.getcwd()
-parent_dir = "/mnt/f/Downloads"
 
 
 class Molecule:
-    def __init__(self, charge=0, spin=1) -> None:
+    def __init__(self, xyz_file, charge=0, spin=1) -> None:
         self.moleculename: str
         self.charge: int = charge
         self.spin: int = spin
@@ -20,27 +17,22 @@ class Molecule:
         self.vibronic_contribution: float = 0
         self.spe_energy: float = 0
 
+        self.moleculename = os.path.basename(xyz_file).strip(".xyz")
+
+        self.geometry = []
+
+        with open(xyz_file, "r") as file:
+            for linenum, line in enumerate(file):
+                if linenum == 0:
+                    self.atomnumber = line
+                if linenum > 1 and linenum < int(self.atomnumber) + 2:
+                    self.geometry.append(line)
+
 
 def generate_inchikey(molfile):
     mol = Chem.MolFromMolFile(molfile)
     inchikey = Chem.MolToInchiKey(mol)
     return inchikey
-
-
-def read_xyz(xyz_file):
-
-    moleculename = os.path.basename(xyz_file).strip(".xyz")
-
-    geometry = []
-
-    with open(xyz_file, "r") as file:
-        for linenum, line in enumerate(file):
-            if linenum == 0:
-                atomnumber = line
-            if linenum > 1 and linenum < int(atomnumber) + 2:
-                geometry.append(line)
-
-    return moleculename, atomnumber, geometry
 
 
 def write_xyz(molecule, xyz_file):
@@ -51,18 +43,16 @@ def write_xyz(molecule, xyz_file):
             file.write(line)
 
 
-def update_geometry(xyz_file):
+def update_geometry(molecule, xyz_file):
 
-    geometry = []
+    molecule.geometry = []
 
     with open(xyz_file, "r") as file:
         for linenum, line in enumerate(file):
             if linenum == 0:
                 atomnumber = line
             if linenum > 1 and linenum < int(atomnumber) + 2:
-                geometry.append(line)
-
-    return geometry
+                molecule.geometry.append(line)
 
 
 def cyclization_check(molecule, start_file, end_file):
@@ -107,7 +97,7 @@ def tautomer_search(molecule, nproc=1):
 
         cyclization_check(molecule, "geom.xyz", "tautomers.xyz")
 
-        molecule.geometry = update_geometry("tautomers.xyz")
+        update_geometry(molecule, "tautomers.xyz")
 
         os.chdir(parent_dir)
 
@@ -155,7 +145,7 @@ def opt_xtb(molecule, conformers=True, nproc=1):
                 if "G(RRHO) contrib." in line:
                     molecule.vibronic_contribution = float(line.split()[-3])
 
-        molecule.geometry = update_geometry("xtbopt.xyz")
+        update_geometry(molecule, "tautomers.xyz")
 
         os.chdir(parent_dir)
 
@@ -196,22 +186,3 @@ def spe_ccsd(molecule, nproc=1, maxcore=7500):
 
         os.chdir(parent_dir)
 
-
-molecule = Molecule(0, 1)
-
-molecule.moleculename, molecule.atomnumber, molecule.geometry = read_xyz(
-    parent_dir + "/01_2,6-dimethoxyphenol.xyz"
-)
-
-for num, line in enumerate(molecule.geometry):
-    print(num, line)
-
-opt_xtb(molecule, nproc=8)
-
-for num, line in enumerate(molecule.geometry):
-    print(num, line)
-
-tautomer_search(molecule, nproc=8)
-
-for num, line in enumerate(molecule.geometry):
-    print(num, line)
