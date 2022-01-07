@@ -1,20 +1,19 @@
 import os
 from jobdispatcher import JobDispatcher
-import compechem.calculators.calculators as cc
+from compechem import molecule
+from compechem.calculators import tools, crest, xtb, orca
 
-xyz_folder = "/mnt/f/Downloads/xyz_files"
+os.chdir("/mnt/f/Downloads")
+xyz_folder = "xyz_files"
+
 
 molecules = []
 
 for file in os.listdir(xyz_folder):
-    molecules.append(cc.Molecule(os.path.join(xyz_folder, file), charge=0, spin=1))
+    molecules.append(
+        molecule.Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
+    )
 
-# for molecule in molecules:
-#     cc.deprotonate(molecule)
-#     for deprotomer in molecule.deprotomers:
-#         for line in deprotomer:
-#             print(line)
-
-for molecule in molecules:
-    cc.opt_xtb(molecule, conformers=False, nproc=1)
-    print(molecule.energies)
+# for mol in molecules:
+#     crest.tautomer_search(mol, nproc=8, remove=False)
+#     crest.deprotonate(mol, nproc=8, remove=False)
