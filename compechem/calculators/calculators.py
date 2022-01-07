@@ -1,6 +1,6 @@
-import os
+import os, shutil
 from rdkit import Chem
-from tempfile import TemporaryDirectory
+from tempfile import mkdtemp
 
 parent_dir = os.getcwd()
 
@@ -86,143 +86,186 @@ def tautomer_search(molecule, nproc=1):
 
     print(f"INFO: {molecule.moleculename} - CREST tautomer search")
 
-    with TemporaryDirectory(
+    wdir = mkdtemp(
         prefix=molecule.moleculename + "_", suffix="_crestTAUT", dir=os.getcwd()
-    ) as wdir:
+    )
 
-        os.chdir(wdir)
-        write_xyz(molecule, "geom.xyz")
+    os.chdir(wdir)
+    write_xyz(molecule, "geom.xyz")
 
-        os.system(
-            f"crest geom.xyz --alpb water --charge {molecule.charge} --uhf {molecule.spin-1} --mquick --fstrict --tautomerize -T {nproc} > output.out 2>> output.out"
-        )
+    os.system(
+        f"crest geom.xyz --alpb water --charge {molecule.charge} --uhf {molecule.spin-1} --mquick --fstrict --tautomerize -T {nproc} > output.out 2>> output.out"
+    )
 
-        cyclization_check(molecule, "geom.xyz", "tautomers.xyz")
+    cyclization_check(molecule, "geom.xyz", "tautomers.xyz")
 
-        update_geometry(molecule, "tautomers.xyz")
+    update_geometry(molecule, "tautomers.xyz")
 
-        os.chdir(parent_dir)
+    shutil.rmtree(wdir)
+    os.chdir(parent_dir)
 
 
 def opt_xtb(molecule, conformers=True, nproc=1):
 
     print(f"INFO: {molecule.moleculename} - xTB OPT")
 
-    with TemporaryDirectory(
+    wdir = mkdtemp(
         prefix=molecule.moleculename + "_", suffix="_xtbOPT", dir=os.getcwd()
-    ) as wdir:
+    )
 
-        os.chdir(wdir)
-        write_xyz(molecule, "geom.xyz")
+    os.chdir(wdir)
+    write_xyz(molecule, "geom.xyz")
 
+    os.system(
+        f"xtb geom.xyz --alpb water --charge {molecule.charge} --uhf {molecule.spin-1} --ohess -P {nproc} > output.out 2>> output.out"
+    )
+
+    if conformers is True:
         os.system(
-            f"xtb geom.xyz --alpb water --charge {molecule.charge} --uhf {molecule.spin-1} --ohess -P {nproc} > output.out 2>> output.out"
+            f"crest xtbopt.xyz --alpb water --chrg {molecule.charge} --uhf {molecule.spin-1} --mquick -T {nproc} > conformers.out 2>> conformers.out"
+        )
+        os.system(
+            f"xtb crest_best.xyz --alpb water --chrg {molecule.charge} --uhf {molecule.spin-1} --ohess -P {nproc} > output.out 2>> output.out"
         )
 
-        if conformers is True:
-            os.system(
-                f"crest xtbopt.xyz --alpb water --chrg {molecule.charge} --uhf {molecule.spin-1} --mquick -T {nproc} > conformers.out 2>> conformers.out"
-            )
-            os.system(
-                f"xtb crest_best.xyz --alpb water --chrg {molecule.charge} --uhf {molecule.spin-1} --ohess -P {nproc} > output.out 2>> output.out"
-            )
-
-        # Checking for dissociation
-        mol_file = [f for f in os.listdir(".") if f.endswith(".mol")][-1]
-        end_mol = Chem.MolFromMolFile(
-            mol_file, sanitize=False, removeHs=False, strictParsing=False
+    # Checking for dissociation
+    mol_file = [f for f in os.listdir(".") if f.endswith(".mol")][-1]
+    end_mol = Chem.MolFromMolFile(
+        mol_file, sanitize=False, removeHs=False, strictParsing=False
+    )
+    end_smiles = Chem.MolToSmiles(end_mol)
+    if "." in end_smiles:
+        print(
+            f"ERROR: {molecule.moleculename} (charge {molecule.charge} spin {molecule.spin}) has undergone dissociation.\n"
         )
-        end_smiles = Chem.MolToSmiles(end_mol)
-        if "." in end_smiles:
-            print(
-                f"ERROR: {molecule.moleculename} (charge {molecule.charge} spin {molecule.spin}) has undergone dissociation.\n"
-            )
 
-        cyclization_check(molecule, "geom.xyz", "xtbopt.xyz")
+    cyclization_check(molecule, "geom.xyz", "xtbopt.xyz")
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "total free energy" in line:
-                    molecule.energies["total_energy"] = float(line.split()[-3])
-                if "G(RRHO) contrib." in line:
-                    molecule.energies["vibronic_contribution"] = float(line.split()[-3])
+    with open("output.out", "r") as out:
+        for line in out:
+            if "total free energy" in line:
+                molecule.energies["total_energy"] = float(line.split()[-3])
+            if "G(RRHO) contrib." in line:
+                molecule.energies["vibronic_contribution"] = float(line.split()[-3])
 
-        update_geometry(molecule, "xtbopt.xyz")
+    update_geometry(molecule, "xtbopt.xyz")
 
-        os.chdir(parent_dir)
+    shutil.rmtree(wdir)
+    os.chdir(parent_dir)
 
 
 def spe_ccsd(molecule, nproc=1, maxcore=7500):
 
     print(f"INFO: {molecule.moleculename} - CCSD SPE")
 
-    with TemporaryDirectory(
+    wdir = mkdtemp(
         prefix=molecule.moleculename + "_", suffix="_ccsdSPE", dir=os.getcwd()
-    ) as wdir:
+    )
 
-        os.chdir(wdir)
-        write_xyz(molecule, "geom.xyz")
+    os.chdir(wdir)
+    write_xyz(molecule, "geom.xyz")
 
-        with open("input.inp", "w") as inp:
-            inp.write(
-                f"%pal nproc {nproc} end\n"
-                f"%maxcore {maxcore}\n"
-                "! DLPNO-CCSD ano-pVTZ\n"
-                "! RIJCOSX AutoAux\n"
-                "%CPCM\n"
-                "  SMD True\n"
-                '  SMDsolvent "water"\n'
-                "end\n"
-                f"* xyzfile {molecule.charge} {molecule.spin} geom.xyz\n"
-            )
+    with open("input.inp", "w") as inp:
+        inp.write(
+            f"%pal nproc {nproc} end\n"
+            f"%maxcore {maxcore}\n"
+            "! DLPNO-CCSD ano-pVTZ\n"
+            "! RIJCOSX AutoAux\n"
+            "%CPCM\n"
+            "  SMD True\n"
+            '  SMDsolvent "water"\n'
+            "end\n"
+            f"* xyzfile {molecule.charge} {molecule.spin} geom.xyz\n"
+        )
 
-        os.system("$ORCADIR/orca input.inp > output.out")
+    os.system("$ORCADIR/orca input.inp > output.out")
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "FINAL SINGLE POINT ENERGY" in line:
-                    molecule.energies["spe_energy"] = float(line.split()[-3])
-                    molecule.energies["total_energy"] = (
-                        molecule.energies["spe_energy"]
-                        + molecule.energies["vibronic_contribution"]
-                    )
+    with open("output.out", "r") as out:
+        for line in out:
+            if "FINAL SINGLE POINT ENERGY" in line:
+                molecule.energies["spe_energy"] = float(line.split()[-3])
+                molecule.energies["total_energy"] = (
+                    molecule.energies["spe_energy"]
+                    + molecule.energies["vibronic_contribution"]
+                )
 
-        os.chdir(parent_dir)
+    shutil.rmtree(wdir)
+    os.chdir(parent_dir)
+
+
+def spe_b97(molecule, nproc=1, maxcore=350):
+
+    print(f"INFO: {molecule.moleculename} - B97 SPE")
+
+    wdir = mkdtemp(
+        prefix=molecule.moleculename + "_", suffix="_b97SPE", dir=os.getcwd()
+    )
+
+    os.chdir(wdir)
+    write_xyz(molecule, "geom.xyz")
+
+    with open("input.inp", "w") as inp:
+        inp.write(
+            f"%pal nproc {nproc} end\n"
+            f"%maxcore {maxcore}\n"
+            "! B97-D3 D3BJ def2-TZVP\n"
+            "! RIJCOSX def2/J\n"
+            "%CPCM\n"
+            "  SMD True\n"
+            '  SMDsolvent "water"\n'
+            "end\n"
+            f"* xyzfile {molecule.charge} {molecule.spin} geom.xyz\n"
+        )
+
+    os.system("$ORCADIR/orca input.inp > output.out")
+
+    with open("output.out", "r") as out:
+        for line in out:
+            if "FINAL SINGLE POINT ENERGY" in line:
+                molecule.energies["spe_energy"] = float(line.split()[-3])
+                molecule.energies["total_energy"] = (
+                    molecule.energies["spe_energy"]
+                    + molecule.energies["vibronic_contribution"]
+                )
+
+    shutil.rmtree(wdir)
+    os.chdir(parent_dir)
 
 
 def deprotonate(molecule, nproc=1):
 
     print(f"INFO: {molecule.moleculename} - CREST deprotonation")
 
-    with TemporaryDirectory(
+    wdir = mkdtemp(
         prefix=molecule.moleculename + "_", suffix="_crestDEPROT", dir=os.getcwd()
-    ) as wdir:
+    )
 
-        os.chdir(wdir)
-        write_xyz(molecule, "geom.xyz")
+    os.chdir(wdir)
+    write_xyz(molecule, "geom.xyz")
 
-        os.system(
-            f"crest geom.xyz --alpb water --charge {molecule.charge} --uhf {molecule.spin-1} --deprotonate -T {nproc} > output.out 2>> output.out"
-        )
+    os.system(
+        f"crest geom.xyz --alpb water --charge {molecule.charge} --uhf {molecule.spin-1} --deprotonate -T {nproc} > output.out 2>> output.out"
+    )
 
-        molsize = int(molecule.atomcount) - 1
-        with open("deprotonated.xyz", "r") as f:
-            numlines = int(sum(1 for line in f))
+    molsize = int(molecule.atomcount) - 1
+    with open("deprotonated.xyz", "r") as f:
+        numlines = int(sum(1 for line in f))
 
-        j = 0
-        deprotomer = 1
-        with open("deprotonated.xyz", "r") as f:
-            while j < numlines:
-                geometry = []
-                i = 0
-                while i < molsize + 2:
-                    geometry.append(f.readline())
-                    i += 1
-                    j += 1
-                molecule.deprotomers.append(geometry)
-                deprotomer += 1
+    j = 0
+    deprotomer = 1
+    with open("deprotonated.xyz", "r") as f:
+        while j < numlines:
+            geometry = []
+            i = 0
+            while i < molsize + 2:
+                geometry.append(f.readline())
+                i += 1
+                j += 1
+            molecule.deprotomers.append(geometry)
+            deprotomer += 1
 
-        os.chdir(parent_dir)
+    shutil.rmtree(wdir)
+    os.chdir(parent_dir)
 
 
 def calculate_pka(molecule, nproc=1):
