@@ -10,22 +10,24 @@ class Molecule:
         self.moleculename: str
         self.charge: int = charge
         self.spin: int = spin
-        self.atomnumber: int
+        self.atomcount: int
         self.geometry: list = []
         # Energies
-        self.total_energy: float = 0
-        self.vibronic_contribution: float = 0
-        self.spe_energy: float = 0
-
+        self.energies = {
+            "total_energy": 0.0,
+            "vibronic_contribution": 0.0,
+            "spe_energy": 0.0,
+        }
         self.moleculename = os.path.basename(xyz_file).strip(".xyz")
 
-        self.geometry = []
+        self.geometry: list = []
+        self.deprotonation_state: int = 0  # how many times it was deprotonated
 
         with open(xyz_file, "r") as file:
             for linenum, line in enumerate(file):
                 if linenum == 0:
-                    self.atomnumber = line
-                if linenum > 1 and linenum < int(self.atomnumber) + 2:
+                    self.atomcount = line
+                if linenum > 1 and linenum < int(self.atomcount) + 2:
                     self.geometry.append(line)
 
 
@@ -37,7 +39,7 @@ def generate_inchikey(molfile):
 
 def write_xyz(molecule, xyz_file):
     with open(xyz_file, "w") as file:
-        file.write(str(molecule.atomnumber))
+        file.write(str(molecule.atomcount))
         file.write("\n")
         for line in molecule.geometry:
             file.write(line)
@@ -50,8 +52,8 @@ def update_geometry(molecule, xyz_file):
     with open(xyz_file, "r") as file:
         for linenum, line in enumerate(file):
             if linenum == 0:
-                atomnumber = line
-            if linenum > 1 and linenum < int(atomnumber) + 2:
+                atomcount = line
+            if linenum > 1 and linenum < int(atomcount) + 2:
                 molecule.geometry.append(line)
 
 
@@ -141,11 +143,11 @@ def opt_xtb(molecule, conformers=True, nproc=1):
         with open("output.out", "r") as out:
             for line in out:
                 if "total free energy" in line:
-                    molecule.total_energy = float(line.split()[-3])
+                    molecule.energies["total_energy"] = float(line.split()[-3])
                 if "G(RRHO) contrib." in line:
-                    molecule.vibronic_contribution = float(line.split()[-3])
+                    molecule.energies["vibronic_contribution"] = float(line.split()[-3])
 
-        update_geometry(molecule, "tautomers.xyz")
+        update_geometry(molecule, "xtbopt.xyz")
 
         os.chdir(parent_dir)
 
@@ -179,10 +181,53 @@ def spe_ccsd(molecule, nproc=1, maxcore=7500):
         with open("output.out", "r") as out:
             for line in out:
                 if "FINAL SINGLE POINT ENERGY" in line:
-                    molecule.spe_energy = float(line.split()[-3])
-                    molecule.total_energy = (
-                        molecule.spe_energy + molecule.vibronic_contribution
+                    molecule.energies["spe_energy"] = float(line.split()[-3])
+                    molecule.energies["total_energy"] = (
+                        molecule.energies["spe_energy"]
+                        + molecule.energies["vibronic_contribution"]
                     )
 
         os.chdir(parent_dir)
+
+
+def deprotonate(molecule, nproc=1):
+
+    print(f"INFO: {molecule.moleculename} - CREST deprotonation")
+
+    with TemporaryDirectory(
+        prefix=molecule.moleculename + "_", suffix="_crestDEPROT", dir=os.getcwd()
+    ) as wdir:
+
+        os.chdir(wdir)
+        write_xyz(molecule, "geom.xyz")
+
+        os.system(
+            f"crest geom.xyz --alpb water --charge {molecule.charge} --uhf {molecule.spin-1} --deprotonate -T {nproc} > output.out 2>> output.out"
+        )
+
+        molsize = int(molecule.atomcount) - 1
+        with open("deprotonated.xyz", "r") as f:
+            numlines = int(sum(1 for line in f))
+
+        j = 0
+        deprotomer = 1
+        with open("deprotonated.xyz", "r") as f:
+            while j < numlines:
+                geometry = []
+                i = 0
+                while i < molsize + 2:
+                    geometry.append(f.readline())
+                    i += 1
+                    j += 1
+                molecule.deprotomers.append(geometry)
+                deprotomer += 1
+
+        os.chdir(parent_dir)
+
+
+def calculate_pka(molecule, nproc=1):
+
+    print(
+        f"INFO: calculating pKa for {molecule.moleculename}, charge {molecule.charge} spin {molecule.spin}"
+    )
 

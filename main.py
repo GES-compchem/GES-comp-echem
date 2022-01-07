@@ -2,22 +2,19 @@ import os
 from jobdispatcher import JobDispatcher
 import compechem.calculators.calculators as cc
 
-os.chdir("/mnt/f/Downloads")
-
-xyz_folder = "./xyz_files"
+xyz_folder = "/mnt/f/Downloads/xyz_files"
 
 molecules = []
 
-for root, dirs, files in os.walk(os.path.abspath(xyz_folder)):
-    for file in files:
-        molecules.append(cc.Molecule(os.path.join(root, file), charge=0, spin=1))
+for file in os.listdir(xyz_folder):
+    molecules.append(cc.Molecule(os.path.join(xyz_folder, file), charge=0, spin=1))
 
+# for molecule in molecules:
+#     cc.deprotonate(molecule)
+#     for deprotomer in molecule.deprotomers:
+#         for line in deprotomer:
+#             print(line)
 
-for item in molecules:
-    print(item.moleculename)
-
-# pka_jobs = [calc(file, 0, 0) for file in xyz_files]
-
-# jobprocessor = JobDispatcher([job.calculate_pka for job in pka_jobs],)
-
-# results = jobprocessor.run()
+for molecule in molecules:
+    cc.opt_xtb(molecule, conformers=False, nproc=1)
+    print(molecule.energies)
