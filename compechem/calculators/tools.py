@@ -12,7 +12,10 @@ def generate_inchikey(molfile):
 def write_xyz(mol, xyz_file):
     with open(xyz_file, "w") as file:
         file.write(str(mol.atomcount))
-        file.write("\n\n")
+        if mol.energies["total_energy"] != 0.0:
+            file.write(f"\n{mol.energies['total_energy']}\n")
+        else:
+            file.write("\n\n")
         for line in mol.geometry:
             file.write(line)
 

@@ -14,6 +14,9 @@ for file in os.listdir(xyz_folder):
         molecule.Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
     )
 
-# for mol in molecules:
-#     crest.tautomer_search(mol, nproc=8, remove=False)
-#     crest.deprotonate(mol, nproc=8, remove=False)
+for mol in molecules:
+
+    deprotomers = crest.deprotonate(mol, nproc=8, remove=True)
+
+    for deprotomer in deprotomers:
+        print(deprotomer.name, deprotomer.energies["total_energy"])
