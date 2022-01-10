@@ -8,13 +8,25 @@ def generate_inchikey(molfile):
     return inchikey
 
 
+def info(mol):
+    print(f"\nMolecule: {mol.name}")
+    print(f"\tNumber of atoms: {mol.atomcount}")
+    print(f"\tCharge: {mol.charge}")
+    print(f"\tSpin: {mol.spin}")
+    print("\nEnergies:")
+    print(f"\t Total: {mol.energies['total']} Eh")
+    print(f"\t Vibronic: {mol.energies['vibronic']} Eh")
+    print(f"\t Electronic: {mol.energies['electronic']} Eh")
+    print("\nCoordinates (Angstrom):")
+    for line in mol.geometry:
+        print(line, end="")
+    print("\n")
+
+
 def write_xyz(mol, xyz_file):
     with open(xyz_file, "w") as file:
         file.write(str(mol.atomcount))
-        if mol.energies["total_energy"] != 0.0:
-            file.write(f"\n{mol.energies['total_energy']}\n")
-        else:
-            file.write("\n\n")
+        file.write("\n\n")
         for line in mol.geometry:
             file.write(line)
 

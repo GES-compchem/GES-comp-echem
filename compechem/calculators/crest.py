@@ -127,7 +127,9 @@ def deprotonate(mol, nproc=1, remove=True):
                     j += 1
             deprotomers.append(
                 molecule.Molecule(
-                    f"{mol.name}_deprotomer_{num}.xyz", charge=mol.charge + 1,
+                    f"{mol.name}_deprotomer_{num}.xyz",
+                    charge=mol.charge + 1,
+                    spin=mol.spin,
                 )
             )
             num += 1
