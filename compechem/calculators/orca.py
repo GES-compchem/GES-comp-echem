@@ -11,7 +11,7 @@ def spe_ccsd(mol, nproc=1, maxcore=7500, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_ccsdSPE", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     with open("input.inp", "w") as inp:
         inp.write(
@@ -49,7 +49,7 @@ def spe_b97(mol, nproc=1, maxcore=350, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_b97SPE", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     with open("input.inp", "w") as inp:
         inp.write(
@@ -87,7 +87,7 @@ def opt_m06(mol, nproc=1, solvent=False, maxcore=350, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_m06OPT", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     with open("input.inp", "w") as inp:
         inp.write(
@@ -120,7 +120,7 @@ def freq_m06(mol, nproc=1, solvent=True, maxcore=350, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_m06FREQ", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     with open("input.inp", "w") as inp:
         inp.write(

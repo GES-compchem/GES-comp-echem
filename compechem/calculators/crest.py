@@ -12,7 +12,7 @@ def tautomer_search(mol, nproc=1, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_crestTAUT", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     os.system(
         f"crest geom.xyz --alpb water --charge {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize -T {nproc} > output.out 2>> output.out"
@@ -58,7 +58,7 @@ def conformer_search(mol, nproc=1, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_crestCONF", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     os.system(
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick -T {nproc} > conformers.out 2>> conformers.out"
@@ -102,7 +102,7 @@ def deprotonate(mol, nproc=1, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_crestDEPROT", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     os.system(
         f"crest geom.xyz --alpb water --charge {mol.charge} --uhf {mol.spin-1} --deprotonate -T {nproc} > output.out 2>> output.out"

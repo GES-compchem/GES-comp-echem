@@ -25,6 +25,13 @@ class Molecule:
                 if linenum > 1 and linenum < self.atomcount + 2:
                     self.geometry.append(line)
 
+    def write_xyz(self, xyz_file):
+        with open(xyz_file, "w") as file:
+            file.write(str(self.atomcount))
+            file.write("\n\n")
+            for line in self.geometry:
+                file.write(line)
+
     def update_geometry(self, xyz_file):
 
         self.geometry = []

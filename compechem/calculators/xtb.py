@@ -11,7 +11,7 @@ def opt(mol, nproc=1, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_xtbOPT", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     os.system(
         f"xtb geom.xyz --alpb water --charge {mol.charge} --uhf {mol.spin-1} --ohess -P {nproc} > output.out 2>> output.out"
@@ -44,7 +44,7 @@ def spe(mol, nproc=1, remove=True):
     wdir = mkdtemp(prefix=mol.name + "_", suffix="_xtbSPE", dir=os.getcwd())
 
     os.chdir(wdir)
-    tools.write_xyz(mol, "geom.xyz")
+    mol.write_xyz("geom.xyz")
 
     os.system(
         f"xtb geom.xyz --alpb water --charge {mol.charge} --uhf {mol.spin-1} --hess -P {nproc} > output.out 2>> output.out"

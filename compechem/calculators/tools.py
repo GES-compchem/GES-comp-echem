@@ -23,14 +23,6 @@ def info(mol):
     print("\n")
 
 
-def write_xyz(mol, xyz_file):
-    with open(xyz_file, "w") as file:
-        file.write(str(mol.atomcount))
-        file.write("\n\n")
-        for line in mol.geometry:
-            file.write(line)
-
-
 def cyclization_check(mol, start_file, end_file):
 
     os.system(f"crest --testtopo {start_file} > start_topo.out 2>> start_topo.out")
