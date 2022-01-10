@@ -19,4 +19,4 @@ for mol in molecules:
     deprotomers = crest.deprotonate(mol, nproc=8, remove=True)
 
     for deprotomer in deprotomers:
-        print(deprotomer.name, deprotomer.energies["total_energy"])
+        print(deprotomer.name, deprotomer.energies["total"])

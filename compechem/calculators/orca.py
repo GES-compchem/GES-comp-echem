@@ -31,9 +31,9 @@ def spe_ccsd(mol, nproc=1, maxcore=7500, remove=True):
     with open("output.out", "r") as out:
         for line in out:
             if "FINAL SINGLE POINT ENERGY" in line:
-                mol.energies["spe_energy"] = float(line.split()[-1])
-                mol.energies["total_energy"] = (
-                    mol.energies["spe_energy"] + mol.energies["vibronic_contribution"]
+                mol.energies["electronic"] = float(line.split()[-1])
+                mol.energies["total"] = (
+                    mol.energies["electronic"] + mol.energies["vibronic"]
                 )
 
     if remove is True:
@@ -69,9 +69,9 @@ def spe_b97(mol, nproc=1, maxcore=350, remove=True):
     with open("output.out", "r") as out:
         for line in out:
             if "FINAL SINGLE POINT ENERGY" in line:
-                mol.energies["spe_energy"] = float(line.split()[-1])
-                mol.energies["total_energy"] = (
-                    mol.energies["spe_energy"] + mol.energies["vibronic_contribution"]
+                mol.energies["electronic"] = float(line.split()[-1])
+                mol.energies["total"] = (
+                    mol.energies["electronic"] + mol.energies["vibronic"]
                 )
 
     if remove is True:
@@ -138,9 +138,9 @@ def freq_m06(mol, nproc=1, solvent=True, maxcore=350, remove=True):
     with open("output.out", "r") as out:
         for line in out:
             if "FINAL SINGLE POINT ENERGY" in line:
-                mol.energies["spe_energy"] = float(line.split()[-1])
-                mol.energies["total_energy"] = (
-                    mol.energies["spe_energy"] + mol.energies["vibronic_contribution"]
+                mol.energies["electronic"] = float(line.split()[-1])
+                mol.energies["total"] = (
+                    mol.energies["electronic"] + mol.energies["vibronic"]
                 )
 
     if remove is True:

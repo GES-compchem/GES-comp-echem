@@ -1,6 +1,5 @@
 import os
 from rdkit import Chem
-from tempfile import mkdtemp
 
 
 def generate_inchikey(molfile):

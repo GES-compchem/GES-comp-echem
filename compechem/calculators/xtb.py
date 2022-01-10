@@ -25,9 +25,9 @@ def opt(mol, nproc=1, remove=True):
     with open("output.out", "r") as out:
         for line in out:
             if "total free energy" in line:
-                mol.energies["total_energy"] = float(line.split()[-3])
+                mol.energies["total"] = float(line.split()[-3])
             if "G(RRHO) contrib." in line:
-                mol.energies["vibronic_contribution"] = float(line.split()[-3])
+                mol.energies["vibronic"] = float(line.split()[-3])
 
     mol.update_geometry("xtbopt.xyz")
 
@@ -53,9 +53,9 @@ def spe(mol, nproc=1, remove=True):
     with open("output.out", "r") as out:
         for line in out:
             if "total free energy" in line:
-                mol.energies["total_energy"] = float(line.split()[-3])
+                mol.energies["total"] = float(line.split()[-3])
             if "G(RRHO) contrib." in line:
-                mol.energies["vibronic_contribution"] = float(line.split()[-3])
+                mol.energies["vibronic"] = float(line.split()[-3])
 
     if remove is True:
         shutil.rmtree(wdir)

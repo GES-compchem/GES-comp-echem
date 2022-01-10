@@ -11,9 +11,9 @@ class Molecule:
 
         # Energies
         self.energies = {
-            "total_energy": 0.0,
-            "vibronic_contribution": 0.0,
-            "spe_energy": 0.0,
+            "total": 0.0,
+            "vibronic": 0.0,
+            "electronic": 0.0,
         }
 
         self.name = os.path.basename(xyz_file).strip(".xyz")
@@ -22,11 +22,6 @@ class Molecule:
             for linenum, line in enumerate(file):
                 if linenum == 0:
                     self.atomcount = int(line)
-                if linenum == 1:
-                    try:
-                        self.energies["total_energy"] = float(line)
-                    except:
-                        print(f"INFO: no energy in .xyz file for {self.name}")
                 if linenum > 1 and linenum < self.atomcount + 2:
                     self.geometry.append(line)
 
