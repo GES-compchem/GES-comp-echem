@@ -154,7 +154,7 @@ class OrcaInput:
     def nfreq(self, mol, remove_tdir=True):
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name} - {self.method} FREQ")
+        print(f"INFO: {mol.name} - {self.method} NFREQ")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
