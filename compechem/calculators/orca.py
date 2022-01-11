@@ -1,149 +1,201 @@
 import os, shutil
 from tempfile import mkdtemp
-from compechem.calculators import tools
 
 
-def spe_ccsd(mol, nproc=1, maxcore=7500, remove=True):
+class OrcaInput:
+    def __init__(
+        self,
+        method: str,
+        basis_set: str = "def2-TZVP",
+        aux_basis: str = "def2/J",
+        nproc: int = 1,
+        maxcore: int = 350,
+        solvation: bool = False,
+        solvent: str = "water",
+        optionals: str = "",
+    ) -> None:
 
-    parent_dir = os.getcwd()
-    print(f"INFO: {mol.name} - CCSD SPE")
+        self.method = method
+        self.basis_set = basis_set
+        self.aux_basis = aux_basis
+        self.nproc = nproc
+        self.maxcore = maxcore
+        self.solvation = solvation
+        self.solvent = solvent
+        self.optionals = optionals
 
-    wdir = mkdtemp(prefix=mol.name + "_", suffix="_ccsdSPE", dir=os.getcwd())
+    def spe(self, mol, remove_tdir=True):
 
-    os.chdir(wdir)
-    mol.write_xyz("geom.xyz")
+        parent_dir = os.getcwd()
+        print(f"INFO: {mol.name} - {self.method} SPE")
 
-    with open("input.inp", "w") as inp:
-        inp.write(
-            f"%pal nproc {nproc} end\n"
-            f"%maxcore {maxcore}\n"
-            "! DLPNO-CCSD ano-pVTZ\n"
-            "! RIJCOSX AutoAux\n"
-            "%CPCM\n"
-            "  SMD True\n"
-            '  SMDsolvent "water"\n'
-            "end\n"
-            f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n"
+        tdir = mkdtemp(
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_spe",
+            dir=os.getcwd(),
         )
 
-    os.system("$ORCADIR/orca input.inp > output.out")
+        os.chdir(tdir)
+        mol.write_xyz("geom.xyz")
 
-    with open("output.out", "r") as out:
-        for line in out:
-            if "FINAL SINGLE POINT ENERGY" in line:
-                mol.energies["electronic"] = float(line.split()[-1])
-                mol.energies["total"] = (
-                    mol.energies["electronic"] + mol.energies["vibronic"]
+        with open("input.inp", "w") as inp:
+            inp.write(
+                f"%pal nproc {self.nproc} end\n"
+                f"%maxcore {self.maxcore}\n"
+                f"! {self.method} {self.basis_set} {self.optionals}\n"
+                f"! RIJCOSX {self.aux_basis}\n"
+            )
+            if self.solvation is True:
+                inp.write(
+                    "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
                 )
+            inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
 
-    if remove is True:
-        shutil.rmtree(wdir)
-    os.chdir(parent_dir)
+        os.system("$ORCADIR/orca input.inp > output.out")
 
+        with open("output.out", "r") as out:
+            for line in out:
+                if "FINAL SINGLE POINT ENERGY" in line:
+                    electronic_energy = line.split()[-1]
 
-def spe_b97(mol, nproc=1, maxcore=350, remove=True):
-
-    parent_dir = os.getcwd()
-    print(f"INFO: {mol.name} - B97 SPE")
-
-    wdir = mkdtemp(prefix=mol.name + "_", suffix="_b97SPE", dir=os.getcwd())
-
-    os.chdir(wdir)
-    mol.write_xyz("geom.xyz")
-
-    with open("input.inp", "w") as inp:
-        inp.write(
-            f"%pal nproc {nproc} end\n"
-            f"%maxcore {maxcore}\n"
-            "! B97-D3 D3BJ def2-TZVP\n"
-            "! RIJCOSX def2/J\n"
-            "%CPCM\n"
-            "  SMD True\n"
-            '  SMDsolvent "water"\n'
-            "end\n"
-            f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n"
+        mol.energies[f"{self.method}"] = mol.Energies(
+            method=f"{self.method}", electronic=electronic_energy,
         )
 
-    os.system("$ORCADIR/orca input.inp > output.out")
+        if remove_tdir is True:
+            shutil.rmtree(tdir)
+        os.chdir(parent_dir)
 
-    with open("output.out", "r") as out:
-        for line in out:
-            if "FINAL SINGLE POINT ENERGY" in line:
-                mol.energies["electronic"] = float(line.split()[-1])
-                mol.energies["total"] = (
-                    mol.energies["electronic"] + mol.energies["vibronic"]
+        return
+
+    def opt(self, mol, remove_tdir=True):
+
+        parent_dir = os.getcwd()
+        print(f"INFO: {mol.name} - {self.method} OPT")
+
+        tdir = mkdtemp(
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_opt",
+            dir=os.getcwd(),
+        )
+
+        os.chdir(tdir)
+        mol.write_xyz("geom.xyz")
+
+        with open("input.inp", "w") as inp:
+            inp.write(
+                f"%pal nproc {self.nproc} end\n"
+                f"%maxcore {self.maxcore}\n"
+                f"! {self.method} {self.basis_set} {self.optionals}\n"
+                f"! RIJCOSX {self.aux_basis}\n"
+            )
+            if self.solvation is True:
+                inp.write(
+                    "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
                 )
+            inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
 
-    if remove is True:
-        shutil.rmtree(wdir)
-    os.chdir(parent_dir)
+        os.system("$ORCADIR/orca input.inp > output.out")
 
+        if remove_tdir is True:
+            shutil.rmtree(tdir)
+        os.chdir(parent_dir)
 
-def opt_m06(mol, nproc=1, solvent=False, maxcore=350, remove=True):
+        return
 
-    parent_dir = os.getcwd()
-    print(f"INFO: {mol.name} - M06-2X-D3 OPT")
+    def freq(self, mol, remove_tdir=True):
 
-    wdir = mkdtemp(prefix=mol.name + "_", suffix="_m06OPT", dir=os.getcwd())
+        parent_dir = os.getcwd()
+        print(f"INFO: {mol.name} - {self.method} FREQ")
 
-    os.chdir(wdir)
-    mol.write_xyz("geom.xyz")
-
-    with open("input.inp", "w") as inp:
-        inp.write(
-            f"%pal nproc {nproc} end\n"
-            f"%maxcore {maxcore}\n"
-            "! M062X D3ZERO def2-TZVP Opt\n"
-            "! RIJCOSX def2/J\n"
-            "%geom\n"
-            "  maxiter 500\n"
-            "end\n"
+        tdir = mkdtemp(
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_freq",
+            dir=os.getcwd(),
         )
-        if solvent is True:
-            inp.write("%CPCM\n" "  SMD True\n" '  SMDsolvent "water"\n' "end\n")
-        inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
 
-    os.system("$ORCADIR/orca input.inp > output.out")
+        os.chdir(tdir)
+        mol.write_xyz("geom.xyz")
 
-    mol.update_geometry
-
-    if remove is True:
-        shutil.rmtree(wdir)
-    os.chdir(parent_dir)
-
-
-def freq_m06(mol, nproc=1, solvent=True, maxcore=350, remove=True):
-
-    parent_dir = os.getcwd()
-    print(f"INFO: {mol.name} - M06-2X-D3 FREQ")
-
-    wdir = mkdtemp(prefix=mol.name + "_", suffix="_m06FREQ", dir=os.getcwd())
-
-    os.chdir(wdir)
-    mol.write_xyz("geom.xyz")
-
-    with open("input.inp", "w") as inp:
-        inp.write(
-            f"%pal nproc {nproc} end\n"
-            f"%maxcore {maxcore}\n"
-            "! M062X D3ZERO def2-TZVP NumFreq\n"
-            "! RIJCOSX def2/J\n"
-        )
-        if solvent is True:
-            inp.write("%CPCM\n" "  SMD True\n" '  SMDsolvent "water"\n' "end\n")
-        inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
-
-    os.system("$ORCADIR/orca input.inp > output.out")
-
-    with open("output.out", "r") as out:
-        for line in out:
-            if "FINAL SINGLE POINT ENERGY" in line:
-                mol.energies["electronic"] = float(line.split()[-1])
-                mol.energies["total"] = (
-                    mol.energies["electronic"] + mol.energies["vibronic"]
+        with open("input.inp", "w") as inp:
+            inp.write(
+                f"%pal nproc {self.nproc} end\n"
+                f"%maxcore {self.maxcore}\n"
+                f"! {self.method} {self.basis_set} {self.optionals}\n"
+                f"! RIJCOSX {self.aux_basis}\n"
+            )
+            if self.solvation is True:
+                inp.write(
+                    "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
                 )
+            inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
 
-    if remove is True:
-        shutil.rmtree(wdir)
-    os.chdir(parent_dir)
+        os.system("$ORCADIR/orca input.inp > output.out")
+
+        with open("output.out", "r") as out:
+            for line in out:
+                if "FINAL SINGLE POINT ENERGY" in line:
+                    electronic_energy = line.split()[-1]
+                if "G-E(el)" in line:
+                    vibronic_energy = line.split()[-4]
+
+        mol.energies[f"{self.method}"] = mol.Energies(
+            method=f"{self.method}",
+            electronic=electronic_energy,
+            vibronic=vibronic_energy,
+        )
+
+        if remove_tdir is True:
+            shutil.rmtree(tdir)
+        os.chdir(parent_dir)
+
+        return
+
+    def nfreq(self, mol, remove_tdir=True):
+
+        parent_dir = os.getcwd()
+        print(f"INFO: {mol.name} - {self.method} FREQ")
+
+        tdir = mkdtemp(
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_nfreq",
+            dir=os.getcwd(),
+        )
+
+        os.chdir(tdir)
+        mol.write_xyz("geom.xyz")
+
+        with open("input.inp", "w") as inp:
+            inp.write(
+                f"%pal nproc {self.nproc} end\n"
+                f"%maxcore {self.maxcore}\n"
+                f"! {self.method} {self.basis_set} {self.optionals}\n"
+                f"! RIJCOSX {self.aux_basis}\n"
+            )
+            if self.solvation is True:
+                inp.write(
+                    "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+                )
+            inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
+
+        os.system("$ORCADIR/orca input.inp > output.out")
+
+        with open("output.out", "r") as out:
+            for line in out:
+                if "FINAL SINGLE POINT ENERGY" in line:
+                    electronic_energy = line.split()[-1]
+                if "G-E(el)" in line:
+                    vibronic_energy = line.split()[-4]
+
+        mol.energies[f"{self.method}"] = mol.Energies(
+            method=f"{self.method}",
+            electronic=electronic_energy,
+            vibronic=vibronic_energy,
+        )
+
+        if remove_tdir is True:
+            shutil.rmtree(tdir)
+        os.chdir(parent_dir)
+
+        return
 
