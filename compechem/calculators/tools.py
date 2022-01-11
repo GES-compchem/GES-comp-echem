@@ -14,9 +14,10 @@ def info(mol):
     print(f"\tCharge: {mol.charge}")
     print(f"\tSpin: {mol.spin}")
     print("\nEnergies:")
-    print(f"\t Total: {mol.energies['total']} Eh")
-    print(f"\t Vibronic: {mol.energies['vibronic']} Eh")
-    print(f"\t Electronic: {mol.energies['electronic']} Eh")
+    for method in mol.energies:
+        print(f"\t Method: {method}")
+        print(f"\t Electronic: {mol.energies[method].electronic} Eh")
+        print(f"\t Vibronic: {mol.energies[method].vibronic} Eh")
     print("\nCoordinates (Angstrom):")
     for line in mol.geometry:
         print(line, end="")

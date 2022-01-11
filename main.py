@@ -2,6 +2,7 @@ import os
 
 # from jobdispatcher import JobDispatcher
 from compechem.molecule import Molecule
+from compechem.calculators import tools
 from compechem.calculators.orca import OrcaInput
 from compechem.calculators.xtb import XtbInput
 
@@ -13,7 +14,6 @@ xyz_folder = "xyz_files"
 ncores = 4
 
 for file in os.listdir(xyz_folder):
-    mol_gs = Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
 
     orca = OrcaInput(
         method="B97-D3",
@@ -27,18 +27,20 @@ for file in os.listdir(xyz_folder):
     )
 
     xtb = XtbInput(
-        method="gfn1", nproc=ncores, solvation=True, solvent="water", optionals=""
-    )
-
-    xtb = XtbInput(
         method="gfn2", nproc=ncores, solvation=True, solvent="water", optionals=""
     )
 
-    xtb.spe(mol=mol_gs, remove_tdir=True)
-    print(mol_gs.energies)
-    print(mol_gs.energies["gfn2"].electronic)
+    mol_gs = Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
 
-    xtb.opt(mol=mol_gs, remove_tdir=True)
-    print(mol_gs.energies)
-    print(mol_gs.energies["gfn2"].electronic)
+    xtb.spe(mol_gs)
+    orca.spe(mol_gs)
+    tools.info(mol_gs)
+    # print(mol_gs.energies["gfn2"].electronic)
+    # print(mol_gs.energies["B97-D3"].electronic)
+
+    # xtb.opt(mol_gs)
+    # orca.spe(mol_gs)
+    # print(mol_gs.energies)
+    # print(mol_gs.energies["gfn2"].electronic)
+    # print(mol_gs.energies["B97-D3"].electronic)
 
