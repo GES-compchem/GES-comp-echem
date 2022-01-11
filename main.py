@@ -43,4 +43,3 @@ for file in os.listdir(xyz_folder):
     # print(mol_gs.energies)
     # print(mol_gs.energies["gfn2"].electronic)
     # print(mol_gs.energies["B97-D3"].electronic)
-

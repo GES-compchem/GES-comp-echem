@@ -3,12 +3,53 @@ from rdkit import Chem
 
 
 def generate_inchikey(molfile):
+    """Generates InchiKey from a Mol file.
+
+    Parameters
+    ----------
+    molfile : str
+        path containing the Mol file
+
+    Returns
+    -------
+    InchiKey
+        InchiKey generated from the Mol file
+    """
     mol = Chem.MolFromMolFile(molfile)
     inchikey = Chem.MolToInchiKey(mol)
     return inchikey
 
 
+def generate_inchi(molfile):
+    """Generates Inchi from a Mol file.
+
+    Parameters
+    ----------
+    molfile : str
+        path containing the Mol file
+
+    Returns
+    -------
+    Inchi
+        Inchi generated from the Mol file
+    """
+    mol = Chem.MolFromMolFile(molfile)
+    inchi = Chem.MolToInchi(mol)
+    return inchi
+
+
 def info(mol):
+    """Prints information about the molecule
+
+    Parameters
+    ----------
+    mol : Molecule object
+        Molecule object
+
+    Returns
+    -------
+    Prints to screen a summary with all the informations about the molecule.
+    """
     print(f"\nMolecule: {mol.name}")
     print(f"\tNumber of atoms: {mol.atomcount}")
     print(f"\tCharge: {mol.charge}")
@@ -25,6 +66,22 @@ def info(mol):
 
 
 def cyclization_check(mol, start_file, end_file):
+    """Checks if a cyclization has occurred (e.g., during a
+    geometry optimization)
+
+    Parameters
+    ----------
+    mol : Molecule object
+        Molecule object
+    start_file : str
+        .xyz file containing the starting geometry
+    end_file : str
+        .xyz file containing the final geometry
+
+    Returns
+    -------
+    If a cyclization is detected, prints an error message.
+    """
 
     os.system(f"crest --testtopo {start_file} > start_topo.out 2>> start_topo.out")
     os.system(f"crest --testtopo {end_file} > end_topo.out 2>> end_topo.out")
@@ -50,6 +107,19 @@ def cyclization_check(mol, start_file, end_file):
 
 
 def dissociation_check(mol):
+    """Checks if a dissociation has occurred (e.g., during a
+    geometry optimization)
+
+    Parameters
+    ----------
+    mol : str
+        Mol file containing the molecular structure
+
+    Returns
+    -------
+    True, if a dissociation is detected
+    False, if a dissociation is not detected
+    """
 
     mol_file = [f for f in os.listdir(".") if f.endswith(".mol")][-1]
     end_mol = Chem.MolFromMolFile(

@@ -4,6 +4,9 @@ from compechem.calculators import tools
 
 
 class XtbInput:
+    """Interface for running xTB calculations
+    """
+
     def __init__(
         self,
         method: str = "gfn2",
@@ -12,6 +15,20 @@ class XtbInput:
         solvent: str = "water",
         optionals: str = "",
     ) -> None:
+        """
+        Parameters
+        ----------
+        method : str, optional
+            level of theory, by default "gfn2"
+        nproc : int, optional
+            number of cores, by default 1
+        solvation : bool, optional
+            ALPB implicit solvation model, by default True
+        solvent : str, optional
+            ALPB solvent, by default "water"
+        optionals : str, optional
+            optional keywords/flags, by default ""
+        """
 
         self.method = method
 
@@ -21,6 +38,21 @@ class XtbInput:
         self.optionals = optionals
 
     def spe(self, mol, remove_tdir=True):
+        """Single point energy calculation.
+
+        Parameters
+        ----------
+        mol : Molecule object
+            Input molecule to use in the calculation.
+        remove_tdir : bool, optional
+            Temporary work directory will be removed, by default True
+
+        Returns
+        -------
+        Updates the mol.energies dictionary adding an entry with:
+            method
+            electronic energy
+        """
 
         parent_dir = os.getcwd()
         print(f"INFO: {mol.name} - {self.method} SPE")
@@ -58,6 +90,25 @@ class XtbInput:
         os.chdir(parent_dir)
 
     def opt(self, mol, remove_tdir=True):
+        """Geometry optimization + frequency analysis.
+
+        Parameters
+        ----------
+        mol : Molecule object
+            input molecule to use in the calculation
+        remove_tdir : bool, optional
+            temporary work directory will be removed, by default True
+
+        Returns
+        -------
+        Updates the molecular geometry and mol.energies dictionary 
+        adding an entry with:
+            method
+            electronic energy
+            vibronic contribution
+        
+        If a dissociation or a cyclization is observed, ignore the calculation.
+        """
 
         parent_dir = os.getcwd()
         print(f"INFO: {mol.name} - {self.method} OPT")
@@ -106,6 +157,22 @@ class XtbInput:
         os.chdir(parent_dir)
 
     def freq(self, mol, remove_tdir=True):
+        """Frequency analysis.
+
+        Parameters
+        ----------
+        mol : Molecule object
+            input molecule to use in the calculation
+        remove_tdir : bool, optional
+            temporary work directory will be removed, by default True
+
+        Returns
+        -------
+        Updates the mol.energies dictionary adding an entry with:
+            method
+            electronic energy
+            vibronic contribution
+        """
 
         parent_dir = os.getcwd()
         print(f"INFO: {mol.name} - {self.method} FREQ")

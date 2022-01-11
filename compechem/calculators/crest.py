@@ -4,14 +4,30 @@ from compechem import molecule
 from compechem.calculators import tools
 
 
-def tautomer_search(mol, nproc=1, remove=True):
+def tautomer_search(mol, nproc=1, remove_tdir=True):
+    """Tautomer search using CREST.
+
+    Parameters
+    ----------
+    mol : Molecule object
+        input molecule to use in the calculation
+    nproc : int, optional
+        number of cores, by default 1
+    remove_tdir : bool, optional
+        temporary work directory will be removed, by default True
+
+    Returns
+    -------
+    tautomers : list
+        list containing the found tautomers, in order of ascending energy
+    """
 
     parent_dir = os.getcwd()
     print(f"INFO: {mol.name} - CREST tautomer search")
 
-    wdir = mkdtemp(prefix=mol.name + "_", suffix="_crestTAUT", dir=os.getcwd())
+    tdir = mkdtemp(prefix=mol.name + "_", suffix="_crestTAUT", dir=os.getcwd())
 
-    os.chdir(wdir)
+    os.chdir(tdir)
     mol.write_xyz("geom.xyz")
 
     os.system(
@@ -43,21 +59,37 @@ def tautomer_search(mol, nproc=1, remove=True):
             )
             num += 1
 
-    if remove is True:
-        shutil.rmtree(wdir)
+    if remove_tdir is True:
+        shutil.rmtree(tdir)
     os.chdir(parent_dir)
 
     return tautomers
 
 
-def conformer_search(mol, nproc=1, remove=True):
+def conformer_search(mol, nproc=1, remove_tdir=True):
+    """Conformer search using CREST.
+
+    Parameters
+    ----------
+    mol : Molecule object
+        input molecule to use in the calculation
+    nproc : int, optional
+        number of cores, by default 1
+    remove_tdir : bool, optional
+        temporary work directory will be removed, by default True
+
+    Returns
+    -------
+    conformers : list
+        list containing the found conformers, in order of ascending energy
+    """
 
     parent_dir = os.getcwd()
     print(f"INFO: {mol.name} - CREST conformer search")
 
-    wdir = mkdtemp(prefix=mol.name + "_", suffix="_crestCONF", dir=os.getcwd())
+    tdir = mkdtemp(prefix=mol.name + "_", suffix="_crestCONF", dir=os.getcwd())
 
-    os.chdir(wdir)
+    os.chdir(tdir)
     mol.write_xyz("geom.xyz")
 
     os.system(
@@ -87,21 +119,37 @@ def conformer_search(mol, nproc=1, remove=True):
             )
             num += 1
 
-    if remove is True:
-        shutil.rmtree(wdir)
+    if remove_tdir is True:
+        shutil.rmtree(tdir)
     os.chdir(parent_dir)
 
     return conformers
 
 
-def deprotonate(mol, nproc=1, remove=True):
+def deprotonate(mol, nproc=1, remove_tdir=True):
+    """Deprotomer search using CREST.
+
+    Parameters
+    ----------
+    mol : Molecule object
+        input molecule to use in the calculation
+    nproc : int, optional
+        number of cores, by default 1
+    remove_tdir : bool, optional
+        temporary work directory will be removed, by default True
+
+    Returns
+    -------
+    deprotomers : list
+        list containing the found deprotomers, in order of ascending energy
+    """
 
     parent_dir = os.getcwd()
     print(f"INFO: {mol.name} - CREST deprotonation")
 
-    wdir = mkdtemp(prefix=mol.name + "_", suffix="_crestDEPROT", dir=os.getcwd())
+    tdir = mkdtemp(prefix=mol.name + "_", suffix="_crestDEPROT", dir=os.getcwd())
 
-    os.chdir(wdir)
+    os.chdir(tdir)
     mol.write_xyz("geom.xyz")
 
     os.system(
@@ -134,8 +182,8 @@ def deprotonate(mol, nproc=1, remove=True):
             )
             num += 1
 
-    if remove is True:
-        shutil.rmtree(wdir)
+    if remove_tdir is True:
+        shutil.rmtree(tdir)
     os.chdir(parent_dir)
 
     return deprotomers
