@@ -25,7 +25,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
     parent_dir = os.getcwd()
     print(f"INFO: {mol.name} - CREST tautomer search")
 
-    tdir = mkdtemp(prefix=mol.name + "_", suffix="_crestTAUT", dir=os.getcwd())
+    tdir = mkdtemp(prefix=mol.name + "_", suffix="_TAUT", dir=os.getcwd())
 
     os.chdir(tdir)
     mol.write_xyz("geom.xyz")
@@ -89,7 +89,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
     parent_dir = os.getcwd()
     print(f"INFO: {mol.name} - CREST conformer search")
 
-    tdir = mkdtemp(prefix=mol.name + "_", suffix="_crestCONF", dir=os.getcwd())
+    tdir = mkdtemp(prefix=mol.name + "_", suffix="_CONF", dir=os.getcwd())
 
     os.chdir(tdir)
     mol.write_xyz("geom.xyz")
@@ -151,9 +151,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
     parent_dir = os.getcwd()
     print(f"INFO: {mol.name} - CREST deprotonation")
 
-    tdir = mkdtemp(
-        prefix=mol.name + "_", suffix="_crestDEPROT", dir=os.getcwd()
-    )
+    tdir = mkdtemp(prefix=mol.name + "_", suffix="_DEPROT", dir=os.getcwd())
 
     os.chdir(tdir)
     mol.write_xyz("geom.xyz")

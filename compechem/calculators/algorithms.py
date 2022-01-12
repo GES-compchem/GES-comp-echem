@@ -1,8 +1,4 @@
-import os
-from rdkit import Chem
-
-
-def calculate_pka(protonated, deprotonated, method):
+def calculate_pka(protonated, deprotonated, method_el, method_vib):
     """Calculates the pKa of a molecule, given the protonated and deprotonated
     forms.
 
@@ -12,9 +8,12 @@ def calculate_pka(protonated, deprotonated, method):
         molecule in the protonated form
     deprotonated : Molecule object
         molecule in the deprotonated form
-    method : str
-        level of theory at which the pKa will be evaluated
-        (necessary for applying corrections)
+    method_el : str
+        level of theory for the electronic energy
+    method_vib : str
+        level of theory for the vibronic contributions, by default None
+        if method_vib is None, it defaults to the same level of theory of 
+        method_el
 
     Returns
     -------
@@ -22,22 +21,22 @@ def calculate_pka(protonated, deprotonated, method):
         pKa of the molecule.
     """
 
+    if method_vib is None:
+        method_vib = method_el
+
     protonated_energy = (
-        protonated.energies[method].electronic
-        + protonated.energies[method].vibronic
+        protonated.energies[method_el].electronic
+        + protonated.energies[method_vib].vibronic
     )
 
     deprotonated_energy = (
-        deprotonated.energies[method].electronic
-        + deprotonated.energies[method].vibronic
+        deprotonated.energies[method_el].electronic
+        + deprotonated.energies[method_vib].vibronic
     )
-
-    print(f"protonated energy: {protonated_energy}")
-    print(f"deprotonated energy: {deprotonated_energy}")
 
     hydrogens = protonated.atomcount - deprotonated.atomcount
 
-    if method == "gfn2":
+    if method_el == "gfn2":
         pka_correction = 164.22  # kcal/mol
     else:
         pka_correction = 0

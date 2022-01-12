@@ -50,16 +50,16 @@ def info(mol):
     -------
     Prints to screen a summary with all the informations about the molecule.
     """
-    print(f"\nMolecule: {mol.name}")
-    print(f"\tNumber of atoms: {mol.atomcount}")
-    print(f"\tCharge: {mol.charge}")
-    print(f"\tSpin: {mol.spin}")
-    print("\nEnergies (Eh):")
+    print(f"\n === Molecule: {mol.name} === ")
+    print(f"\nNumber of atoms: {mol.atomcount}")
+    print(f"Charge: {mol.charge}")
+    print(f"Spin: {mol.spin}")
+    print("\n --- Energies (Eh) --- ")
     for method in mol.energies:
-        print(f"\n\t Method: {method}")
-        print(f"\t Electronic: {mol.energies[method].electronic}")
-        print(f"\t Vibronic: {mol.energies[method].vibronic}")
-    print("\nCoordinates (Angstrom):")
+        print(f"\nMethod: {method}")
+        print(f"Electronic: {mol.energies[method].electronic}")
+        print(f"Vibronic: {mol.energies[method].vibronic}")
+    print("\n --- Coordinates (Angstrom) --- ")
     for line in mol.geometry:
         print(line, end="")
     print("\n")
@@ -83,7 +83,9 @@ def cyclization_check(mol, start_file, end_file):
     If a cyclization is detected, prints an error message.
     """
 
-    os.system(f"crest --testtopo {start_file} > start_topo.out 2>> start_topo.out")
+    os.system(
+        f"crest --testtopo {start_file} > start_topo.out 2>> start_topo.out"
+    )
     os.system(f"crest --testtopo {end_file} > end_topo.out 2>> end_topo.out")
 
     with open("start_topo.out", "r") as out:

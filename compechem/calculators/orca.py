@@ -97,7 +97,7 @@ class OrcaInput:
         with open("output.out", "r") as out:
             for line in out:
                 if "FINAL SINGLE POINT ENERGY" in line:
-                    electronic_energy = line.split()[-1]
+                    electronic_energy = float(line.split()[-1])
 
         mol.energies[f"{self.method}"] = mol.Energies(
             method=f"{self.method}", electronic=electronic_energy,
@@ -211,9 +211,9 @@ class OrcaInput:
         with open("output.out", "r") as out:
             for line in out:
                 if "FINAL SINGLE POINT ENERGY" in line:
-                    electronic_energy = line.split()[-1]
+                    electronic_energy = float(line.split()[-1])
                 if "G-E(el)" in line:
-                    vibronic_energy = line.split()[-4]
+                    vibronic_energy = float(line.split()[-4])
 
         mol.energies[f"{self.method}"] = mol.Energies(
             method=f"{self.method}",
@@ -278,9 +278,9 @@ class OrcaInput:
         with open("output.out", "r") as out:
             for line in out:
                 if "FINAL SINGLE POINT ENERGY" in line:
-                    electronic_energy = line.split()[-1]
+                    electronic_energy = float(line.split()[-1])
                 if "G-E(el)" in line:
-                    vibronic_energy = line.split()[-4]
+                    vibronic_energy = float(line.split()[-4])
 
         mol.energies[f"{self.method}"] = mol.Energies(
             method=f"{self.method}",
