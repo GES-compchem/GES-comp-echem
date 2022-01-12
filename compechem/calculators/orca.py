@@ -85,7 +85,10 @@ class OrcaInput:
             )
             if self.solvation is True:
                 inp.write(
-                    "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+                    "%CPCM\n"
+                    "  SMD True\n"
+                    f'  SMDsolvent "{self.solvent}"\n'
+                    "end\n"
                 )
             inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
 
@@ -142,7 +145,10 @@ class OrcaInput:
             )
             if self.solvation is True:
                 inp.write(
-                    "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+                    "%CPCM\n"
+                    "  SMD True\n"
+                    f'  SMDsolvent "{self.solvent}"\n'
+                    "end\n"
                 )
             inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
 
@@ -193,7 +199,10 @@ class OrcaInput:
             )
             if self.solvation is True:
                 inp.write(
-                    "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+                    "%CPCM\n"
+                    "  SMD True\n"
+                    f'  SMDsolvent "{self.solvent}"\n'
+                    "end\n"
                 )
             inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
 
@@ -257,7 +266,10 @@ class OrcaInput:
             )
             if self.solvation is True:
                 inp.write(
-                    "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+                    "%CPCM\n"
+                    "  SMD True\n"
+                    f'  SMDsolvent "{self.solvent}"\n'
+                    "end\n"
                 )
             inp.write(f"* xyzfile {mol.charge} {mol.spin} geom.xyz\n")
 

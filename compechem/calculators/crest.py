@@ -54,7 +54,9 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
                     j += 1
             tautomers.append(
                 molecule.Molecule(
-                    f"{mol.name}_tautomer_{num}.xyz", charge=mol.charge, spin=mol.spin,
+                    f"{mol.name}_tautomer_{num}.xyz",
+                    charge=mol.charge,
+                    spin=mol.spin,
                 )
             )
             num += 1
@@ -114,7 +116,9 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
                     j += 1
             conformers.append(
                 molecule.Molecule(
-                    f"{mol.name}_conformer_{num}.xyz", charge=mol.charge, spin=mol.spin,
+                    f"{mol.name}_conformer_{num}.xyz",
+                    charge=mol.charge,
+                    spin=mol.spin,
                 )
             )
             num += 1
@@ -147,7 +151,9 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
     parent_dir = os.getcwd()
     print(f"INFO: {mol.name} - CREST deprotonation")
 
-    tdir = mkdtemp(prefix=mol.name + "_", suffix="_crestDEPROT", dir=os.getcwd())
+    tdir = mkdtemp(
+        prefix=mol.name + "_", suffix="_crestDEPROT", dir=os.getcwd()
+    )
 
     os.chdir(tdir)
     mol.write_xyz("geom.xyz")
@@ -176,7 +182,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
             deprotomers.append(
                 molecule.Molecule(
                     f"{mol.name}_deprotomer_{num}.xyz",
-                    charge=mol.charge + 1,
+                    charge=mol.charge - 1,
                     spin=mol.spin,
                 )
             )

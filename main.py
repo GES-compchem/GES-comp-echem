@@ -2,7 +2,7 @@ import os
 
 # from jobdispatcher import JobDispatcher
 from compechem.molecule import Molecule
-from compechem.calculators import tools
+from compechem.calculators import tools, crest, algorithms
 from compechem.calculators.orca import OrcaInput
 from compechem.calculators.xtb import XtbInput
 
@@ -11,7 +11,7 @@ from compechem.calculators.xtb import XtbInput
 os.chdir("/mnt/c/Users/LucaBabetto/Downloads")
 xyz_folder = "xyz_files"
 
-ncores = 4
+ncores = 8
 
 for file in os.listdir(xyz_folder):
 
@@ -27,19 +27,22 @@ for file in os.listdir(xyz_folder):
     )
 
     xtb = XtbInput(
-        method="gfn2", nproc=ncores, solvation=True, solvent="water", optionals=""
+        method="gfn2",
+        nproc=ncores,
+        solvation=True,
+        solvent="water",
+        optionals="",
     )
 
-    mol_gs = Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
+    mol1 = Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
 
-    xtb.spe(mol_gs)
-    orca.spe(mol_gs)
-    tools.info(mol_gs)
-    # print(mol_gs.energies["gfn2"].electronic)
-    # print(mol_gs.energies["B97-D3"].electronic)
+    xtb.opt(mol1)
+    tools.info(mol1)
 
-    # xtb.opt(mol_gs)
-    # orca.spe(mol_gs)
-    # print(mol_gs.energies)
-    # print(mol_gs.energies["gfn2"].electronic)
-    # print(mol_gs.energies["B97-D3"].electronic)
+    mol2 = crest.deprotonate(mol1, nproc=ncores)[0]
+    xtb.opt(mol2)
+    tools.info(mol2)
+    mol2.write_xyz("deprot.xyz")
+
+    pka = algorithms.calculate_pka(mol1, mol2, method="gfn2")
+    print(f"pKa: {pka}")
