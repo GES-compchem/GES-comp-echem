@@ -55,7 +55,9 @@ class XtbInput:
         """
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name} - {self.method} SPE")
+        print(
+            f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SPE"
+        )
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -111,7 +113,9 @@ class XtbInput:
         """
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name} - {self.method} OPT")
+        print(
+            f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT"
+        )
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -175,7 +179,9 @@ class XtbInput:
         """
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name} - {self.method} FREQ")
+        print(
+            f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} FREQ"
+        )
 
         tdir = mkdtemp(
             prefix=mol.name + "_",

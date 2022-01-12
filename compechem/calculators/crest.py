@@ -23,7 +23,9 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
     """
 
     parent_dir = os.getcwd()
-    print(f"INFO: {mol.name} - CREST tautomer search")
+    print(
+        f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search"
+    )
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_TAUT", dir=os.getcwd())
 
@@ -87,7 +89,9 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
     """
 
     parent_dir = os.getcwd()
-    print(f"INFO: {mol.name} - CREST conformer search")
+    print(
+        f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search"
+    )
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_CONF", dir=os.getcwd())
 
@@ -149,7 +153,9 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
     """
 
     parent_dir = os.getcwd()
-    print(f"INFO: {mol.name} - CREST deprotonation")
+    print(
+        f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation"
+    )
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_DEPROT", dir=os.getcwd())
 

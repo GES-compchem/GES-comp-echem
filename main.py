@@ -11,7 +11,7 @@ from compechem.calculators.xtb import XtbInput
 os.chdir("/mnt/c/Users/LucaBabetto/Downloads")
 xyz_folder = "xyz_files"
 
-ncores = 4
+ncores = 8
 
 for file in os.listdir(xyz_folder):
 
@@ -34,28 +34,40 @@ for file in os.listdir(xyz_folder):
         optionals="",
     )
 
-    mol1 = Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
+    mol_gs = Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
+    mol_rc = Molecule(os.path.join(xyz_folder, file), charge=1, spin=2)
 
-    xtb.opt(mol1)
-    orca.spe(mol1)
-    tools.info(mol1)
+    xtb.opt(mol_gs)
+    xtb.opt(mol_rc)
 
-    mol2 = crest.deprotonate(mol1, nproc=ncores)[0]
-    xtb.opt(mol2)
-    orca.spe(mol2)
-    tools.info(mol2)
+    mol_nr = crest.deprotonate(mol_rc, nproc=ncores)[0]
+    xtb.opt(mol_nr)
 
-    mol3 = crest.deprotonate(mol2, nproc=ncores)[0]
-    xtb.opt(mol3)
-    orca.spe(mol3)
-    tools.info(mol3)
+    tools.info(mol_gs)
+    tools.info(mol_rc)
+    tools.info(mol_nr)
 
-    pka1 = algorithms.calculate_pka(
-        mol1, mol2, method_el="B97-D3", method_vib="gfn2"
+    pka_rc = algorithms.calculate_pka(
+        mol_rc, mol_nr, method_el="gfn2", method_vib="gfn2"
     )
-    print(f"pKa1: {pka1}")
+    print(f"Radical cation pKa: {pka_rc}")
 
-    pka2 = algorithms.calculate_pka(
-        mol1, mol3, method_el="B97-D3", method_vib="gfn2"
+    potential_nonPCET = algorithms.calculate_potential(
+        oxidised=mol_rc,
+        reduced=mol_gs,
+        pH=3,
+        method_el="gfn2",
+        method_vib="gfn2",
     )
-    print(f"pKa2: {pka2}")
+
+    print(f"Potential (non PCET): {potential_nonPCET} V")
+
+    potential_PCET = algorithms.calculate_potential(
+        oxidised=mol_nr,
+        reduced=mol_gs,
+        pH=3,
+        method_el="gfn2",
+        method_vib="gfn2",
+    )
+
+    print(f"Potential (PCET): {potential_PCET} V")
