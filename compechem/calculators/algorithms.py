@@ -21,6 +21,12 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
         pKa of the molecule.
     """
 
+    if protonated.atomcount - deprotonated.atomcount != 1:
+        print(
+            f"ERROR: {protonated.name} deprotomer differs for more than 1 atom."
+        )
+        return None
+
     if method_vib is None:
         method_vib = method_el
 
@@ -34,7 +40,6 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
         + deprotonated.energies[method_vib].vibronic
     ) * 627.5  # kcal/mol
 
-    hydrogens = protonated.atomcount - deprotonated.atomcount
     proton_self_energy = 0
 
     if method_el == "gfn2":
@@ -43,7 +48,7 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
     pka = (
         (
             deprotonated_energy
-            + (-270.29 + proton_self_energy) * hydrogens
+            + (-270.29 + proton_self_energy)
             - protonated_energy
         )
     ) / (2.303 * 1.98720425864083 / 1000 * 298.15)
@@ -92,9 +97,6 @@ def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
     # note, count is reversed compared to pKa calculation
     hydrogens = reduced.atomcount - oxidised.atomcount
 
-    # not sure it's right for multiple electron redox reactions - CHECK
-    electrons = abs(oxidised.spin - reduced.spin)
-
     reference_potential = 4.28  # V
     electron_self_energy = 0
     proton_self_energy = 0
@@ -106,7 +108,7 @@ def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
     potential = (
         -(
             reduced_energy
-            + electron_self_energy * electrons
+            + electron_self_energy
             - (oxidised_energy + (-270.29 + proton_self_energy) * hydrogens)
         )
         * (4184 / 96485)

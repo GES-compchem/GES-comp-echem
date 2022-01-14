@@ -38,13 +38,15 @@ def generate_inchi(molfile):
     return inchi
 
 
-def info(mol):
+def info(mol, print_geometry=True):
     """Prints information about the molecule
 
     Parameters
     ----------
     mol : Molecule object
         Molecule object
+    print_geometry : bool
+        prints atom coordinates, by default True
 
     Returns
     -------
@@ -54,15 +56,16 @@ def info(mol):
     print(f"\nNumber of atoms: {mol.atomcount}")
     print(f"Charge: {mol.charge}")
     print(f"Spin: {mol.spin}")
-    print("\n --- Energies (Eh) --- ")
+    print("\n --- Energies (Eh) --- \n")
     for method in mol.energies:
-        print(f"\nMethod: {method}")
+        print(f"Method: {method}")
         print(f"Electronic: {mol.energies[method].electronic}")
         print(f"Vibronic: {mol.energies[method].vibronic}")
-    print("\n --- Coordinates (Angstrom) --- ")
-    for line in mol.geometry:
-        print(line, end="")
-    print("\n")
+    if print_geometry is True:
+        print("\n --- Coordinates (Angstrom) --- ")
+        for line in mol.geometry:
+            print(line, end="")
+        print("\n")
 
 
 def cyclization_check(mol, start_file, end_file):
