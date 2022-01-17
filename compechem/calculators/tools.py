@@ -58,14 +58,13 @@ def info(mol, print_geometry=True):
     print(f"Spin: {mol.spin}")
     print("\n --- Energies (Eh) --- \n")
     for method in mol.energies:
-        print(f"Method: {method}")
+        print(f"* Method: {method}")
         print(f"Electronic: {mol.energies[method].electronic}")
         print(f"Vibronic: {mol.energies[method].vibronic}")
     if print_geometry is True:
         print("\n --- Coordinates (Angstrom) --- ")
         for line in mol.geometry:
             print(line, end="")
-        print("\n")
 
 
 def cyclization_check(mol, start_file, end_file):

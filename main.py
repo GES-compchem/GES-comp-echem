@@ -16,14 +16,14 @@ ncores = 8
 for file in os.listdir(xyz_folder):
 
     orca = OrcaInput(
-        method="B97-D3",
-        basis_set="def2-SVP",
+        method="M062X",
+        basis_set="def2-TZVP",
         aux_basis="def2/J",
         nproc=ncores,
         maxcore=350,
-        solvation=False,
+        solvation=True,
         solvent="water",
-        optionals="D3BJ",
+        optionals="D3ZERO DEFGRID3",
     )
 
     xtb = XtbInput(
@@ -34,65 +34,98 @@ for file in os.listdir(xyz_folder):
         optionals="",
     )
 
+    # CALCOLO PKA
+
+    # mol_gs = Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
+    # xtb.opt(mol_gs)
+    # orca.spe(mol_gs)
+
+    # mol_1 = crest.deprotonate(mol_gs, nproc=ncores)[0]
+    # xtb.opt(mol_1)
+    # orca.spe(mol_1)
+
+    # mol_2 = crest.deprotonate(mol_1, nproc=ncores)[0]
+    # xtb.opt(mol_2)
+    # orca.spe(mol_2)
+
+    # tools.info(mol_gs, print_geometry=False)
+    # tools.info(mol_1, print_geometry=False)
+    # tools.info(mol_2, print_geometry=False)
+
+    # pka_1 = algorithms.calculate_pka(
+    #     mol_gs, mol_1, method_el="B97-D3", method_vib="gfn2"
+    # )
+    # print(f"\npKa1: {pka_1}")
+
+    # pka_2 = algorithms.calculate_pka(
+    #     mol_1, mol_2, method_el="B97-D3", method_vib="gfn2"
+    # )
+    # print(f"\npKa2: {pka_2}")
+
+    # CALCOLO POTENZIALE
+
     mol_gs = Molecule(os.path.join(xyz_folder, file), charge=0, spin=1)
+    mol_rc = Molecule(os.path.join(xyz_folder, file), charge=1, spin=2)
+
     xtb.opt(mol_gs)
     orca.spe(mol_gs)
+    xtb.opt(mol_rc)
+    orca.spe(mol_rc)
 
-    mol_1 = crest.deprotonate(mol_gs, nproc=ncores)[0]
-    xtb.opt(mol_1)
-    orca.spe(mol_1)
+    mol_nr = crest.deprotonate(mol_rc, nproc=ncores)[0]
+    xtb.opt(mol_nr)
+    orca.spe(mol_nr)
 
-    mol_2 = crest.deprotonate(mol_1, nproc=ncores)[0]
-    xtb.opt(mol_2)
-    orca.spe(mol_2)
+    tools.info(mol_gs)
+    tools.info(mol_rc)
+    tools.info(mol_nr)
 
-    tools.info(mol_gs, print_geometry=False)
-    tools.info(mol_1, print_geometry=False)
-    tools.info(mol_2, print_geometry=False)
-
-    pka_1 = algorithms.calculate_pka(
-        mol_gs, mol_1, method_el="B97-D3", method_vib="gfn2"
+    pka_rc1 = algorithms.calculate_pka(
+        mol_rc, mol_nr, method_el="gfn2", method_vib="gfn2"
     )
-    print(f"\npKa1: {pka_1}")
+    print(f"\nRadical cation pKa (gfn2): {pka_rc1}")
 
-    pka_2 = algorithms.calculate_pka(
-        mol_1, mol_2, method_el="B97-D3", method_vib="gfn2"
+    pka_rc2 = algorithms.calculate_pka(
+        mol_rc, mol_nr, method_el="M062X", method_vib="gfn2"
     )
-    print(f"\npKa2: {pka_2}")
+    print(f"\nRadical cation pKa (M062X): {pka_rc2}")
 
-    # mol_rc = Molecule(os.path.join(xyz_folder, file), charge=1, spin=2)
+    potential_nonPCET1 = algorithms.calculate_potential(
+        oxidised=mol_rc,
+        reduced=mol_gs,
+        pH=1,
+        method_el="gfn2",
+        method_vib="gfn2",
+    )
 
-    # xtb.opt(mol_gs)
-    # xtb.opt(mol_rc)
+    print(f"\nPotential (non PCET) (gfn2): {potential_nonPCET1} V")
 
-    # mol_nr = crest.deprotonate(mol_rc, nproc=ncores)[0]
-    # xtb.opt(mol_nr)
+    potential_PCET1 = algorithms.calculate_potential(
+        oxidised=mol_nr,
+        reduced=mol_gs,
+        pH=3,
+        method_el="gfn2",
+        method_vib="gfn2",
+    )
 
-    # tools.info(mol_gs)
-    # tools.info(mol_rc)
-    # tools.info(mol_nr)
+    print(f"\nPotential (PCET) (gfn2): {potential_PCET1} V")
 
-    # pka_rc = algorithms.calculate_pka(
-    #     mol_rc, mol_nr, method_el="gfn2", method_vib="gfn2"
-    # )
-    # print(f"Radical cation pKa: {pka_rc}")
+    potential_nonPCET2 = algorithms.calculate_potential(
+        oxidised=mol_rc,
+        reduced=mol_gs,
+        pH=1,
+        method_el="M062X",
+        method_vib="gfn2",
+    )
 
-    # potential_nonPCET = algorithms.calculate_potential(
-    #     oxidised=mol_rc,
-    #     reduced=mol_gs,
-    #     pH=3,
-    #     method_el="gfn2",
-    #     method_vib="gfn2",
-    # )
+    print(f"\nPotential (non PCET) (M062X): {potential_nonPCET2} V")
 
-    # print(f"Potential (non PCET): {potential_nonPCET} V")
+    potential_PCET2 = algorithms.calculate_potential(
+        oxidised=mol_nr,
+        reduced=mol_gs,
+        pH=3,
+        method_el="M062X",
+        method_vib="gfn2",
+    )
 
-    # potential_PCET = algorithms.calculate_potential(
-    #     oxidised=mol_nr,
-    #     reduced=mol_gs,
-    #     pH=3,
-    #     method_el="gfn2",
-    #     method_vib="gfn2",
-    # )
-
-    # print(f"Potential (PCET): {potential_PCET} V")
+    print(f"\nPotential (PCET) (M062X): {potential_PCET2} V")
