@@ -198,3 +198,60 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
 
     return deprotomers
 
+
+def qcg_grow(
+    solute, solvent, method="gfnff", nsolv=None, nproc=1, remove_tdir=True
+):
+    """Quantum Cluster Growth using CREST.
+
+    Parameters
+    ----------
+    solute : Molecule object
+        solute molecule to use in the calculation
+    solvent : Molecule object
+        solvent molecule to use in the calculation
+    method : str
+        method for the geometry optimizations, by default gfnff
+        Alternative options: gfn1, gfn2
+    nsolv : int
+        number of solvent molecules to add to the cluster, by default None.
+        If a number is not specified, the program will keep adding solvent
+        molecules until convergence is reached, or 150 molecules are added.
+    nproc : int, optional
+        number of cores, by default 1
+    remove_tdir : bool, optional
+        temporary work directory will be removed, by default True
+
+    Returns
+    -------
+    cluster : Molecule object
+        Molecule object containing the explicitly solvated input molecule
+    """
+
+    parent_dir = os.getcwd()
+    print(
+        f"INFO: {solute.name}, charge {solute.charge} spin {solute.spin} - CREST QCG"
+    )
+
+    tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG", dir=os.getcwd())
+
+    os.chdir(tdir)
+    solute.write_xyz("solute.xyz")
+    solvent.write_xyz("solvent.xyz")
+
+    if nsolv is not None:
+        os.system(
+            f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --charge {solute.charge} --uhf {solute.spin-1} --T {nproc} > output.out 2>> output.out"
+        )
+
+    else:
+        os.system(
+            f"crest solute.xyz --qcg solvent.xyz --{method} --alpb water --charge {solute.charge} --uhf {solute.spin-1} --T {nproc} > output.out 2>> output.out"
+        )
+
+    if remove_tdir is True:
+        shutil.rmtree(tdir)
+    os.chdir(parent_dir)
+
+    solute.update_geometry("grow/cluster.xyz")
+
