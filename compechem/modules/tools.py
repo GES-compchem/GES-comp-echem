@@ -85,9 +85,7 @@ def cyclization_check(mol, start_file, end_file):
     If a cyclization is detected, prints an error message.
     """
 
-    os.system(
-        f"crest --testtopo {start_file} > start_topo.out 2>> start_topo.out"
-    )
+    os.system(f"crest --testtopo {start_file} > start_topo.out 2>> start_topo.out")
     os.system(f"crest --testtopo {end_file} > end_topo.out 2>> end_topo.out")
 
     with open("start_topo.out", "r") as out:
@@ -116,8 +114,9 @@ def dissociation_check(mol):
 
     Parameters
     ----------
-    mol : str
-        Mol file containing the molecular structure
+    mol : Molecule object
+        Molecule for which to check if a dissociation has happened.
+        Requires a .mol file in the current directory.
 
     Returns
     -------
@@ -126,9 +125,7 @@ def dissociation_check(mol):
     """
 
     mol_file = [f for f in os.listdir(".") if f.endswith(".mol")][-1]
-    end_mol = Chem.MolFromMolFile(
-        mol_file, sanitize=False, removeHs=False, strictParsing=False
-    )
+    end_mol = Chem.MolFromMolFile(mol_file, sanitize=False, removeHs=False, strictParsing=False)
     end_smiles = Chem.MolToSmiles(end_mol)
     if "." in end_smiles:
         print(

@@ -53,10 +53,7 @@ class Molecule:
         """
 
         def __init__(
-            self,
-            method: str = None,
-            electronic: float = None,
-            vibronic: float = None,
+            self, method: str = None, electronic: float = None, vibronic: float = None,
         ) -> None:
             """
             Parameters

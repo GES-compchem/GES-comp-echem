@@ -22,22 +22,18 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
     """
 
     if protonated.atomcount - deprotonated.atomcount != 1:
-        print(
-            f"ERROR: {protonated.name} deprotomer differs for more than 1 atom."
-        )
+        print(f"ERROR: {protonated.name} deprotomer differs for more than 1 atom.")
         return None
 
     if method_vib is None:
         method_vib = method_el
 
     protonated_energy = (
-        protonated.energies[method_el].electronic
-        + protonated.energies[method_vib].vibronic
+        protonated.energies[method_el].electronic + protonated.energies[method_vib].vibronic
     ) * 627.5  # kcal/mol
 
     deprotonated_energy = (
-        deprotonated.energies[method_el].electronic
-        + deprotonated.energies[method_vib].vibronic
+        deprotonated.energies[method_el].electronic + deprotonated.energies[method_vib].vibronic
     ) * 627.5  # kcal/mol
 
     proton_self_energy = 0
@@ -45,13 +41,9 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
     if method_el == "gfn2":
         proton_self_energy = 164.22  # kcal/mol
 
-    pka = (
-        (
-            deprotonated_energy
-            + (-270.29 + proton_self_energy)
-            - protonated_energy
-        )
-    ) / (2.303 * 1.98720425864083 / 1000 * 298.15)
+    pka = ((deprotonated_energy + (-270.29 + proton_self_energy) - protonated_energy)) / (
+        2.303 * 1.98720425864083 / 1000 * 298.15
+    )
 
     return pka
 
@@ -85,13 +77,11 @@ def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
         method_vib = method_el
 
     oxidised_energy = (
-        oxidised.energies[method_el].electronic
-        + oxidised.energies[method_vib].vibronic
+        oxidised.energies[method_el].electronic + oxidised.energies[method_vib].vibronic
     ) * 627.5  # kcal/mol
 
     reduced_energy = (
-        reduced.energies[method_el].electronic
-        + reduced.energies[method_vib].vibronic
+        reduced.energies[method_el].electronic + reduced.energies[method_vib].vibronic
     ) * 627.5  # kcal/mol
 
     # note, count is reversed compared to pKa calculation
