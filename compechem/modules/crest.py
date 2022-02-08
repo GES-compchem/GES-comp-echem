@@ -1,7 +1,7 @@
 import os, shutil
 from tempfile import mkdtemp
 from compechem.molecule import Molecule
-from compechem.calculators import tools
+from compechem.modules import tools
 
 
 def tautomer_search(mol, nproc=1, remove_tdir=True):
@@ -238,11 +238,11 @@ def qcg_grow(
             f"crest solute.xyz --qcg solvent.xyz --{method} --alpb water --charge {charge} --uhf {spin-1} --T {nproc} > output.out 2>> output.out"
         )
 
+    cluster = Molecule("grow/cluster.xyz", charge, spin)
+
     if remove_tdir is True:
         shutil.rmtree(tdir)
     os.chdir(parent_dir)
-
-    cluster = Molecule("grow/cluster.xyz", charge, spin)
 
     return cluster
 

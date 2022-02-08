@@ -1,6 +1,6 @@
 import os, shutil
 from tempfile import mkdtemp
-from compechem.calculators import tools
+from compechem.modules import tools
 from compechem.molecule import Molecule
 
 
