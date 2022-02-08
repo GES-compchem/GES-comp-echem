@@ -31,7 +31,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --charge {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize -T {nproc} > output.out 2>> output.out"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize -T {nproc} > output.out 2>> output.out"
     )
 
     tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
@@ -149,7 +149,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --charge {mol.charge} --uhf {mol.spin-1} --deprotonate -T {nproc} > output.out 2>> output.out"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate -T {nproc} > output.out 2>> output.out"
     )
 
     molsize = mol.atomcount - 1
@@ -231,7 +231,7 @@ def qcg_grow(
     solvent.write_xyz("solvent.xyz")
 
     os.system(
-        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --charge {charge} --uhf {spin-1} --T {nproc} > output.out 2>> output.out"
+        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} --T {nproc} > output.out 2>> output.out"
     )
 
     solute.write_xyz(f"{solute.name}.xyz")
