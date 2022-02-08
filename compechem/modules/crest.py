@@ -237,7 +237,12 @@ def qcg_grow(
     solute.write_xyz(f"{solute.name}.xyz")
     cluster = Molecule(f"{solute.name}.xyz", charge, spin)
 
-    cluster.update_geometry("grow/cluster.xyz")
+    try:
+        cluster.update_geometry("grow/cluster.xyz")
+    except:
+        print("ERROR: cluster growth failed, updating geometry to the last viable cluster")
+        cluster.update_geometry("grow/qcg_grow.xyz")
+        return cluster
 
     if remove_tdir is True:
         shutil.rmtree(tdir)
