@@ -182,7 +182,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
 
 
 def qcg_grow(
-    solute, solvent, charge=None, spin=None, method="gfnff", nsolv=0, nproc=1, remove_tdir=True
+    solute, solvent, charge=None, spin=None, method="gfn2", nsolv=0, nproc=1, remove_tdir=True
 ):
     """Quantum Cluster Growth using CREST.
 
@@ -197,8 +197,8 @@ def qcg_grow(
         spin : int, optional
             total spin of the molecule. Default is taken from the solute molecule.
     method : str
-        method for the geometry optimizations, by default gfnff
-        Alternative options: gfn1, gfn2
+        method for the geometry optimizations, by default gfn2
+        Alternative options: gfn1, gfnff
     nsolv : int
         number of solvent molecules to add to the cluster, by default 0 (unconstrained).
         If a number is not specified, the program will keep adding solvent
