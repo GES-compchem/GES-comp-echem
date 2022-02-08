@@ -220,7 +220,9 @@ def qcg_grow(
         spin = solute.spin
 
     parent_dir = os.getcwd()
-    print(f"INFO: {solute.name}, charge {charge} spin {spin} - CREST QCG")
+    print(
+        f"INFO: {solute.name}, charge {charge} spin {spin} - CREST QCG - {nsolv} solvent molecules"
+    )
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG", dir=os.getcwd())
 
