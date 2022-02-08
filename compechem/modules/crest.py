@@ -232,7 +232,10 @@ def qcg_grow(
         f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --charge {charge} --uhf {spin-1} --T {nproc} > output.out 2>> output.out"
     )
 
-    cluster = Molecule("grow/cluster.xyz", charge, spin)
+    solute.write_xyz(f"{solute.name}.xyz")
+    cluster = Molecule(f"{solute.name}.xyz", charge, spin)
+
+    cluster.update_geometry("grow/cluster.xyz")
 
     if remove_tdir is True:
         shutil.rmtree(tdir)
