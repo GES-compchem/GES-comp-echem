@@ -182,7 +182,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
 
 
 def qcg_grow(
-    solute, solvent, charge=None, spin=None, method="gfnff", nsolv=None, nproc=1, remove_tdir=True
+    solute, solvent, charge=None, spin=None, method="gfnff", nsolv=0, nproc=1, remove_tdir=True
 ):
     """Quantum Cluster Growth using CREST.
 
@@ -200,7 +200,7 @@ def qcg_grow(
         method for the geometry optimizations, by default gfnff
         Alternative options: gfn1, gfn2
     nsolv : int
-        number of solvent molecules to add to the cluster, by default None.
+        number of solvent molecules to add to the cluster, by default 0 (unconstrained).
         If a number is not specified, the program will keep adding solvent
         molecules until convergence is reached, or 150 molecules are added.
     nproc : int, optional
@@ -228,15 +228,9 @@ def qcg_grow(
     solute.write_xyz("solute.xyz")
     solvent.write_xyz("solvent.xyz")
 
-    if nsolv is not None:
-        os.system(
-            f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --charge {charge} --uhf {spin-1} --T {nproc} > output.out 2>> output.out"
-        )
-
-    else:
-        os.system(
-            f"crest solute.xyz --qcg solvent.xyz --{method} --alpb water --charge {charge} --uhf {spin-1} --T {nproc} > output.out 2>> output.out"
-        )
+    os.system(
+        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --charge {charge} --uhf {spin-1} --T {nproc} > output.out 2>> output.out"
+    )
 
     cluster = Molecule("grow/cluster.xyz", charge, spin)
 
