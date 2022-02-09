@@ -337,7 +337,7 @@ def qcg_ensemble(
     try:
         cluster.update_geometry("ensemble/crest_best.xyz")
 
-        with open("crest.out", "r") as out:
+        with open("output.out", "r") as out:
             for line in out:
                 if "G /Eh" in line:
                     electronic_energy = float(line.split()[-1])
