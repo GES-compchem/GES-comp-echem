@@ -31,7 +31,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize -T {nproc} > output.out 2>> output.out"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize -T {nproc} > output.out 2>> output.err"
     )
 
     tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
@@ -91,7 +91,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick -T {nproc} > conformers.out 2>> conformers.out"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick -T {nproc} > output.out 2>> output.err"
     )
 
     molsize = mol.atomcount
@@ -149,7 +149,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate -T {nproc} > output.out 2>> output.out"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate -T {nproc} > output.out 2>> output.err"
     )
 
     molsize = mol.atomcount - 1
@@ -241,7 +241,7 @@ def qcg_grow(
     solvent.write_xyz("solvent.xyz")
 
     os.system(
-        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {nproc} > output.out 2>> output.out"
+        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {nproc} > output.out 2>> output.err"
     )
 
     solute.write_xyz(f"{solute.name}.xyz")
@@ -328,7 +328,7 @@ def qcg_ensemble(
     solvent.write_xyz("solvent.xyz")
 
     os.system(
-        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {nproc} > output.out 2>> output.out"
+        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {nproc} > output.out 2>> output.err"
     )
 
     solute.write_xyz(f"{solute.name}.xyz")
@@ -353,9 +353,11 @@ def qcg_ensemble(
             method=f"{method}", electronic=electronic_energy, vibronic=vibronic_energy,
         )
 
-    except:
+    except Exception as e:
         print("ERROR: cluster growth failed, updating geometry to the last viable cluster")
+        print(str(e))
         cluster.update_geometry("grow/qcg_grow.xyz")
+        os.chdir(parent_dir)
         return cluster
 
     if remove_tdir is True:

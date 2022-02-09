@@ -75,12 +75,12 @@ class XtbInput:
 
         if self.solvation is True:
             os.system(
-                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
         else:
             os.system(
-                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
         with open("output.out", "r") as out:
@@ -147,12 +147,12 @@ class XtbInput:
 
         if self.solvation is True:
             os.system(
-                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
         else:
             os.system(
-                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
         if tools.dissociation_check(mol) is True:
@@ -220,12 +220,12 @@ class XtbInput:
 
         if self.solvation is True:
             os.system(
-                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
         else:
             os.system(
-                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
         with open("output.out", "r") as out:
