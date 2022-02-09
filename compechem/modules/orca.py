@@ -1,5 +1,7 @@
 import os, shutil
 from tempfile import mkdtemp
+
+from pyparsing import Or
 from compechem.molecule import Molecule
 
 
@@ -96,14 +98,23 @@ class OrcaInput:
 
         os.system("$ORCADIR/orca input.inp > output.out")
 
-        newmol = Molecule(f"{mol.name}.xyz", charge, spin)
-
-        newmol.energies = mol.energies
-
         with open("output.out", "r") as out:
             for line in out:
                 if "FINAL SINGLE POINT ENERGY" in line:
                     electronic_energy = float(line.split()[-1])
+
+        newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+
+        newmol.energies = mol.energies
+
+        vibronic_energy = None
+
+        if self.method in mol.energies:
+            vibronic_energy = mol.energies[f"{self.method}"].vibronic
+
+        newmol.energies[f"{self.method}"] = newmol.Energies(
+            method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+        )
 
         newmol.energies[f"{self.method}"] = newmol.Energies(
             method=f"{self.method}", electronic=electronic_energy,
@@ -342,4 +353,18 @@ class OrcaInput:
         os.chdir(parent_dir)
 
         return newmol
+
+
+class M06(OrcaInput):
+    def __init__(self, nproc=1, maxcore=350):
+        super().__init__(
+            method="M062X",
+            basis_set="def2-TZVP",
+            aux_basis="def2/J",
+            nproc=nproc,
+            maxcore=maxcore,
+            solvation=True,
+            solvent="water",
+            optionals="D3ZERO",
+        )
 

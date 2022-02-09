@@ -75,12 +75,12 @@ class XtbInput:
 
         if self.solvation is True:
             os.system(
-                f"xtb {mol.name} --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {self.nproc} {self.optionals} > output.out 2>> output.out"
             )
 
         else:
             os.system(
-                f"xtb {mol.name} --{self.method} --chrg {charge} --uhf {spin-1} -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {self.nproc} {self.optionals} > output.out 2>> output.out"
             )
 
         with open("output.out", "r") as out:
@@ -92,8 +92,13 @@ class XtbInput:
 
         newmol.energies = mol.energies
 
+        vibronic_energy = None
+
+        if self.method in mol.energies:
+            vibronic_energy = mol.energies[f"{self.method}"].vibronic
+
         newmol.energies[f"{self.method}"] = newmol.Energies(
-            method=f"{self.method}", electronic=electronic_energy,
+            method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
         )
 
         if remove_tdir is True:
@@ -215,12 +220,12 @@ class XtbInput:
 
         if self.solvation is True:
             os.system(
-                f"xtb geom.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {self.nproc} {self.optionals} > output.out 2>> output.out"
             )
 
         else:
             os.system(
-                f"xtb geom.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {self.nproc} {self.optionals} > output.out 2>> output.out"
+                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {self.nproc} {self.optionals} > output.out 2>> output.out"
             )
 
         with open("output.out", "r") as out:

@@ -98,6 +98,6 @@ class Molecule:
         with open(xyz_file, "r") as file:
             for linenum, line in enumerate(file):
                 if linenum == 0:
-                    atomcount = int(line)
-                if linenum > 1 and linenum < atomcount + 2:
+                    self.atomcount = int(line)
+                if linenum > 1 and linenum < self.atomcount + 2:
                     self.geometry.append(line)
