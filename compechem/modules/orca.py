@@ -50,7 +50,7 @@ class OrcaInput:
         self.solvent = solvent
         self.optionals = optionals
 
-    def spe(self, mol, charge=None, spin=None, remove_tdir=True):
+    def spe(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
         """Single point energy calculation.
 
         Parameters
@@ -61,6 +61,9 @@ class OrcaInput:
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
             total spin of the molecule. Default is taken from the input molecule.
+        inplace : bool, optional
+            updates info for the input molecule instead of outputting a new molecule object,
+            by default False
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
 
@@ -103,30 +106,34 @@ class OrcaInput:
                 if "FINAL SINGLE POINT ENERGY" in line:
                     electronic_energy = float(line.split()[-1])
 
-        newmol = Molecule(f"{mol.name}.xyz", charge, spin)
-
-        newmol.energies = mol.energies
-
         vibronic_energy = None
 
         if self.method in mol.energies:
             vibronic_energy = mol.energies[f"{self.method}"].vibronic
 
-        newmol.energies[f"{self.method}"] = newmol.Energies(
-            method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-        )
+        if inplace is False:
 
-        newmol.energies[f"{self.method}"] = newmol.Energies(
-            method=f"{self.method}", electronic=electronic_energy,
-        )
+            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+
+            newmol.energies = mol.energies
+
+            newmol.energies[f"{self.method}"] = newmol.Energies(
+                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            )
+
+        else:
+            mol.energies[f"{self.method}"] = mol.Energies(
+                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            )
 
         if remove_tdir is True:
             shutil.rmtree(tdir)
         os.chdir(parent_dir)
 
-        return newmol
+        if inplace is False:
+            return newmol
 
-    def opt(self, mol, charge=None, spin=None, remove_tdir=True):
+    def opt(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
         """Geometry optimization + frequency analysis.
 
         Parameters
@@ -137,6 +144,9 @@ class OrcaInput:
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
             total spin of the molecule. Default is taken from the input molecule.
+        inplace : bool, optional
+            updates info for the input molecule instead of outputting a new molecule object,
+            by default False
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
 
@@ -189,13 +199,24 @@ class OrcaInput:
                 if "G-E(el)" in line:
                     vibronic_energy = float(line.split()[-4])
 
-        newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+        if inplace is False:
 
-        newmol.energies = mol.energies
+            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-        newmol.energies[f"{self.method}"] = newmol.Energies(
-            method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-        )
+            newmol.energies = mol.energies
+
+            newmol.energies[f"{self.method}"] = newmol.Energies(
+                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            )
+
+            newmol.update_geometry(f"{mol.name}.xyz")
+
+        else:
+            mol.energies[f"{self.method}"] = mol.Energies(
+                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            )
+
+            mol.update_geometry(f"{mol.name}.xyz")
 
         if remove_tdir is True:
             shutil.rmtree(tdir)
@@ -203,7 +224,7 @@ class OrcaInput:
 
         return newmol
 
-    def freq(self, mol, charge=None, spin=None, remove_tdir=True):
+    def freq(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
         """Frequency analysis (analytical frequencies).
 
         Note: if the SMD solvation model is detected, defaults to numerical frequencies
@@ -217,6 +238,9 @@ class OrcaInput:
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
             total spin of the molecule. Default is taken from the input molecule.
+        inplace : bool, optional
+            updates info for the input molecule instead of outputting a new molecule object,
+            by default False
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
 
@@ -269,21 +293,29 @@ class OrcaInput:
                 if "G-E(el)" in line:
                     vibronic_energy = float(line.split()[-4])
 
-        newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+        if inplace is False:
 
-        newmol.energies = mol.energies
+            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-        newmol.energies[f"{self.method}"] = newmol.Energies(
-            method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-        )
+            newmol.energies = mol.energies
+
+            newmol.energies[f"{self.method}"] = newmol.Energies(
+                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            )
+
+        else:
+            mol.energies[f"{self.method}"] = mol.Energies(
+                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            )
 
         if remove_tdir is True:
             shutil.rmtree(tdir)
         os.chdir(parent_dir)
 
-        return newmol
+        if inplace is False:
+            return newmol
 
-    def nfreq(self, mol, charge=None, spin=None, remove_tdir=True):
+    def nfreq(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
         """Frequency analysis (numerical frequencies).
 
         Parameters
@@ -294,6 +326,9 @@ class OrcaInput:
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
             total spin of the molecule. Default is taken from the input molecule.
+        inplace : bool, optional
+            updates info for the input molecule instead of outputting a new molecule object,
+            by default False
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
 
@@ -340,19 +375,27 @@ class OrcaInput:
                 if "G-E(el)" in line:
                     vibronic_energy = float(line.split()[-4])
 
-        newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+        if inplace is False:
 
-        newmol.energies = mol.energies
+            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-        newmol.energies[f"{self.method}"] = newmol.Energies(
-            method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-        )
+            newmol.energies = mol.energies
+
+            newmol.energies[f"{self.method}"] = newmol.Energies(
+                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            )
+
+        else:
+            mol.energies[f"{self.method}"] = mol.Energies(
+                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            )
 
         if remove_tdir is True:
             shutil.rmtree(tdir)
         os.chdir(parent_dir)
 
-        return newmol
+        if inplace is False:
+            return newmol
 
 
 class M06(OrcaInput):
