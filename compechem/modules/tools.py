@@ -1,5 +1,6 @@
 import os
 from rdkit import Chem
+from compechem.molecule import Molecule
 
 
 def generate_inchikey(molfile):
@@ -135,3 +136,51 @@ def dissociation_check(mol):
 
     else:
         return False
+
+
+def split_multixyz(mol, file, charge=None, spin=None):
+    """Splits a .xyz file containing multiple structures into individual structures.
+
+    Parameters
+    ----------
+    mol : Molecule object
+        Input molecule, giving the charge/spin (if not defined) and name of the output molecules
+    file : str
+        .xyz file containing the multiple structures
+    charge : int, optional
+        Charge of the output molecules, by default the same as the input molecule
+    spin : int, optional
+        Spin of the output molecules, by default the same as the input molecule
+
+    Returns
+    -------
+    molecules_list : list
+        List containing the individual Molecule object, whose structure is taken from the .xyz file
+    """
+
+    if charge is None:
+        charge = mol.charge
+    if spin is None:
+        spin = mol.spin
+
+    with open(file, "r") as f:
+        molsize = int(f.readline())
+
+    molecules_list = []
+
+    num = 1
+    with open(file, "r") as f:
+        line = f.readline()
+        while line:
+            with open(f"{mol.name}_{os.path.basename(file).strip('.xyz')}_{num}.xyz", "w") as out:
+                for _ in range(molsize + 2):
+                    out.write(line)
+                    line = f.readline()
+            molecules_list.append(
+                Molecule(
+                    f"{mol.name}_{os.path.basename(file).strip('.xyz')}_{num}.xyz", charge, spin
+                )
+            )
+            num += 1
+
+    return molecules_list
