@@ -270,7 +270,7 @@ class OrcaInput:
                 f"%pal nproc {self.nproc} end\n"
                 f"%maxcore {self.maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
-                f"! RIJCOSX {self.aux_basis}"
+                f"! RIJCOSX {self.aux_basis}\n"
             )
             if self.solvation is True:
                 inp.write(
