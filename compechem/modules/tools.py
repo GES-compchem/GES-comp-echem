@@ -1,4 +1,5 @@
 import os
+import pickle
 from rdkit import Chem
 from compechem.molecule import Molecule
 
@@ -66,6 +67,27 @@ def info(mol, print_geometry=True):
         print("\n --- Coordinates (Angstrom) --- ")
         for line in mol.geometry:
             print(line, end="")
+
+
+def dump(obj, filename=None):
+    """Generates a pickle file containing an object 
+
+    Parameters
+    ----------
+    obj : anything
+        Object to dump to pickle file. Can be anything, including individual Molecule objects
+    filename : str
+        string containing the filename of the pickle file.
+
+    Returns
+    -------
+    Saves a pickle file containing the input object
+    """
+
+    if filename is None and type(obj) == Molecule:
+        filename = f"{obj.name}.pickle"
+
+    pickle.dump(obj, open(filename, "wb"))
 
 
 def cyclization_check(mol, start_file, end_file):
