@@ -1,7 +1,5 @@
-import os, shutil
+import os
 from tempfile import mkdtemp
-
-from pyparsing import Or
 from compechem.molecule import Molecule
 from compechem.modules import tools
 

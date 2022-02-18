@@ -1,4 +1,4 @@
-import os, shutil
+import os
 from tempfile import mkdtemp
 from compechem.modules import tools
 from compechem.molecule import Molecule
