@@ -148,7 +148,7 @@ def process_output(mol, method, calc, tdir, remove_tdir, parent_dir):
         shutil.rmtree(tdir)
     os.chdir(parent_dir)
 
-
+    
 def cyclization_check(mol, start_file, end_file):
     """Checks if a cyclization has occurred (e.g., during a
     geometry optimization)
