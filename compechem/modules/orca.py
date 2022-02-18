@@ -1,8 +1,7 @@
-import os, shutil
+import os
 from tempfile import mkdtemp
-
-from pyparsing import Or
 from compechem.molecule import Molecule
+from compechem.modules import tools
 
 
 class OrcaInput:
@@ -126,9 +125,7 @@ class OrcaInput:
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
-        if remove_tdir is True:
-            shutil.rmtree(tdir)
-        os.chdir(parent_dir)
+        tools.process_output(mol, self.method, "spe", tdir, remove_tdir, parent_dir)
 
         if inplace is False:
             return newmol
@@ -218,9 +215,7 @@ class OrcaInput:
 
             mol.update_geometry(f"{mol.name}.xyz")
 
-        if remove_tdir is True:
-            shutil.rmtree(tdir)
-        os.chdir(parent_dir)
+        tools.process_output(mol, self.method, "opt", tdir, remove_tdir, parent_dir)
 
         return newmol
 
@@ -270,7 +265,7 @@ class OrcaInput:
                 f"%pal nproc {self.nproc} end\n"
                 f"%maxcore {self.maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
-                f"! RIJCOSX {self.aux_basis}"
+                f"! RIJCOSX {self.aux_basis}\n"
             )
             if self.solvation is True:
                 inp.write(
@@ -308,9 +303,7 @@ class OrcaInput:
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
-        if remove_tdir is True:
-            shutil.rmtree(tdir)
-        os.chdir(parent_dir)
+        tools.process_output(mol, self.method, "freq", tdir, remove_tdir, parent_dir)
 
         if inplace is False:
             return newmol
@@ -390,9 +383,7 @@ class OrcaInput:
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
-        if remove_tdir is True:
-            shutil.rmtree(tdir)
-        os.chdir(parent_dir)
+        tools.process_output(mol, self.method, "numfreq", tdir, remove_tdir, parent_dir)
 
         if inplace is False:
             return newmol
@@ -411,3 +402,16 @@ class M06(OrcaInput):
             optionals="D3ZERO",
         )
 
+
+class r2SCAN(OrcaInput):
+    def __init__(self, nproc=1, maxcore=350):
+        super().__init__(
+            method="r2SCAN-3c",
+            basis_set="",
+            aux_basis="",
+            nproc=nproc,
+            maxcore=maxcore,
+            solvation=True,
+            solvent="water",
+            optionals="",
+        )

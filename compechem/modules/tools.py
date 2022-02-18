@@ -1,5 +1,8 @@
 import os
+import shutil
+import pickle
 from rdkit import Chem
+from compechem.molecule import Molecule
 
 
 def generate_inchikey(molfile):
@@ -67,6 +70,85 @@ def info(mol, print_geometry=True):
             print(line, end="")
 
 
+def dump(obj, filename=None):
+    """Generates a pickle file containing an object 
+
+    Parameters
+    ----------
+    obj : anything
+        Object to dump to pickle file. Can be anything, including individual Molecule objects
+    filename : str
+        string containing the filename of the pickle file.
+
+    Returns
+    -------
+    Saves a pickle file containing the input object
+    """
+
+    if filename is None and type(obj) == Molecule:
+        filename = f"{obj.name}.pickle"
+
+    pickle.dump(obj, open(filename, "wb"))
+
+
+def save_ext(ext, output_dir):
+    """Saves all files matching a certain set of extensions
+
+    Parameters
+    ----------
+    ext : list
+        List containing the extensions of the files to be saved (in string format)
+    output_dir : str
+        Directory in which the files are to be saved
+
+    Returns
+    -------
+    Saves all the files matching the given extensions to the output directory
+    """
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    for file in os.listdir("."):
+        if os.path.splitext(file)[1] in ext:
+            shutil.copy(file, output_dir + "/" + file)
+
+
+def process_output(mol, method, calc, tdir, remove_tdir, parent_dir):
+    """Processes the output of a calculation, copying the output files to a safe directory in the
+    parent directory tree, and cleans the temporary directory if requested.
+
+    Parameters
+    ----------
+    mol : Molecule object
+        Molecules processed in the calculation
+    method : str
+        Level of theory of the calculation
+    calc : str
+        Type of calculation
+    tdir : str
+        Temporary directory
+    remove_tdir : bool
+        If true, removes the temporary directory
+    parent_dir : str
+        Parent directory to return to after the calculation is done    
+
+    """
+
+    os.makedirs("../output_files", exist_ok=True)
+    shutil.copy(
+        "output.out", f"../output_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.out",
+    )
+
+    os.makedirs("../error_files", exist_ok=True)
+    shutil.copy(
+        "output.err", f"../error_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.err",
+    )
+
+    if remove_tdir is True:
+        shutil.rmtree(tdir)
+    os.chdir(parent_dir)
+
+    
 def cyclization_check(mol, start_file, end_file):
     """Checks if a cyclization has occurred (e.g., during a
     geometry optimization)
@@ -135,3 +217,51 @@ def dissociation_check(mol):
 
     else:
         return False
+
+
+def split_multixyz(mol, file, charge=None, spin=None):
+    """Splits a .xyz file containing multiple structures into individual structures.
+
+    Parameters
+    ----------
+    mol : Molecule object
+        Input molecule, giving the charge/spin (if not defined) and name of the output molecules
+    file : str
+        .xyz file containing the multiple structures
+    charge : int, optional
+        Charge of the output molecules, by default the same as the input molecule
+    spin : int, optional
+        Spin of the output molecules, by default the same as the input molecule
+
+    Returns
+    -------
+    molecules_list : list
+        List containing the individual Molecule object, whose structure is taken from the .xyz file
+    """
+
+    if charge is None:
+        charge = mol.charge
+    if spin is None:
+        spin = mol.spin
+
+    with open(file, "r") as f:
+        molsize = int(f.readline())
+
+    molecules_list = []
+
+    num = 1
+    with open(file, "r") as f:
+        line = f.readline()
+        while line:
+            with open(f"{mol.name}_{os.path.basename(file).strip('.xyz')}_{num}.xyz", "w") as out:
+                for _ in range(molsize + 2):
+                    out.write(line)
+                    line = f.readline()
+            molecules_list.append(
+                Molecule(
+                    f"{mol.name}_{os.path.basename(file).strip('.xyz')}_{num}.xyz", charge, spin
+                )
+            )
+            num += 1
+
+    return molecules_list

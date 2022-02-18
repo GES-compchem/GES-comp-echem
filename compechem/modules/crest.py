@@ -1,4 +1,4 @@
-import os, shutil
+import os
 from tempfile import mkdtemp
 from compechem.molecule import Molecule
 from compechem.modules import tools
@@ -36,30 +36,9 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
 
     tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
 
-    molsize = mol.atomcount
-    with open("tautomers.xyz", "r") as f:
-        numlines = int(sum(1 for line in f))
+    tautomers = tools.split_multixyz(mol, "tautomers.xyz")
 
-    tautomers = []
-
-    with open("tautomers.xyz", "r") as f:
-        num = 1
-        j = 0
-        while j < numlines:
-            i = 0
-            with open(f"{mol.name}_tautomer_{num}.xyz", "w") as out:
-                while i < molsize + 2:
-                    out.write(f.readline())
-                    i += 1
-                    j += 1
-            tautomers.append(
-                Molecule(f"{mol.name}_tautomer_{num}.xyz", charge=mol.charge, spin=mol.spin,)
-            )
-            num += 1
-
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(mol, "CREST", "tautomers", tdir, remove_tdir, parent_dir)
 
     return tautomers
 
@@ -94,30 +73,9 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick -T {nproc} > output.out 2>> output.err"
     )
 
-    molsize = mol.atomcount
-    with open("crest_conformers.xyz", "r") as f:
-        numlines = int(sum(1 for line in f))
+    conformers = tools.split_multixyz(mol, "crest_conformers.xyz")
 
-    conformers = []
-
-    with open("crest_conformers.xyz", "r") as f:
-        num = 1
-        j = 0
-        while j < numlines:
-            i = 0
-            with open(f"{mol.name}_conformer_{num}.xyz", "w") as out:
-                while i < molsize + 2:
-                    out.write(f.readline())
-                    i += 1
-                    j += 1
-            conformers.append(
-                Molecule(f"{mol.name}_conformer_{num}.xyz", charge=mol.charge, spin=mol.spin,)
-            )
-            num += 1
-
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(mol, "CREST", "conformers", tdir, remove_tdir, parent_dir)
 
     return conformers
 
@@ -152,31 +110,9 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate -T {nproc} > output.out 2>> output.err"
     )
 
-    molsize = mol.atomcount - 1
-    with open("deprotonated.xyz", "r") as f:
-        numlines = int(sum(1 for line in f))
+    deprotomers = tools.split_multixyz(mol, "deprotonated.xyz", charge=mol.charge - 1)
 
-    j = 0
-
-    deprotomers = []
-
-    num = 1
-    with open("deprotonated.xyz", "r") as f:
-        while j < numlines:
-            i = 0
-            with open(f"{mol.name}_deprotomer_{num}.xyz", "w") as out:
-                while i < molsize + 2:
-                    out.write(f.readline())
-                    i += 1
-                    j += 1
-            deprotomers.append(
-                Molecule(f"{mol.name}_deprotomer_{num}.xyz", charge=mol.charge - 1, spin=mol.spin,)
-            )
-            num += 1
-
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(mol, "CREST", "deprotomers", tdir, remove_tdir, parent_dir)
 
     return deprotomers
 
@@ -250,13 +186,10 @@ def qcg_grow(
     try:
         cluster.update_geometry("grow/cluster.xyz")
     except:
-        print("ERROR: cluster growth failed, updating geometry to the last viable cluster")
-        cluster.update_geometry("grow/qcg_grow.xyz")
-        return cluster
+        print("ERROR: cluster growth failed.")
+        return
 
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(solute, "QCG", "grow", tdir, remove_tdir, parent_dir)
 
     return cluster
 
@@ -331,38 +264,14 @@ def qcg_ensemble(
         f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {nproc} > output.out 2>> output.err"
     )
 
-    solute.write_xyz(f"{solute.name}.xyz")
-    cluster = Molecule(f"{solute.name}.xyz", charge, spin)
-
     try:
-        cluster.update_geometry("ensemble/crest_best.xyz")
+        ensemble = tools.split_multixyz(solute, "ensemble/final_ensemble.xyz")
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "G /Eh" in line:
-                    electronic_energy = float(line.split()[-1])
-
-        cluster.energies = solute.energies
-
-        vibronic_energy = None
-
-        if method in solute.energies:
-            vibronic_energy = solute.energies[f"{method}"].vibronic
-
-        cluster.energies[f"{method}"] = cluster.Energies(
-            method=f"{method}", electronic=electronic_energy, vibronic=vibronic_energy,
-        )
-
-    except Exception as e:
-        print("ERROR: cluster growth failed, updating geometry to the last viable cluster")
-        print(str(e))
-        cluster.update_geometry("grow/qcg_grow.xyz")
+    except:
+        print("ERROR: cluster growth failed.")
         os.chdir(parent_dir)
-        return cluster
+        return
 
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(solute, "QCG", "ensemble", tdir, remove_tdir, parent_dir)
 
-    return cluster
-
+    return ensemble
