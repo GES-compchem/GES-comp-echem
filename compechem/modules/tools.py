@@ -139,10 +139,11 @@ def process_output(mol, method, calc, tdir, remove_tdir, parent_dir):
         "output.out", f"../output_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.out",
     )
 
-    os.makedirs("../error_files", exist_ok=True)
-    shutil.copy(
-        "output.err", f"../error_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.err",
-    )
+    if os.path.exists("output.err"):
+        os.makedirs("../error_files", exist_ok=True)
+        shutil.copy(
+            "output.err", f"../error_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.err",
+        )
 
     if remove_tdir is True:
         shutil.rmtree(tdir)
