@@ -39,9 +39,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
 
     tautomers = tools.split_multixyz(mol, "tautomers.xyz")
 
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(mol, "CREST", "tautomers", tdir, remove_tdir, parent_dir)
 
     return tautomers
 
@@ -78,9 +76,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
 
     conformers = tools.split_multixyz(mol, "crest_conformers.xyz")
 
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(mol, "CREST", "conformers", tdir, remove_tdir, parent_dir)
 
     return conformers
 
@@ -117,9 +113,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
 
     deprotomers = tools.split_multixyz(mol, "deprotonated.xyz", charge=mol.charge - 1)
 
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(mol, "CREST", "deprotomers", tdir, remove_tdir, parent_dir)
 
     return deprotomers
 
@@ -196,9 +190,7 @@ def qcg_grow(
         print("ERROR: cluster growth failed.")
         return
 
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(solute, "QCG", "grow", tdir, remove_tdir, parent_dir)
 
     return cluster
 
@@ -281,8 +273,6 @@ def qcg_ensemble(
         os.chdir(parent_dir)
         return
 
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
+    tools.process_output(solute, "QCG", "ensemble", tdir, remove_tdir, parent_dir)
 
     return ensemble

@@ -1,4 +1,5 @@
 import os
+import shutil
 import pickle
 from rdkit import Chem
 from compechem.molecule import Molecule
@@ -88,6 +89,64 @@ def dump(obj, filename=None):
         filename = f"{obj.name}.pickle"
 
     pickle.dump(obj, open(filename, "wb"))
+
+
+def save_ext(ext, output_dir):
+    """Saves all files matching a certain set of extensions
+
+    Parameters
+    ----------
+    ext : list
+        List containing the extensions of the files to be saved (in string format)
+    output_dir : str
+        Directory in which the files are to be saved
+
+    Returns
+    -------
+    Saves all the files matching the given extensions to the output directory
+    """
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    for file in os.listdir("."):
+        if os.path.splitext(file)[1] in ext:
+            shutil.copy(file, output_dir + "/" + file)
+
+
+def process_output(mol, method, calc, tdir, remove_tdir, parent_dir):
+    """Processes the output of a calculation, copying the output files to a safe directory in the
+    parent directory tree, and cleans the temporary directory if requested.
+
+    Parameters
+    ----------
+    mol : Molecule object
+        Molecules processed in the calculation
+    method : str
+        Level of theory of the calculation
+    calc : str
+        Type of calculation
+    tdir : str
+        Temporary directory
+    remove_tdir : bool
+        If true, removes the temporary directory
+    parent_dir : str
+        Parent directory to return to after the calculation is done    
+
+    """
+
+    os.makedirs("../output_files", exist_ok=True)
+    shutil.copy(
+        "output.out", f"../output_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.out",
+    )
+
+    os.makedirs("../error_files", exist_ok=True)
+    shutil.copy(
+        "output.err", f"../error_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.err",
+    )
+
+    if remove_tdir is True:
+        shutil.rmtree(tdir)
+    os.chdir(parent_dir)
 
 
 def cyclization_check(mol, start_file, end_file):

@@ -111,9 +111,7 @@ class XtbInput:
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
-        if remove_tdir is True:
-            shutil.rmtree(tdir)
-        os.chdir(parent_dir)
+        tools.process_output(mol, self.method, "spe", tdir, remove_tdir, parent_dir)
 
         if inplace is False:
             return newmol
@@ -200,9 +198,7 @@ class XtbInput:
 
             mol.update_geometry("xtbopt.xyz")
 
-        if remove_tdir is True:
-            shutil.rmtree(tdir)
-        os.chdir(parent_dir)
+        tools.process_output(mol, self.method, "opt", tdir, remove_tdir, parent_dir)
 
         if inplace is False:
             return newmol
@@ -277,9 +273,7 @@ class XtbInput:
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
-        if remove_tdir is True:
-            shutil.rmtree(tdir)
-        os.chdir(parent_dir)
+        tools.process_output(mol, self.method, "freq", tdir, remove_tdir, parent_dir)
 
         if inplace is False:
             return newmol
