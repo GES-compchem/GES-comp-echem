@@ -1,3 +1,7 @@
+from compechem.molecule import Molecule
+from compechem.ensemble import Ensemble
+
+
 def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
     """Calculates the pKa of a molecule, given the protonated and deprotonated
     forms.
@@ -20,6 +24,10 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
     pKa : float
         pKa of the molecule.
     """
+
+    if type(protonated) or type(deprotonated) != Molecule:
+        print(f"ERROR: calculating pKa for Ensemble instead of Molecule. Currently not supported.")
+        return None
 
     if protonated.atomcount - deprotonated.atomcount != 1:
         print(f"ERROR: {protonated.name} deprotomer differs for more than 1 atom.")
