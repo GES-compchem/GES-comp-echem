@@ -3,8 +3,7 @@ from compechem.ensemble import Ensemble
 
 
 def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
-    """Calculates the pKa of a molecule, given the protonated and deprotonated
-    forms.
+    """Calculates the pKa of a molecule, given the protonated and deprotonated forms.
 
     Parameters
     ----------
@@ -14,10 +13,9 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
         molecule in the deprotonated form
     method_el : str
         level of theory for the electronic energy
-    method_vib : str
-        level of theory for the vibronic contributions, by default None
-        if method_vib is None, it defaults to the same level of theory of 
-        method_el
+    method_vib : str, optional
+        level of theory for the vibronic contributions, if method_vib is None (default), 
+        the pKa calculation will be carried out only considering the electronic component
 
     Returns
     -------
@@ -34,15 +32,17 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
         return None
 
     if method_vib is None:
-        method_vib = method_el
+        protonated_energy = (protonated.energies[method_el].electronic) * 627.5  # kcal/mol
+        deprotonated_energy = (deprotonated.energies[method_el].electronic) * 627.5  # kcal/mol
 
-    protonated_energy = (
-        protonated.energies[method_el].electronic + protonated.energies[method_vib].vibronic
-    ) * 627.5  # kcal/mol
+    else:
+        protonated_energy = (
+            protonated.energies[method_el].electronic + protonated.energies[method_vib].vibronic
+        ) * 627.5  # kcal/mol
 
-    deprotonated_energy = (
-        deprotonated.energies[method_el].electronic + deprotonated.energies[method_vib].vibronic
-    ) * 627.5  # kcal/mol
+        deprotonated_energy = (
+            deprotonated.energies[method_el].electronic + deprotonated.energies[method_vib].vibronic
+        ) * 627.5  # kcal/mol
 
     proton_self_energy = 0
 
@@ -57,8 +57,7 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
 
 
 def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
-    """Calculates the reduction potential of a molecule, given the
-    oxidised and reduced forms.
+    """Calculates the reduction potential of a molecule, given the oxidised and reduced forms.
 
     Parameters
     ----------
@@ -70,10 +69,9 @@ def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
         pH at which the redox potential is evaluated
     method_el : str
         level of theory for the electronic energy
-    method_vib : str
-        level of theory for the vibronic contributions, by default None
-        if method_vib is None, it defaults to the same level of theory of 
-        method_el
+    method_vib : str, optional
+        level of theory for the vibronic contributions, if method_vib is None (default), 
+        the potential calculation will be carried out only considering the electronic component
 
     Returns
     -------
@@ -82,15 +80,17 @@ def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
     """
 
     if method_vib is None:
-        method_vib = method_el
+        oxidised_energy = (oxidised.energies[method_el].electronic) * 627.5  # kcal/mol
+        reduced_energy = (reduced.energies[method_el].electronic) * 627.5  # kcal/mol
 
-    oxidised_energy = (
-        oxidised.energies[method_el].electronic + oxidised.energies[method_vib].vibronic
-    ) * 627.5  # kcal/mol
+    else:
+        oxidised_energy = (
+            oxidised.energies[method_el].electronic + oxidised.energies[method_vib].vibronic
+        ) * 627.5  # kcal/mol
 
-    reduced_energy = (
-        reduced.energies[method_el].electronic + reduced.energies[method_vib].vibronic
-    ) * 627.5  # kcal/mol
+        reduced_energy = (
+            reduced.energies[method_el].electronic + reduced.energies[method_vib].vibronic
+        ) * 627.5  # kcal/mol
 
     # note, count is reversed compared to pKa calculation
     hydrogens = reduced.atomcount - oxidised.atomcount

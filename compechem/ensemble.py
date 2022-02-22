@@ -33,8 +33,7 @@ class Ensemble:
         self.energies: dict = {}
 
     class Energies:
-        """Ensemble energies.
-        """
+        """Ensemble energies."""
 
         def __init__(
             self, method: str = None, electronic: float = None, vibronic: float = None,
@@ -62,19 +61,30 @@ class Ensemble:
         ----------
         method_el : str
             level of theory for the electronic energies
-        method_vib : str
-            level of theory for the vibronic contributions, by default equal to method_el
+        method_vib : str, optional
+            level of theory for the vibronic contributions, if method_vib is None (default), 
+            the ensemble energy will be evaluated only considering the electronic component
         temperature : float
             temperature at which to calculate the Boltzmann average, by default 297.15 K
-        """
 
-        if method_vib is None:
-            method_vib = method_el
+        Returns
+        -------
+        Creates an Energies object with the total free Gibbs energy of the ensemble. 
+
+        NOTE: the vibronic contributions are included in the electronic component, which actually 
+        contains the TOTAL energy of the system. Maybe in the future I'll think of how to separate
+        the two contributions - LB
+        """
 
         energies = []
 
         for mol in self.molecules:
-            energies.append(mol.energies[method_el].electronic + mol.energies[method_vib].vibronic)
+            if method_vib is None:
+                energies.append(mol.energies[method_el].electronic)
+            else:
+                energies.append(
+                    mol.energies[method_el].electronic + mol.energies[method_vib].vibronic
+                )
 
         # necessary for avoiding overflows with large energies
         relative_energies = [energy - min(energies) for energy in energies]
