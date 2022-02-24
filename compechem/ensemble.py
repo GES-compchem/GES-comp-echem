@@ -26,7 +26,7 @@ class Ensemble:
         """
 
         self.name = molecules_list[0].name
-        self.atomcount: molecules_list[0].atomcount
+        self.atomcount = molecules_list[0].atomcount
 
         self.molecules = [mol for mol in molecules_list]
 
