@@ -115,7 +115,7 @@ def save_ext(ext, output_dir):
             shutil.copy(file, output_dir + "/" + file)
 
 
-def process_output(mol, calc, runtype, tdir, remove_tdir, parent_dir):
+def process_output(mol, method, charge, spin, calc, tdir, remove_tdir, parent_dir):
     """Processes the output of a calculation, copying the output files to a safe directory in the
     parent directory tree, and cleans the temporary directory if requested.
 
@@ -123,10 +123,13 @@ def process_output(mol, calc, runtype, tdir, remove_tdir, parent_dir):
     ----------
     mol : Molecule object
         Molecules processed in the calculation
-    calc : Input object or str
-        Input (xtb/orca) object containing information for the calculation, or generic string
-        if not one of the above.
-    runtype : str
+    method : str
+        level of theory for the calculation
+    charge : int
+        Charge of the molecule in the calculation
+    spin : int
+        Spin of the molecule in the calculation
+    calc : str
         Type of calculation
     tdir : str
         Temporary directory
@@ -138,27 +141,15 @@ def process_output(mol, calc, runtype, tdir, remove_tdir, parent_dir):
     """
 
     os.makedirs("../output_files", exist_ok=True)
-    if calc is OrcaInput or XtbInput:
-        shutil.copy(
-            "output.out",
-            f"../output_files/{mol.name}_{calc.charge}_{calc.spin}_{calc.method}_{runtype}.out",
-        )
-    else:
-        shutil.copy(
-            "output.out", f"../output_files/{mol.name}_{calc}_{runtype}.out",
-        )
+    shutil.copy(
+        "output.out", f"../output_files/{mol.name}_{charge}_{spin}_{method}_{calc}.out",
+    )
 
     if os.path.exists("output.err"):
         os.makedirs("../error_files", exist_ok=True)
-        if calc is OrcaInput or XtbInput:
-            shutil.copy(
-                "output.err",
-                f"../error_files/{mol.name}_{calc.charge}_{calc.spin}_{calc.method}_{runtype}.err",
-            )
-        else:
-            shutil.copy(
-                "output.err", f"../error_files/{mol.name}_{calc}_{runtype}.err",
-            )
+        shutil.copy(
+            "output.err", f"../error_files/{mol.name}_{charge}_{spin}_{method}_{calc}.err",
+        )
 
     if remove_tdir is True:
         shutil.rmtree(tdir)

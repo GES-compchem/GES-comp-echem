@@ -38,7 +38,9 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
 
     tautomers = tools.split_multixyz(mol, "tautomers.xyz")
 
-    tools.process_output(mol, "CREST", "tautomers", tdir, remove_tdir, parent_dir)
+    tools.process_output(
+        mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
+    )
 
     return tautomers
 
@@ -75,7 +77,9 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
 
     conformers = tools.split_multixyz(mol, "crest_conformers.xyz")
 
-    tools.process_output(mol, "CREST", "conformers", tdir, remove_tdir, parent_dir)
+    tools.process_output(
+        mol, "CREST", mol.charge, mol.spin, "conformers", tdir, remove_tdir, parent_dir
+    )
 
     return conformers
 
@@ -112,7 +116,9 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
 
     deprotomers = tools.split_multixyz(mol, "deprotonated.xyz", charge=mol.charge - 1)
 
-    tools.process_output(mol, "CREST", "deprotomers", tdir, remove_tdir, parent_dir)
+    tools.process_output(
+        mol, "CREST", mol.charge, mol.spin, "deprotomers", tdir, remove_tdir, parent_dir
+    )
 
     return deprotomers
 
@@ -189,7 +195,7 @@ def qcg_grow(
         print("ERROR: cluster growth failed.")
         return
 
-    tools.process_output(solute, "QCG", "grow", tdir, remove_tdir, parent_dir)
+    tools.process_output(solute, "QCG", charge, spin, "grow", tdir, remove_tdir, parent_dir)
 
     return cluster
 
@@ -272,6 +278,6 @@ def qcg_ensemble(
         os.chdir(parent_dir)
         return
 
-    tools.process_output(solute, "QCG", "ensemble", tdir, remove_tdir, parent_dir)
+    tools.process_output(solute, "QCG", charge, spin, "ensemble", tdir, remove_tdir, parent_dir)
 
     return ensemble
