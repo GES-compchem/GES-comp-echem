@@ -2,6 +2,8 @@ import os
 import shutil
 import pickle
 from rdkit import Chem
+from compechem.modules.orca import OrcaInput
+from compechem.modules.xtb import XtbInput
 from compechem.molecule import Molecule
 
 
@@ -113,7 +115,7 @@ def save_ext(ext, output_dir):
             shutil.copy(file, output_dir + "/" + file)
 
 
-def process_output(mol, method, calc, tdir, remove_tdir, parent_dir):
+def process_output(mol, calc, runtype, tdir, remove_tdir, parent_dir):
     """Processes the output of a calculation, copying the output files to a safe directory in the
     parent directory tree, and cleans the temporary directory if requested.
 
@@ -121,9 +123,10 @@ def process_output(mol, method, calc, tdir, remove_tdir, parent_dir):
     ----------
     mol : Molecule object
         Molecules processed in the calculation
-    method : str
-        Level of theory of the calculation
-    calc : str
+    calc : Input object or str
+        Input (xtb/orca) object containing information for the calculation, or generic string
+        if not one of the above.
+    runtype : str
         Type of calculation
     tdir : str
         Temporary directory
@@ -135,21 +138,33 @@ def process_output(mol, method, calc, tdir, remove_tdir, parent_dir):
     """
 
     os.makedirs("../output_files", exist_ok=True)
-    shutil.copy(
-        "output.out", f"../output_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.out",
-    )
+    if calc is OrcaInput or XtbInput:
+        shutil.copy(
+            "output.out",
+            f"../output_files/{mol.name}_{calc.charge}_{calc.spin}_{calc.method}_{runtype}.out",
+        )
+    else:
+        shutil.copy(
+            "output.out", f"../output_files/{mol.name}_{calc}_{runtype}.out",
+        )
 
     if os.path.exists("output.err"):
         os.makedirs("../error_files", exist_ok=True)
-        shutil.copy(
-            "output.err", f"../error_files/{mol.name}_{mol.charge}_{mol.spin}_{method}_{calc}.err",
-        )
+        if calc is OrcaInput or XtbInput:
+            shutil.copy(
+                "output.err",
+                f"../error_files/{mol.name}_{calc.charge}_{calc.spin}_{calc.method}_{runtype}.err",
+            )
+        else:
+            shutil.copy(
+                "output.err", f"../error_files/{mol.name}_{calc}_{runtype}.err",
+            )
 
     if remove_tdir is True:
         shutil.rmtree(tdir)
     os.chdir(parent_dir)
 
-    
+
 def cyclization_check(mol, start_file, end_file):
     """Checks if a cyclization has occurred (e.g., during a
     geometry optimization)
