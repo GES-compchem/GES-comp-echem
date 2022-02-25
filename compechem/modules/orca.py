@@ -125,7 +125,7 @@ class OrcaInput:
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
-        tools.process_output(mol, self, "spe", tdir, remove_tdir, parent_dir)
+        tools.process_output(mol, self.method, charge, spin, "spe", tdir, remove_tdir, parent_dir)
 
         if inplace is False:
             return newmol
@@ -215,7 +215,7 @@ class OrcaInput:
 
             mol.update_geometry(f"{mol.name}.xyz")
 
-        tools.process_output(mol, self, "opt", tdir, remove_tdir, parent_dir)
+        tools.process_output(mol, self.method, charge, spin, "opt", tdir, remove_tdir, parent_dir)
 
         return newmol
 
@@ -303,7 +303,7 @@ class OrcaInput:
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
-        tools.process_output(mol, self, "freq", tdir, remove_tdir, parent_dir)
+        tools.process_output(mol, self.method, charge, spin, "freq", tdir, remove_tdir, parent_dir)
 
         if inplace is False:
             return newmol
@@ -383,7 +383,9 @@ class OrcaInput:
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
-        tools.process_output(mol, self, "numfreq", tdir, remove_tdir, parent_dir)
+        tools.process_output(
+            mol, self.method, charge, spin, "numfreq", tdir, remove_tdir, parent_dir
+        )
 
         if inplace is False:
             return newmol
