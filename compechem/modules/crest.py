@@ -207,6 +207,7 @@ def qcg_ensemble(
     spin=None,
     method="gfn2",
     enslvl="gfn2",
+    ensemble_choice="full_ensemble",
     nsolv=0,
     nproc=1,
     optionals="",
@@ -230,6 +231,12 @@ def qcg_ensemble(
     enslvl : str
         method for the ensemble optimization, by default gfn2
         Alternative options: gfn1, gfnff
+    ensemble_choice : str
+        file containing the chosen ensemble after generation, by default "full_ensemble". Available
+        options are:
+            - "full_ensemble"
+            - "final_ensemble"
+            - "crest_best"
     nsolv : int
         number of solvent molecules to add to the cluster, by default 0 (unconstrained).
         If a number is not specified, the program will keep adding solvent
@@ -271,7 +278,7 @@ def qcg_ensemble(
     )
 
     try:
-        ensemble = tools.split_multixyz(solute, "ensemble/final_ensemble.xyz")
+        ensemble = tools.split_multixyz(solute, f"ensemble/{ensemble_choice}.xyz")
 
     except:
         print("ERROR: cluster growth failed.")
