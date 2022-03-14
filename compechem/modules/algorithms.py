@@ -23,7 +23,7 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
         pKa of the molecule.
     """
 
-    if type(protonated) or type(deprotonated) == Ensemble:
+    if type(protonated) == Ensemble or type(deprotonated) == Ensemble:
         print(f"ERROR: calculating pKa for Ensemble instead of Molecule. Currently not supported.")
         return None
 
