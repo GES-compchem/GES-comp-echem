@@ -123,6 +123,45 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
     return deprotomers
 
 
+def protonate(mol, nproc=1, remove_tdir=True):
+    """Protomer search using CREST.
+
+    Parameters
+    ----------
+    mol : Molecule object
+        input molecule to use in the calculation
+    nproc : int, optional
+        number of cores, by default 1
+    remove_tdir : bool, optional
+        temporary work directory will be removed, by default True
+
+    Returns
+    -------
+    protomers : list
+        list containing the found protomers, in order of ascending energy
+    """
+
+    parent_dir = os.getcwd()
+    print(f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
+
+    tdir = mkdtemp(prefix=mol.name + "_", suffix="_PROT", dir=os.getcwd())
+
+    os.chdir(tdir)
+    mol.write_xyz("geom.xyz")
+
+    os.system(
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate -T {nproc} > output.out 2>> output.err"
+    )
+
+    deprotomers = tools.split_multixyz(mol, "protonated.xyz", charge=mol.charge + 1)
+
+    tools.process_output(
+        mol, "CREST", mol.charge, mol.spin, "protomers", tdir, remove_tdir, parent_dir
+    )
+
+    return protomers
+
+
 def qcg_grow(
     solute,
     solvent,
