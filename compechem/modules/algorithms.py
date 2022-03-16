@@ -1,4 +1,3 @@
-from compechem.molecule import Molecule
 from compechem.ensemble import Ensemble
 
 
@@ -115,4 +114,3 @@ def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
     )
 
     return potential
-

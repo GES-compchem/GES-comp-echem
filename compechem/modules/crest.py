@@ -36,7 +36,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
 
     tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
 
-    tautomers = tools.split_multixyz(mol, "tautomers.xyz")
+    tautomers = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
 
     tools.process_output(
         mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
@@ -75,7 +75,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick -T {nproc} > output.out 2>> output.err"
     )
 
-    conformers = tools.split_multixyz(mol, "crest_conformers.xyz")
+    conformers = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="c")
 
     tools.process_output(
         mol, "CREST", mol.charge, mol.spin, "conformers", tdir, remove_tdir, parent_dir
@@ -114,7 +114,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate -T {nproc} > output.out 2>> output.err"
     )
 
-    deprotomers = tools.split_multixyz(mol, "deprotonated.xyz", charge=mol.charge - 1)
+    deprotomers = tools.split_multixyz(mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1)
 
     tools.process_output(
         mol, "CREST", mol.charge, mol.spin, "deprotomers", tdir, remove_tdir, parent_dir
@@ -153,7 +153,7 @@ def protonate(mol, nproc=1, remove_tdir=True):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate -T {nproc} > output.out 2>> output.err"
     )
 
-    deprotomers = tools.split_multixyz(mol, "protonated.xyz", charge=mol.charge + 1)
+    protomers = tools.split_multixyz(mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1)
 
     tools.process_output(
         mol, "CREST", mol.charge, mol.spin, "protomers", tdir, remove_tdir, parent_dir
@@ -317,7 +317,7 @@ def qcg_ensemble(
     )
 
     try:
-        ensemble = tools.split_multixyz(solute, f"ensemble/{ensemble_choice}.xyz")
+        ensemble = tools.split_multixyz(solute, file=f"ensemble/{ensemble_choice}.xyz", suffix="e")
 
     except:
         print("ERROR: cluster growth failed.")
