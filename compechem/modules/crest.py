@@ -4,7 +4,7 @@ from compechem.molecule import Molecule
 from compechem.modules import tools
 
 
-def tautomer_search(mol, nproc=1, remove_tdir=True):
+def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     """Tautomer search using CREST.
 
     Parameters
@@ -15,6 +15,8 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
         number of cores, by default 1
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
+    optionals : str, optional
+        optional flags for calculation
 
     Returns
     -------
@@ -31,7 +33,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
     tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
@@ -45,7 +47,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True):
     return tautomers
 
 
-def conformer_search(mol, nproc=1, remove_tdir=True):
+def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     """Conformer search using CREST.
 
     Parameters
@@ -56,6 +58,8 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
         number of cores, by default 1
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
+    optionals : str, optional
+        optional flags for calculation
 
     Returns
     -------
@@ -72,7 +76,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
     conformers = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="c")
@@ -84,7 +88,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True):
     return conformers
 
 
-def deprotonate(mol, nproc=1, remove_tdir=True):
+def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
     """Deprotomer search using CREST.
 
     Parameters
@@ -95,6 +99,8 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
         number of cores, by default 1
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
+    optionals : str, optional
+        optional flags for calculation
 
     Returns
     -------
@@ -111,10 +117,12 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
-    deprotomers = tools.split_multixyz(mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1)
+    deprotomers = tools.split_multixyz(
+        mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1
+    )
 
     tools.process_output(
         mol, "CREST", mol.charge, mol.spin, "deprotomers", tdir, remove_tdir, parent_dir
@@ -123,7 +131,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True):
     return deprotomers
 
 
-def protonate(mol, nproc=1, remove_tdir=True):
+def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
     """Protomer search using CREST.
 
     Parameters
@@ -134,6 +142,8 @@ def protonate(mol, nproc=1, remove_tdir=True):
         number of cores, by default 1
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
+    optionals : str, optional
+        optional flags for calculation
 
     Returns
     -------
@@ -150,7 +160,7 @@ def protonate(mol, nproc=1, remove_tdir=True):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
     protomers = tools.split_multixyz(mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1)
