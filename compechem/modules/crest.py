@@ -41,6 +41,9 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
         tautomers = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
     except:
         print(f"ERROR: no tautomers possible for molecule {mol.name}. Ignoring tautomer search.")
+        tools.process_output(
+            mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
+        )
         return [mol]
 
     tools.process_output(
