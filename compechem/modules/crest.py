@@ -36,7 +36,14 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
-    tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
+    try:
+        tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
+    except:
+        print(f"ERROR: no tautomers possible for molecule {mol.name}. Ignoring tautomer search.")
+        tools.process_output(
+            mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
+        )
+        return [mol]
 
     tautomers = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
 
