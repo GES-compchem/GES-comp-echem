@@ -4,7 +4,7 @@ from compechem.molecule import Molecule
 from compechem.modules import tools
 
 
-def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
+def tautomer_search(mol, nproc=len(os.sched_getaffinity(0)), remove_tdir=True, optionals=""):
     """Tautomer search using CREST.
 
     Parameters
@@ -12,7 +12,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     mol : Molecule object
         input molecule to use in the calculation
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -53,7 +53,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     return tautomers
 
 
-def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
+def conformer_search(mol, nproc=len(os.sched_getaffinity(0)), remove_tdir=True, optionals=""):
     """Conformer search using CREST.
 
     Parameters
@@ -61,7 +61,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     mol : Molecule object
         input molecule to use in the calculation
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -94,7 +94,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     return conformers
 
 
-def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
+def deprotonate(mol, nproc=len(os.sched_getaffinity(0)), remove_tdir=True, optionals=""):
     """Deprotomer search using CREST.
 
     Parameters
@@ -102,7 +102,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
     mol : Molecule object
         input molecule to use in the calculation
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -137,7 +137,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
     return deprotomers
 
 
-def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
+def protonate(mol, nproc=len(os.sched_getaffinity(0)), remove_tdir=True, optionals=""):
     """Protomer search using CREST.
 
     Parameters
@@ -145,7 +145,7 @@ def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
     mol : Molecule object
         input molecule to use in the calculation
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -185,7 +185,7 @@ def qcg_grow(
     spin=None,
     method="gfn2",
     nsolv=0,
-    nproc=1,
+    nproc=len(os.sched_getaffinity(0)),
     optionals="",
     remove_tdir=True,
 ):
@@ -209,7 +209,7 @@ def qcg_grow(
         If a number is not specified, the program will keep adding solvent
         molecules until convergence is reached, or 150 molecules are added.
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
@@ -264,7 +264,7 @@ def qcg_ensemble(
     enslvl="gfn2",
     ensemble_choice="full_ensemble",
     nsolv=0,
-    nproc=1,
+    nproc=len(os.sched_getaffinity(0)),
     optionals="",
     remove_tdir=True,
 ):
@@ -297,7 +297,7 @@ def qcg_ensemble(
         If a number is not specified, the program will keep adding solvent
         molecules until convergence is reached, or 150 molecules are added.
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
