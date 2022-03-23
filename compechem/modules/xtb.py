@@ -108,7 +108,6 @@ class XtbInput:
             newmol.energies[f"{self.method}"] = newmol.Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
-            print(newmol.energies["gfn2"])
 
         else:
             mol.energies[f"{self.method}"] = mol.Energies(
