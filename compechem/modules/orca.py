@@ -1,4 +1,4 @@
-import os
+import os, copy
 from tempfile import mkdtemp
 from compechem.molecule import Molecule
 from compechem.modules import tools
@@ -114,7 +114,7 @@ class OrcaInput:
 
             newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies = mol.energies
+            newmol.energies = copy.copy(mol.energies)
 
             newmol.energies[f"{self.method}"] = newmol.Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
@@ -200,7 +200,7 @@ class OrcaInput:
 
             newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies = mol.energies
+            newmol.energies = copy.copy(mol.energies)
 
             newmol.energies[f"{self.method}"] = newmol.Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
@@ -292,7 +292,7 @@ class OrcaInput:
 
             newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies = mol.energies
+            newmol.energies = copy.copy(mol.energies)
 
             newmol.energies[f"{self.method}"] = newmol.Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
@@ -372,7 +372,7 @@ class OrcaInput:
 
             newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies = mol.energies
+            newmol.energies = copy.copy(mol.energies)
 
             newmol.energies[f"{self.method}"] = newmol.Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy

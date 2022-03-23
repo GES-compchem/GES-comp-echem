@@ -1,7 +1,10 @@
-import os
+import os, copy
 from tempfile import mkdtemp
 from compechem.modules import tools
 from compechem.molecule import Molecule
+
+
+print("importing stuff :)")
 
 
 class XtbInput:
@@ -100,11 +103,12 @@ class XtbInput:
 
             newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies = mol.energies
+            newmol.energies = copy.copy(mol.energies)
 
             newmol.energies[f"{self.method}"] = newmol.Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
+            print(newmol.energies["gfn2"])
 
         else:
             mol.energies[f"{self.method}"] = mol.Energies(
@@ -167,7 +171,7 @@ class XtbInput:
                 f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
-        try: 
+        try:
             tools.dissociation_check(mol)
         except:
             print(f"ERROR: Exception occcurred for {mol.name}. Ignoring optimization.")
@@ -186,7 +190,7 @@ class XtbInput:
 
             newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies = mol.energies
+            newmol.energies = copy.copy(mol.energies)
 
             newmol.energies[f"{self.method}"] = newmol.Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
@@ -265,7 +269,7 @@ class XtbInput:
 
             newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies = mol.energies
+            newmol.energies = copy.copy(mol.energies)
 
             newmol.energies[f"{self.method}"] = newmol.Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
