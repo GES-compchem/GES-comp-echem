@@ -70,6 +70,9 @@ class Molecule:
             self.electronic = electronic
             self.vibronic = vibronic
 
+        def __str__(self):
+            return f"method: {self.method}, el={self.electronic}, vib={self.vibronic}"
+
     def write_xyz(self, xyz_file):
         """Writes the current geometry to a .xyz file.
 
