@@ -11,7 +11,7 @@ class XtbInput:
     def __init__(
         self,
         method: str = "gfn2",
-        nproc: int = len(os.sched_getaffinity(0)),
+        nproc: int = 1,
         solvation: bool = True,
         solvent: str = "water",
         optionals: str = "",
@@ -22,7 +22,7 @@ class XtbInput:
         method : str, optional
             level of theory, by default "gfn2"
         nproc : int, optional
-            number of cores, by default all available cores
+            number of cores, by default 1
         solvation : bool, optional
             ALPB implicit solvation model, by default True
         solvent : str, optional

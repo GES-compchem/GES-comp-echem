@@ -13,7 +13,7 @@ class OrcaInput:
         method: str,
         basis_set: str = "def2-TZVP",
         aux_basis: str = "def2/J",
-        nproc: int = len(os.sched_getaffinity(0)),
+        nproc: int = 1,
         maxcore: int = 350,
         solvation: bool = False,
         solvent: str = "water",
@@ -29,7 +29,7 @@ class OrcaInput:
         aux_basis : str, optional
             auxiliary basis set for RIJCOSX, by default "def2/J"
         nproc : int, optional
-            number of cores, by default all available cores
+            number of cores, by default 1
         maxcore : int, optional
             memory per core, in MB, by default 350
         solvation : bool, optional
