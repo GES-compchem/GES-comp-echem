@@ -392,7 +392,7 @@ class OrcaInput:
 
 
 class M06(OrcaInput):
-    def __init__(self, nproc=len(os.sched_getaffinity(0)), maxcore=350):
+    def __init__(self, nproc=1, maxcore=350):
         super().__init__(
             method="M062X",
             basis_set="def2-TZVP",
@@ -406,7 +406,7 @@ class M06(OrcaInput):
 
 
 class r2SCAN(OrcaInput):
-    def __init__(self, nproc=len(os.sched_getaffinity(0)), maxcore=350):
+    def __init__(self, nproc=1, maxcore=350):
         super().__init__(
             method="r2SCAN-3c",
             basis_set="",
