@@ -156,14 +156,12 @@ def process_output(mol, method, charge, spin, calc, tdir, remove_tdir, parent_di
     os.chdir(parent_dir)
 
 
-def cyclization_check(mol, start_file, end_file):
+def cyclization_check(start_file, end_file):
     """Checks if a cyclization has occurred (e.g., during a
     geometry optimization)
 
     Parameters
     ----------
-    mol : Molecule object
-        Molecule object
     start_file : str
         .xyz file containing the starting geometry
     end_file : str
@@ -194,19 +192,18 @@ def cyclization_check(mol, start_file, end_file):
                 break
 
     if start_rings < end_rings:
-        print(f"ERROR: Cyclization spotted for {mol.name}.\n")
-        raise Exception("Cyclization spotted")
+        return True
+    else:
+        return False
 
 
-def dissociation_check(mol):
+def dissociation_check():
     """Checks if a dissociation has occurred (e.g., during a
     geometry optimization)
 
-    Parameters
+    Requirements
     ----------
-    mol : Molecule object
-        Molecule for which to check if a dissociation has happened.
-        Requires a .mol file in the current directory.
+    A .mol file in the current directory.
 
     Returns
     -------
@@ -217,11 +214,11 @@ def dissociation_check(mol):
     mol_file = [f for f in os.listdir(".") if f.endswith(".mol")][-1]
     end_mol = Chem.MolFromMolFile(mol_file, sanitize=False, removeHs=False, strictParsing=False)
     end_smiles = Chem.MolToSmiles(end_mol)
+
     if "." in end_smiles:
-        print(
-            f"ERROR: {mol.name} (charge {mol.charge} spin {mol.spin}) has undergone dissociation.\n"
-        )
-        raise Exception("Dissociation spotted")
+        return True
+    else:
+        return False
 
 
 def split_multixyz(mol, file, suffix, charge=None, spin=None):
