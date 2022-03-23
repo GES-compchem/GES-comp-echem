@@ -195,6 +195,7 @@ def cyclization_check(mol, start_file, end_file):
 
     if start_rings < end_rings:
         print(f"ERROR: Cyclization spotted for {mol.name}.\n")
+        raise Exception("Cyclization spotted")
 
 
 def dissociation_check(mol):
@@ -220,10 +221,7 @@ def dissociation_check(mol):
         print(
             f"ERROR: {mol.name} (charge {mol.charge} spin {mol.spin}) has undergone dissociation.\n"
         )
-        return True
-
-    else:
-        return False
+        raise Exception("Dissociation spotted")
 
 
 def split_multixyz(mol, file, suffix, charge=None, spin=None):

@@ -167,7 +167,10 @@ class XtbInput:
                 f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
-        if tools.dissociation_check(mol) is True:
+        try: 
+            tools.dissociation_check(mol)
+        except:
+            print(f"ERROR: Exception occcurred for {mol.name}. Ignoring optimization.")
             return mol
 
         tools.cyclization_check(mol, f"{mol.name}.xyz", "xtbopt.xyz")

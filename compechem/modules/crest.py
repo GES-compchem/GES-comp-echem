@@ -40,7 +40,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
         tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
         tautomers = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
     except:
-        print(f"ERROR: no tautomers possible for molecule {mol.name}. Ignoring tautomer search.")
+        print(f"ERROR: Exception occcurred for {mol.name}. Ignoring tautomer search.")
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
         )
