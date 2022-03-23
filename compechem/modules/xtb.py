@@ -4,9 +4,6 @@ from compechem.modules import tools
 from compechem.molecule import Molecule
 
 
-print("importing stuff :)")
-
-
 class XtbInput:
     """Interface for running xTB calculations
     """
