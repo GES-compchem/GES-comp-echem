@@ -1,4 +1,4 @@
-import os
+import os, copy
 from tempfile import mkdtemp
 from compechem.molecule import Molecule
 from compechem.modules import tools
@@ -37,13 +37,17 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     )
 
     if os.path.exists("tautomers.xyz"):
-        tautomers = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
+        tautomers_to_check = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
 
-        for tautomer in tautomers:
+        tautomers = []
+
+        while tautomers_to_check:
+            tautomer = tautomers_to_check.pop(0)
             tautomer.write_xyz(f"{tautomer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
                 print(f"ERROR: cyclization spotted for {tautomer.name}. Removing from list.")
-                tautomers.remove(tautomer)
+            else:
+                tautomers.append(tautomer)
 
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
@@ -91,13 +95,17 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     )
 
     if os.path.exists("crest_conformers.xyz"):
-        conformers = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="c")
+        conformers_to_check = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="t")
 
-        for conformer in conformers:
+        conformers = []
+
+        while conformers_to_check:
+            conformer = conformers_to_check.pop(0)
             conformer.write_xyz(f"{conformer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
                 print(f"ERROR: cyclization spotted for {conformer.name}. Removing from list.")
-                conformers.remove(conformer)
+            else:
+                conformers.append(conformer)
 
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "conformers", tdir, remove_tdir, parent_dir
