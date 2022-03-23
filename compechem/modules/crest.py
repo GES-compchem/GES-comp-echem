@@ -36,21 +36,26 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
-    try:
-        tools.cyclization_check(mol, "geom.xyz", "tautomers.xyz")
+    if os.path.exists("tautomers.xyz"):
         tautomers = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
-    except:
-        print(f"ERROR: Exception occcurred for {mol.name}. Ignoring tautomer search.")
+
+        for tautomer in tautomers:
+            tautomer.write_xyz(f"{tautomer.name}.xyz")
+            if tools.cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
+                print(f"ERROR: cyclization spotted for {tautomer.name}. Removing from list.")
+                tautomers.remove(tautomer)
+
+        tools.process_output(
+            mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
+        )
+        return tautomers
+
+    else:
+        print(f"ERROR: no tautomers possible for {mol.name}. Ignoring tautomer search.")
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
         )
         return [mol]
-
-    tools.process_output(
-        mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
-    )
-
-    return tautomers
 
 
 def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
@@ -85,13 +90,23 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
-    conformers = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="c")
+    if os.path.exists("crest_conformers.xyz"):
+        conformers = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="c")
 
-    tools.process_output(
-        mol, "CREST", mol.charge, mol.spin, "conformers", tdir, remove_tdir, parent_dir
-    )
+        for conformer in conformers:
+            conformer.write_xyz(f"{conformer.name}.xyz")
+            if tools.cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
+                print(f"ERROR: cyclization spotted for {conformer.name}. Removing from list.")
+                conformers.remove(conformer)
 
-    return conformers
+        tools.process_output(
+            mol, "CREST", mol.charge, mol.spin, "conformers", tdir, remove_tdir, parent_dir
+        )
+
+        return conformers
+    else:
+        print("ERROR: conformer search failed.")
+        return None
 
 
 def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
@@ -248,7 +263,7 @@ def qcg_grow(
         cluster.update_geometry("grow/cluster.xyz")
     except:
         print("ERROR: cluster growth failed.")
-        return
+        return None
 
     tools.process_output(solute, "QCG", charge, spin, "grow", tdir, remove_tdir, parent_dir)
 
@@ -338,7 +353,7 @@ def qcg_ensemble(
     except:
         print("ERROR: cluster growth failed.")
         os.chdir(parent_dir)
-        return
+        return None
 
     tools.process_output(solute, "QCG", charge, spin, "ensemble", tdir, remove_tdir, parent_dir)
 

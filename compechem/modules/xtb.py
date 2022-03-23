@@ -170,44 +170,45 @@ class XtbInput:
                 f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {self.nproc} {self.optionals} > output.out 2>> output.err"
             )
 
-        try:
-            tools.dissociation_check(mol)
-        except:
-            print(f"ERROR: Exception occcurred for {mol.name}. Ignoring optimization.")
-            return mol
-
-        tools.cyclization_check(mol, f"{mol.name}.xyz", "xtbopt.xyz")
-
-        with open("output.out", "r") as out:
-            for line in out:
-                if "TOTAL ENERGY" in line:
-                    electronic_energy = float(line.split()[-3])
-                if "G(RRHO) contrib." in line:
-                    vibronic_energy = float(line.split()[-3])
-
-        if inplace is False:
-
-            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
-
-            newmol.energies = copy.copy(mol.energies)
-
-            newmol.energies[f"{self.method}"] = newmol.Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
-
-            newmol.update_geometry("xtbopt.xyz")
-
+        if tools.dissociation_check() is True:
+            print(f"ERROR: dissociation spotted for {mol.name}.")
+            return None
+        elif tools.cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
+            print(f"ERROR: cyclization spotted for {mol.name}.")
+            return None
         else:
-            mol.energies[f"{self.method}"] = mol.Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            with open("output.out", "r") as out:
+                for line in out:
+                    if "TOTAL ENERGY" in line:
+                        electronic_energy = float(line.split()[-3])
+                    if "G(RRHO) contrib." in line:
+                        vibronic_energy = float(line.split()[-3])
+
+            if inplace is False:
+
+                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+
+                newmol.energies = copy.copy(mol.energies)
+
+                newmol.energies[f"{self.method}"] = newmol.Energies(
+                    method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+                )
+
+                newmol.update_geometry("xtbopt.xyz")
+
+            else:
+                mol.energies[f"{self.method}"] = mol.Energies(
+                    method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+                )
+
+                mol.update_geometry("xtbopt.xyz")
+
+            tools.process_output(
+                mol, self.method, charge, spin, "opt", tdir, remove_tdir, parent_dir
             )
 
-            mol.update_geometry("xtbopt.xyz")
-
-        tools.process_output(mol, self.method, charge, spin, "opt", tdir, remove_tdir, parent_dir)
-
-        if inplace is False:
-            return newmol
+            if inplace is False:
+                return newmol
 
     def freq(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
         """Frequency analysis.
