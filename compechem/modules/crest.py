@@ -114,6 +114,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
         return conformers
     else:
         print("ERROR: conformer search failed.")
+        os.chdir(parent_dir)
         return None
 
 
@@ -271,6 +272,7 @@ def qcg_grow(
         cluster.update_geometry("grow/cluster.xyz")
     except:
         print("ERROR: cluster growth failed.")
+        os.chdir(parent_dir)
         return None
 
     tools.process_output(solute, "QCG", charge, spin, "grow", tdir, remove_tdir, parent_dir)

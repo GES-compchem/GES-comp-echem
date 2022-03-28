@@ -55,7 +55,7 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
     return pka
 
 
-def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
+def calculate_potential(oxidised, reduced, method_el, method_vib=None, pH=7):
     """Calculates the reduction potential of a molecule, given the oxidised and reduced forms.
 
     Parameters
@@ -64,13 +64,13 @@ def calculate_potential(oxidised, reduced, pH, method_el, method_vib=None):
         molecule in the oxidised state
     reduced : Molecule object
         molecule in the reduced state
-    pH : float
-        pH at which the redox potential is evaluated
     method_el : str
         level of theory for the electronic energy
     method_vib : str, optional
         level of theory for the vibronic contributions, if method_vib is None (default), 
         the potential calculation will be carried out only considering the electronic component
+    pH : float
+        pH at which the redox potential is evaluated, by default pH=7
 
     Returns
     -------
