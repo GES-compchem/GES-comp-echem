@@ -45,7 +45,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
             tautomer = tautomers_to_check.pop(0)
             tautomer.write_xyz(f"{tautomer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
-                print(f"ERROR: cyclization spotted for {tautomer.name}. Removing from list.")
+                print(f"WARNING: cyclization spotted for {tautomer.name}. Removing from list.")
             else:
                 tautomers.append(tautomer)
 
@@ -55,7 +55,7 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
         return tautomers
 
     else:
-        print(f"ERROR: no tautomers possible for {mol.name}. Ignoring tautomer search.")
+        print(f"WARNING: no tautomers possible for {mol.name}. Ignoring tautomer search.")
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
         )
@@ -103,7 +103,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
             conformer = conformers_to_check.pop(0)
             conformer.write_xyz(f"{conformer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
-                print(f"ERROR: cyclization spotted for {conformer.name}. Removing from list.")
+                print(f"WARNING: cyclization spotted for {conformer.name}. Removing from list.")
             else:
                 conformers.append(conformer)
 

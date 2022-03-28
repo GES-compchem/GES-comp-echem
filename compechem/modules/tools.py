@@ -169,7 +169,7 @@ def cyclization_check(start_file, end_file):
 
     Returns
     -------
-    If a cyclization is detected, prints an error message.
+    If a cyclization is detected, returns True.
     """
 
     os.system(f"crest --testtopo {start_file} > start_topo.out 2>> start_topo.out")
