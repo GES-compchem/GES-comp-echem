@@ -169,9 +169,11 @@ class XtbInput:
 
         if tools.dissociation_check() is True:
             print(f"ERROR: dissociation spotted for {mol.name}.")
+            os.chdir(parent_dir)
             return None
         elif tools.cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
             print(f"ERROR: cyclization spotted for {mol.name}.")
+            os.chdir(parent_dir)
             return None
         else:
             with open("output.out", "r") as out:
