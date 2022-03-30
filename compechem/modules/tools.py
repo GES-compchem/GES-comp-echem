@@ -158,7 +158,7 @@ def process_output(mol, method, charge, spin, calc, tdir, remove_tdir, parent_di
 
 def cyclization_check(start_file, end_file):
     """Checks if a cyclization has occurred (e.g., during a
-    geometry optimization)
+    geometry optimization), or if a ring opening has occurred.
 
     Parameters
     ----------
@@ -169,7 +169,7 @@ def cyclization_check(start_file, end_file):
 
     Returns
     -------
-    If a cyclization is detected, returns True.
+    If a change in the number of rings is detected, returns True.
     """
 
     os.system(f"crest --testtopo {start_file} > start_topo.out 2>> start_topo.out")
@@ -191,7 +191,7 @@ def cyclization_check(start_file, end_file):
             if "No (valid) input file!" in line:
                 break
 
-    if start_rings < end_rings:
+    if start_rings != end_rings:
         return True
     else:
         return False
