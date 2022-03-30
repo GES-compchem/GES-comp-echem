@@ -175,7 +175,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
             mol, "CREST", mol.charge, mol.spin, "deprotomers", tdir, remove_tdir, parent_dir
         )
 
-        return conformers
+        return deprotomers
     else:
         print("ERROR: deprotomer search failed.")
         os.chdir(parent_dir)
@@ -237,7 +237,7 @@ def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
             mol, "CREST", mol.charge, mol.spin, "protomers", tdir, remove_tdir, parent_dir
         )
 
-        return conformers
+        return protomers
     else:
         print("ERROR: protomer search failed.")
         os.chdir(parent_dir)
