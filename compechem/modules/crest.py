@@ -95,7 +95,7 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
     )
 
     if os.path.exists("crest_conformers.xyz"):
-        conformers_to_check = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="t")
+        conformers_to_check = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="c")
 
         conformers = []
 
