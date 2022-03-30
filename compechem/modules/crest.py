@@ -45,7 +45,9 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
             tautomer = tautomers_to_check.pop(0)
             tautomer.write_xyz(f"{tautomer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
-                print(f"WARNING: cyclization spotted for {tautomer.name}. Removing from list.")
+                print(
+                    f"WARNING: cyclization change spotted for {tautomer.name}. Removing from list."
+                )
             else:
                 tautomers.append(tautomer)
 
@@ -103,7 +105,9 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
             conformer = conformers_to_check.pop(0)
             conformer.write_xyz(f"{conformer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
-                print(f"WARNING: cyclization spotted for {conformer.name}. Removing from list.")
+                print(
+                    f"WARNING: cyclization change spotted for {conformer.name}. Removing from list."
+                )
             else:
                 conformers.append(conformer)
 
@@ -150,13 +154,32 @@ def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
-    deprotomers = tools.split_multixyz(
-        mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1
-    )
+    if os.path.exists("deprotonated.xyz"):
+        deprotomers_to_check = tools.split_multixyz(
+            mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1
+        )
 
-    tools.process_output(
-        mol, "CREST", mol.charge, mol.spin, "deprotomers", tdir, remove_tdir, parent_dir
-    )
+        deprotomers = []
+
+        while deprotomers_to_check:
+            deprotomer = deprotomers_to_check.pop(0)
+            deprotomer.write_xyz(f"{deprotomer.name}.xyz")
+            if tools.cyclization_check("geom.xyz", f"{deprotomer.name}.xyz") is True:
+                print(
+                    f"WARNING: cyclization change spotted for {deprotomer.name}. Removing from list."
+                )
+            else:
+                deprotomers.append(deprotomer)
+
+        tools.process_output(
+            mol, "CREST", mol.charge, mol.spin, "deprotomers", tdir, remove_tdir, parent_dir
+        )
+
+        return conformers
+    else:
+        print("ERROR: deprotomer search failed.")
+        os.chdir(parent_dir)
+        return None
 
     return deprotomers
 
@@ -193,11 +216,32 @@ def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
         f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
-    protomers = tools.split_multixyz(mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1)
+    if os.path.exists("protonated.xyz"):
+        protomers_to_check = tools.split_multixyz(
+            mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1
+        )
 
-    tools.process_output(
-        mol, "CREST", mol.charge, mol.spin, "protomers", tdir, remove_tdir, parent_dir
-    )
+        protomers = []
+
+        while protomers_to_check:
+            protomer = protomers_to_check.pop(0)
+            protomer.write_xyz(f"{protomer.name}.xyz")
+            if tools.cyclization_check("geom.xyz", f"{protomer.name}.xyz") is True:
+                print(
+                    f"WARNING: cyclization change spotted for {protomer.name}. Removing from list."
+                )
+            else:
+                protomers.append(deprotomer)
+
+        tools.process_output(
+            mol, "CREST", mol.charge, mol.spin, "protomers", tdir, remove_tdir, parent_dir
+        )
+
+        return conformers
+    else:
+        print("ERROR: protomer search failed.")
+        os.chdir(parent_dir)
+        return None
 
     return protomers
 
