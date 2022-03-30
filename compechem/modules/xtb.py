@@ -172,7 +172,7 @@ class XtbInput:
             os.chdir(parent_dir)
             return None
         elif tools.cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
-            print(f"ERROR: cyclization spotted for {mol.name}.")
+            print(f"ERROR: cyclization change spotted for {mol.name}.")
             os.chdir(parent_dir)
             return None
         else:
