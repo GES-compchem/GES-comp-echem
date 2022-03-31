@@ -151,7 +151,7 @@ def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate {optionals} -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
     if os.path.exists("deprotonated.xyz"):
@@ -213,7 +213,7 @@ def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate {optionals} -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {nproc} > output.out 2>> output.err"
     )
 
     if os.path.exists("protonated.xyz"):
