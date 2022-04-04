@@ -173,7 +173,7 @@ class OrcaInput:
                 f"%pal nproc {self.nproc} end\n"
                 f"%maxcore {self.maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
-                f"! RIJCOSX {self.aux_basis}"
+                f"! RIJCOSX {self.aux_basis}\n"
             )
             if self.solvation is True:
                 inp.write(
@@ -410,7 +410,7 @@ class r2SCAN(OrcaInput):
         super().__init__(
             method="r2SCAN-3c",
             basis_set="",
-            aux_basis="\n",
+            aux_basis="",
             nproc=nproc,
             maxcore=maxcore,
             solvation=True,
