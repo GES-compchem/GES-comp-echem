@@ -410,7 +410,7 @@ class r2SCAN(OrcaInput):
         super().__init__(
             method="r2SCAN-3c",
             basis_set="",
-            aux_basis="",
+            aux_basis="\n",
             nproc=nproc,
             maxcore=maxcore,
             solvation=True,

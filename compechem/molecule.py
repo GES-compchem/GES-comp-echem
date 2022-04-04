@@ -38,6 +38,7 @@ class Molecule:
         self.spin: int = spin
         self.atomcount: int = None
         self.geometry: list = []
+        self.flags: list = []
 
         self.energies: dict = {}
 
