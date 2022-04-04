@@ -217,7 +217,8 @@ class OrcaInput:
 
         tools.process_output(mol, self.method, charge, spin, "opt", tdir, remove_tdir, parent_dir)
 
-        return newmol
+        if inplace is False:
+            return newmol
 
     def freq(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
         """Frequency analysis (analytical frequencies).
