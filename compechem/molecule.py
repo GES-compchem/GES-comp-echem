@@ -19,9 +19,11 @@ class Molecule:
     energies : dict
         dictionary containing the electronic/vibronic energies of the molecule,
         calculated at various levels of theory
+    flags : list
+        list containing all "warning" flags which might be encountered during calculations.
     """
 
-    def __init__(self, xyz_file, charge=0, spin=1) -> None:
+    def __init__(self, xyz_file: str, charge: int = 0, spin: int = 1) -> None:
         """
         Parameters
         ----------
@@ -74,7 +76,7 @@ class Molecule:
         def __str__(self):
             return f"method: {self.method}, el={self.electronic}, vib={self.vibronic}"
 
-    def write_xyz(self, xyz_file):
+    def write_xyz(self, xyz_file: str):
         """Writes the current geometry to a .xyz file.
 
         Parameters
@@ -88,7 +90,7 @@ class Molecule:
             for line in self.geometry:
                 file.write(line)
 
-    def update_geometry(self, xyz_file):
+    def update_geometry(self, xyz_file: str):
         """Updates the current geometry from an external .xyz file
 
         Parameters

@@ -17,7 +17,7 @@ class Ensemble:
         calculated at various levels of theory
     """
 
-    def __init__(self, molecules_list) -> None:
+    def __init__(self, molecules_list: list) -> None:
         """
         Parameters
         ----------
@@ -53,7 +53,9 @@ class Ensemble:
             self.electronic = electronic
             self.vibronic = vibronic
 
-    def boltzmann_average(self, method_el, method_vib=None, temperature=297.15):
+    def boltzmann_average(
+        self, method_el: str, method_vib: str = None, temperature: float = 297.15
+    ):
         """Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted for each 
         molecule by its Boltzmann factor.
         

@@ -1,7 +1,10 @@
 from compechem.ensemble import Ensemble
+from compechem.molecule import Molecule
 
 
-def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
+def calculate_pka(
+    protonated: Molecule, deprotonated: Molecule, method_el: str, method_vib: str = None
+):
     """Calculates the pKa of a molecule, given the protonated and deprotonated forms.
 
     Parameters
@@ -55,7 +58,9 @@ def calculate_pka(protonated, deprotonated, method_el, method_vib=None):
     return pka
 
 
-def calculate_potential(oxidised, reduced, method_el, method_vib=None, pH=7):
+def calculate_potential(
+    oxidised: Molecule, reduced: Molecule, method_el: str, method_vib: str = None, pH: float = 7.0
+):
     """Calculates the reduction potential of a molecule, given the oxidised and reduced forms.
 
     Parameters

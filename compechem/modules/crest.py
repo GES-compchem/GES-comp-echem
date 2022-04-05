@@ -1,10 +1,11 @@
 import os, copy
 from tempfile import mkdtemp
+from turtle import st
 from compechem.molecule import Molecule
 from compechem.modules import tools
 
 
-def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
+def tautomer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
     """Tautomer search using CREST.
 
     Parameters
@@ -48,6 +49,10 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
                 print(
                     f"WARNING: cyclization change spotted for {tautomer.name}. Removing from list."
                 )
+                tools.add_flag(
+                    mol,
+                    f"Cyclization change occurred for {tautomer.name} during conformer search. Conformer was removed.",
+                )
             else:
                 tautomers.append(tautomer)
 
@@ -61,10 +66,11 @@ def tautomer_search(mol, nproc=1, remove_tdir=True, optionals=""):
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
         )
+        tools.add_flag(mol, "No possible tautomers. Tautomer search was ignored.")
         return [mol]
 
 
-def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
+def conformer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
     """Conformer search using CREST.
 
     Parameters
@@ -108,21 +114,26 @@ def conformer_search(mol, nproc=1, remove_tdir=True, optionals=""):
                 print(
                     f"WARNING: cyclization change spotted for {conformer.name}. Removing from list."
                 )
+                tools.add_flag(
+                    mol,
+                    f"Cyclization change occurred for {conformer.name} during conformer search. Conformer was removed.",
+                )
             else:
                 conformers.append(conformer)
 
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "conformers", tdir, remove_tdir, parent_dir
         )
-
         return conformers
+
     else:
         print("ERROR: conformer search failed.")
+        tools.add_flag(mol, "Error during conformer search.")
         os.chdir(parent_dir)
         return None
 
 
-def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
+def deprotonate(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
     """Deprotomer search using CREST.
 
     Parameters
@@ -168,6 +179,10 @@ def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
                 print(
                     f"WARNING: cyclization change spotted for {deprotomer.name}. Removing from list."
                 )
+                tools.add_flag(
+                    mol,
+                    f"Cyclization change occurred for {deprotomer.name} during deprotomer search. Deprotomer was removed.",
+                )
             else:
                 deprotomers.append(deprotomer)
 
@@ -181,10 +196,8 @@ def deprotonate(mol, nproc=1, remove_tdir=True, optionals=""):
         os.chdir(parent_dir)
         return None
 
-    return deprotomers
 
-
-def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
+def protonate(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
     """Protomer search using CREST.
 
     Parameters
@@ -230,8 +243,12 @@ def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
                 print(
                     f"WARNING: cyclization change spotted for {protomer.name}. Removing from list."
                 )
+                tools.add_flag(
+                    mol,
+                    f"Cyclization change occurred for {protomer.name} during deprotomer search. Protomer was removed.",
+                )
             else:
-                protomers.append(deprotomer)
+                protomers.append(protomer)
 
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "protomers", tdir, remove_tdir, parent_dir
@@ -243,19 +260,17 @@ def protonate(mol, nproc=1, remove_tdir=True, optionals=""):
         os.chdir(parent_dir)
         return None
 
-    return protomers
-
 
 def qcg_grow(
-    solute,
-    solvent,
-    charge=None,
-    spin=None,
-    method="gfn2",
-    nsolv=0,
-    nproc=1,
-    optionals="",
-    remove_tdir=True,
+    solute: Molecule,
+    solvent: Molecule,
+    charge: int = None,
+    spin: int = None,
+    method: str = "gfn2",
+    nsolv: int = 0,
+    nproc: int = 1,
+    optionals: str = "",
+    remove_tdir: bool = True,
 ):
     """Quantum Cluster Growth using CREST.
 
@@ -316,6 +331,7 @@ def qcg_grow(
         cluster.update_geometry("grow/cluster.xyz")
     except:
         print("ERROR: cluster growth failed.")
+        tools.add_flag(solute, "Cluster growth failed.")
         os.chdir(parent_dir)
         return None
 
@@ -325,17 +341,17 @@ def qcg_grow(
 
 
 def qcg_ensemble(
-    solute,
-    solvent,
-    charge=None,
-    spin=None,
-    method="gfn2",
-    enslvl="gfn2",
-    ensemble_choice="full_ensemble",
-    nsolv=0,
-    nproc=1,
-    optionals="",
-    remove_tdir=True,
+    solute: Molecule,
+    solvent: Molecule,
+    charge: int = None,
+    spin: int = None,
+    method: st = "gfn2",
+    enslvl: str = "gfn2",
+    ensemble_choice: str = "full_ensemble",
+    nsolv: int = 0,
+    nproc: int = 1,
+    optionals: str = "",
+    remove_tdir: bool = True,
 ):
     """Quantum Cluster Growth + ensemble generation using CREST.
 
@@ -406,6 +422,7 @@ def qcg_ensemble(
 
     except:
         print("ERROR: cluster growth failed.")
+        tools.add_flag(solute, "Cluster growth failed.")
         os.chdir(parent_dir)
         return None
 
