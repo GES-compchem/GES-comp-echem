@@ -49,7 +49,14 @@ class OrcaInput:
         self.solvent = solvent
         self.optionals = optionals
 
-    def spe(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
+    def spe(
+        self,
+        mol: Molecule,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
         """Single point energy calculation.
 
         Parameters
@@ -130,7 +137,14 @@ class OrcaInput:
         if inplace is False:
             return newmol
 
-    def opt(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
+    def opt(
+        self,
+        mol: Molecule,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
         """Geometry optimization + frequency analysis.
 
         Parameters
@@ -173,7 +187,7 @@ class OrcaInput:
                 f"%pal nproc {self.nproc} end\n"
                 f"%maxcore {self.maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
-                f"! RIJCOSX {self.aux_basis}"
+                f"! RIJCOSX {self.aux_basis}\n"
             )
             if self.solvation is True:
                 inp.write(
@@ -217,9 +231,17 @@ class OrcaInput:
 
         tools.process_output(mol, self.method, charge, spin, "opt", tdir, remove_tdir, parent_dir)
 
-        return newmol
+        if inplace is False:
+            return newmol
 
-    def freq(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
+    def freq(
+        self,
+        mol: Molecule,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
         """Frequency analysis (analytical frequencies).
 
         Note: if the SMD solvation model is detected, defaults to numerical frequencies
@@ -308,7 +330,14 @@ class OrcaInput:
         if inplace is False:
             return newmol
 
-    def nfreq(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
+    def nfreq(
+        self,
+        mol: Molecule,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
         """Frequency analysis (numerical frequencies).
 
         Parameters

@@ -38,7 +38,14 @@ class XtbInput:
         self.solvent = solvent
         self.optionals = optionals
 
-    def spe(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
+    def spe(
+        self,
+        mol: Molecule,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
         """Single point energy calculation.
 
         Parameters
@@ -116,7 +123,14 @@ class XtbInput:
         if inplace is False:
             return newmol
 
-    def opt(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
+    def opt(
+        self,
+        mol: Molecule,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
         """Geometry optimization + frequency analysis.
 
         Parameters
@@ -169,10 +183,16 @@ class XtbInput:
 
         if tools.dissociation_check() is True:
             print(f"ERROR: dissociation spotted for {mol.name}.")
+            tools.add_flag(
+                mol, f"Dissociation occurred during geometry optimization with {self.method}."
+            )
             os.chdir(parent_dir)
             return None
         elif tools.cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
             print(f"ERROR: cyclization change spotted for {mol.name}.")
+            tools.add_flag(
+                mol, f"Cyclization change occurred during geometry optimization with {self.method}."
+            )
             os.chdir(parent_dir)
             return None
         else:
@@ -209,7 +229,14 @@ class XtbInput:
             if inplace is False:
                 return newmol
 
-    def freq(self, mol, charge=None, spin=None, inplace=False, remove_tdir=True):
+    def freq(
+        self,
+        mol: Molecule,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
         """Frequency analysis.
 
         Parameters
