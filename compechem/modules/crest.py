@@ -130,7 +130,7 @@ def conformer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, op
         print("ERROR: conformer search failed.")
         tools.add_flag(mol, "Error during conformer search.")
         os.chdir(parent_dir)
-        return None
+        return [mol]
 
 
 def deprotonate(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
