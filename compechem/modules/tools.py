@@ -349,7 +349,7 @@ def reorder_energies(
         ):
             pass
         else:
-            method_el.spe(molecule)
+            method_el.spe(molecule, inplace=True)
 
         if (
             method_vib.method in molecule.energies
@@ -357,7 +357,7 @@ def reorder_energies(
         ):
             pass
         else:
-            method_vib.freq(molecule)
+            method_vib.freq(molecule, inplace=True)
 
     molecule_list.sort(key=get_total_energy)
 
