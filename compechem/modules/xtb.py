@@ -1,7 +1,7 @@
 import os, copy
 from tempfile import mkdtemp
 from compechem.modules import tools
-from compechem.molecule import Molecule
+from compechem.molecule import Molecule, Energies
 
 
 class XtbInput:
@@ -109,12 +109,12 @@ class XtbInput:
 
             newmol.energies = copy.copy(mol.energies)
 
-            newmol.energies[f"{self.method}"] = newmol.Energies(
+            newmol.energies[f"{self.method}"] = Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
         else:
-            mol.energies[f"{self.method}"] = mol.Energies(
+            mol.energies[f"{self.method}"] = Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
@@ -209,14 +209,14 @@ class XtbInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.method}"] = newmol.Energies(
+                newmol.energies[f"{self.method}"] = Energies(
                     method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
                 )
 
                 newmol.update_geometry("xtbopt.xyz")
 
             else:
-                mol.energies[f"{self.method}"] = mol.Energies(
+                mol.energies[f"{self.method}"] = Energies(
                     method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
                 )
 
@@ -297,12 +297,12 @@ class XtbInput:
 
             newmol.energies = copy.copy(mol.energies)
 
-            newmol.energies[f"{self.method}"] = newmol.Energies(
+            newmol.energies[f"{self.method}"] = Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
         else:
-            mol.energies[f"{self.method}"] = mol.Energies(
+            mol.energies[f"{self.method}"] = Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 

@@ -1,5 +1,29 @@
 import os
 
+class Energies:
+    """Molecular energies.
+    """
+
+    def __init__(
+        self, method: str = None, electronic: float = None, vibronic: float = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        method : str, optional
+            level of theory, by default None
+        electronic : float, optional
+            electronic energy (in Hartree), by default None
+        vibronic : float, optional
+            vibronic contribution to the total energy (in Hartree),
+            by default None
+        """
+        self.method = method
+        self.electronic = electronic
+        self.vibronic = vibronic
+
+    def __str__(self):
+        return f"method: {self.method}, el={self.electronic}, vib={self.vibronic}"
 
 class Molecule:
     """Molecule object.
@@ -50,31 +74,6 @@ class Molecule:
                     self.atomcount = int(line)
                 if linenum > 1 and linenum < self.atomcount + 2:
                     self.geometry.append(line)
-
-    class Energies:
-        """Molecular energies.
-        """
-
-        def __init__(
-            self, method: str = None, electronic: float = None, vibronic: float = None,
-        ) -> None:
-            """
-            Parameters
-            ----------
-            method : str, optional
-                level of theory, by default None
-            electronic : float, optional
-                electronic energy (in Hartree), by default None
-            vibronic : float, optional
-                vibronic contribution to the total energy (in Hartree),
-                by default None
-            """
-            self.method = method
-            self.electronic = electronic
-            self.vibronic = vibronic
-
-        def __str__(self):
-            return f"method: {self.method}, el={self.electronic}, vib={self.vibronic}"
 
     def write_xyz(self, xyz_file: str):
         """Writes the current geometry to a .xyz file.

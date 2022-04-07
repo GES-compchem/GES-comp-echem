@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from compechem.molecule import Energies
 
 
 class Ensemble:
@@ -31,27 +32,6 @@ class Ensemble:
         self.molecules = [mol for mol in molecules_list]
 
         self.energies: dict = {}
-
-    class Energies:
-        """Ensemble energies."""
-
-        def __init__(
-            self, method: str = None, electronic: float = None, vibronic: float = None,
-        ) -> None:
-            """
-            Parameters
-            ----------
-            method : str, optional
-                level of theory, by default None
-            electronic : float, optional
-                electronic energy (in Hartree), by default None
-            vibronic : float, optional
-                vibronic contribution to the total energy (in Hartree),
-                by default None
-            """
-            self.method = method
-            self.electronic = electronic
-            self.vibronic = vibronic
 
     def boltzmann_average(
         self, method_el: str, method_vib: str = None, temperature: float = 297.15
@@ -109,7 +89,7 @@ class Ensemble:
 
         boltzmann_entropy = -boltzmann_constant * np.sum(populations * np.log(populations))
 
-        self.energies[f"{method_el}"] = self.Energies(
+        self.energies[f"{method_el}"] = Energies(
             method=f"{method_el}",
             electronic=np.sum([weighted_energies]) - temperature * boltzmann_entropy,
             vibronic=0,
