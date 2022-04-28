@@ -164,7 +164,7 @@ def calculate_states(
     return container
 
 
-def potential_calculation(container: Container, method, step: float = 1.0):
+def generate_potential_data(container: Container, method, step: float = 1.0):
     """Calculates the 1-el oxidation potential for the given molecule in the pH range 0-14
 
     Parameters
@@ -229,8 +229,21 @@ def potential_calculation(container: Container, method, step: float = 1.0):
         yield current_pH, potential
 
 
-def main():
+def main(
+    xyz_file: str, method, nproc: int, conformer_search: bool = True, tautomer_search: bool = True
+):
 
     os.makedirs("pickle_files", exist_ok=True)
 
-    pickle.dump(container, open(f"pickle_files/{molname}.ctr", "wb"))
+    molecule = calculate_states(
+        filepath=xyz_file,
+        method=method,
+        nproc=nproc,
+        conformer_search=conformer_search,
+        tautomer_search=tautomer_search,
+    )
+
+    for pH, potential in generate_potential_data(molecule):
+        print(pH, potential)
+
+    pickle.dump(molecule, open(f"pickle_files/{molecule.singlets[0].name}.ctr", "wb"))
