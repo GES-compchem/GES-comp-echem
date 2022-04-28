@@ -1,6 +1,6 @@
 import os, copy
 from tempfile import mkdtemp
-from compechem.modules import tools
+from compechem import tools
 from compechem.molecule import Molecule, Energies
 
 

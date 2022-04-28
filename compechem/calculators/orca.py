@@ -1,7 +1,7 @@
 import os, copy
 from tempfile import mkdtemp
 from compechem.molecule import Molecule, Energies
-from compechem.modules import tools
+from compechem import tools
 
 
 class OrcaInput:

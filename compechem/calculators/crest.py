@@ -1,8 +1,7 @@
-import os, copy
+import os
 from tempfile import mkdtemp
-from turtle import st
 from compechem.molecule import Molecule
-from compechem.modules import tools
+from compechem import tools
 
 
 def tautomer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
@@ -345,7 +344,7 @@ def qcg_ensemble(
     solvent: Molecule,
     charge: int = None,
     spin: int = None,
-    method: st = "gfn2",
+    method: str = "gfn2",
     enslvl: str = "gfn2",
     ensemble_choice: str = "full_ensemble",
     nsolv: int = 0,

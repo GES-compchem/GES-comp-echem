@@ -1,4 +1,6 @@
 import os
+from dataclasses import dataclass
+
 
 class Energies:
     """Molecular energies.
@@ -24,6 +26,12 @@ class Energies:
 
     def __str__(self):
         return f"method: {self.method}, el={self.electronic}, vib={self.vibronic}"
+
+
+@dataclass
+class Properties:
+    """Dataclass containing molecule properties (such as pKa)."""
+
 
 class Molecule:
     """Molecule object.
@@ -67,6 +75,7 @@ class Molecule:
         self.flags: list = []
 
         self.energies: dict = {}
+        self.properties: Properties = Properties()
 
         with open(xyz_file, "r") as file:
             for linenum, line in enumerate(file):
