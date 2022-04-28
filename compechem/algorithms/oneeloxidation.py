@@ -178,15 +178,13 @@ def potential_calculation(container: Container, method, step: float = 1.0):
         pH step at which the potential is calculated (by default, 1.0 pH units)
 
 
-    Returns
+    Yields (generator)
     -------
-    potential : list? csv?
+    current_pH, potential
 
     """
 
     print("INFO: starting potentials calculation")
-
-    potentials = ["molname,singlet_pKa,radical_pKa,pH,potential"]
 
     last_potential = None
 
@@ -194,8 +192,6 @@ def potential_calculation(container: Container, method, step: float = 1.0):
 
     singlets = container.singlets
     radicals = container.radicals
-
-    potentials_mol = []
 
     for current_pH in np.around(np.arange(0, 14, step), 1):
 
@@ -223,21 +219,14 @@ def potential_calculation(container: Container, method, step: float = 1.0):
             method_vib=xtb.method,
         )
 
-        potentials_mol.append([current_singlet_pka, current_radical_pka, current_pH, potential])
-
         if last_potential is not None and abs(potential - last_potential) > 0.1:
             print(
                 f"WARNING: potential changed by {abs(potential - last_potential)} at pH {current_pH}"
             )
+
         last_potential = potential
 
-    for i in potentials_mol:
-        potentials.append(f"{molname},{i[0]},{i[1]},{i[2]},{i[3]}")
-
-    with open("potentials.csv", "w") as out:
-        for i in potentials:
-            out.write(f"{i}\n")
-    print("INFO: created file potentials.csv")
+        yield current_pH, potential
 
 
 def main():
