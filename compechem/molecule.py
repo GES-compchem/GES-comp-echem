@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass
 
 
 class Energies:
@@ -28,9 +27,11 @@ class Energies:
         return f"method: {self.method}, el={self.electronic}, vib={self.vibronic}"
 
 
-@dataclass
 class Properties:
-    """Dataclass containing molecule properties (such as pKa)."""
+    """Class containing molecule properties (such as pKa)."""
+
+    def __init__(self):
+        self.pka: dict = {}
 
 
 class Molecule:

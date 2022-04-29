@@ -1,6 +1,5 @@
 import os, shutil, pickle
 import numpy as np
-from dataclasses import dataclass
 
 from compechem.molecule import Molecule
 from compechem import tools
@@ -13,12 +12,12 @@ from compechem.calculators.xtb import XtbInput
 xtb = XtbInput()
 
 
-@dataclass
 class Container:
-    """Dataclass containing the singlets and radicals lists"""
+    """Class containing the singlets and radicals lists"""
 
-    singlets: list = []
-    radicals: list = []
+    def __init__(self):
+        self.singlets: list = []
+        self.radicals: list = []
 
 
 def calculate_deprotomers(mol: Molecule, method, nproc: int, conformer_search: bool = True):
@@ -61,7 +60,7 @@ def calculate_deprotomers(mol: Molecule, method, nproc: int, conformer_search: b
 
         if type(method) != XtbInput:
             deprotomer_list = tools.reorder_energies(
-                deprotomer_list, nproc=nproc, method_opt=xtb, method_el=method, method_vib=xtb
+                deprotomer_list, nproc=nproc, method_opt=xtb, method_el=method, method_vib=xtb,
             )
 
         if deprotomer_list:
@@ -109,7 +108,7 @@ def calculate_deprotomers(mol: Molecule, method, nproc: int, conformer_search: b
 
 
 def calculate_states(
-    filepath: str, method, nproc: int, conformer_search: bool = True, tautomer_search: bool = True
+    filepath: str, method, nproc: int, conformer_search: bool = True, tautomer_search: bool = True,
 ):
     """Carries out all the calculations for the singlet and radical species to be used in the
     calculate_potential function, given a file path with a .xyz file
@@ -157,14 +156,15 @@ def calculate_states(
             mol=radical, method=method, nproc=nproc, conformer_search=conformer_search
         )
 
-    except:
+    except Exception as e:
         print(f"ERROR: Error occurred for {molname}! Skipping molecule")
+        print(e)
         return
 
     return container
 
 
-def generate_potential_data(container: Container, method, step: float = 1.0):
+def generate_potential_data(container: Container, method, pH_step: float = 1.0):
     """Calculates the 1-el oxidation potential for the given molecule in the pH range 0-14
 
     Parameters
@@ -174,7 +174,7 @@ def generate_potential_data(container: Container, method, step: float = 1.0):
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
-    step : float
+    pH_step : float
         pH step at which the potential is calculated (by default, 1.0 pH units)
 
 
@@ -193,7 +193,7 @@ def generate_potential_data(container: Container, method, step: float = 1.0):
     singlets = container.singlets
     radicals = container.radicals
 
-    for current_pH in np.around(np.arange(0, 14, step), 1):
+    for current_pH in np.around(np.arange(0, 14, pH_step), 1):
 
         # getting deprotomers with pKa > current_pH or with sentinel value (deprotonation was
         # unsuccessful)
@@ -211,7 +211,7 @@ def generate_potential_data(container: Container, method, step: float = 1.0):
                 current_radical_pka = pka
                 break
 
-        potential = potential.calculate_potential(
+        potential = calculate_potential(
             oxidised=current_radical,
             reduced=current_singlet,
             pH=current_pH,
@@ -229,21 +229,25 @@ def generate_potential_data(container: Container, method, step: float = 1.0):
         yield current_pH, potential
 
 
-def main(
-    xyz_file: str, method, nproc: int, conformer_search: bool = True, tautomer_search: bool = True
+def one_el_ox(
+    xyz_filepath: str,
+    method,
+    nproc: int,
+    conformer_search: bool = True,
+    tautomer_search: bool = True,
+    pH_step: float = 1.0,
 ):
 
     os.makedirs("pickle_files", exist_ok=True)
 
     molecule = calculate_states(
-        filepath=xyz_file,
+        filepath=xyz_filepath,
         method=method,
         nproc=nproc,
         conformer_search=conformer_search,
         tautomer_search=tautomer_search,
     )
 
-    for pH, potential in generate_potential_data(molecule):
-        print(pH, potential)
-
     pickle.dump(molecule, open(f"pickle_files/{molecule.singlets[0].name}.ctr", "wb"))
+
+    return generate_potential_data(container=molecule, method=method, pH_step=pH_step)
