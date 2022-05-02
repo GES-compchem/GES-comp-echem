@@ -13,7 +13,7 @@ class OrcaInput:
         method: str,
         basis_set: str = "def2-TZVP",
         aux_basis: str = "def2/J",
-        nproc: int = 1,
+        nproc: int = len(os.sched_getaffinity(0)),
         maxcore: int = 350,
         solvation: bool = False,
         solvent: str = "water",
@@ -29,7 +29,7 @@ class OrcaInput:
         aux_basis : str, optional
             auxiliary basis set for RIJCOSX, by default "def2/J"
         nproc : int, optional
-            number of cores, by default 1
+            number of cores, by default all available cores
         maxcore : int, optional
             memory per core, in MB, by default 350
         solvation : bool, optional
@@ -421,7 +421,7 @@ class OrcaInput:
 
 
 class M06(OrcaInput):
-    def __init__(self, nproc=1, maxcore=350):
+    def __init__(self, nproc=len(os.sched_getaffinity(0)), maxcore=350):
         super().__init__(
             method="M062X",
             basis_set="def2-TZVP",
@@ -435,7 +435,7 @@ class M06(OrcaInput):
 
 
 class r2SCAN(OrcaInput):
-    def __init__(self, nproc=1, maxcore=350):
+    def __init__(self, nproc=len(os.sched_getaffinity(0)), maxcore=350):
         super().__init__(
             method="r2SCAN-3c",
             basis_set="",

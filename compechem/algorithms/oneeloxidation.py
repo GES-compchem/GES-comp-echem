@@ -8,11 +8,12 @@ from compechem.functions.potential import calculate_potential
 from compechem.calculators import crest
 from compechem.calculators.xtb import XtbInput
 
+from typing import Iterator, Any
 
 xtb = XtbInput()
 
 
-class Container:
+class Species:
     """Class containing the singlets and radicals lists"""
 
     def __init__(self):
@@ -20,7 +21,7 @@ class Container:
         self.radicals: list = []
 
 
-def calculate_deprotomers(mol: Molecule, method, nproc: int, conformer_search: bool = True):
+def calculate_deprotomers(mol: Molecule, method, nproc: int = 1, conformer_search: bool = True):
     """Calculates all the deprotomers with a pKa < 20 for a given Molecule object
 
     Parameters
@@ -107,16 +108,20 @@ def calculate_deprotomers(mol: Molecule, method, nproc: int, conformer_search: b
     return mol_list
 
 
-def calculate_states(
-    filepath: str, method, nproc: int, conformer_search: bool = True, tautomer_search: bool = True,
+def generate_species(
+    base_mol: Molecule,
+    method,
+    nproc: int = 1,
+    conformer_search: bool = True,
+    tautomer_search: bool = True,
 ):
     """Carries out all the calculations for the singlet and radical species to be used in the
     calculate_potential function, given a file path with a .xyz file
     
     Parameters
     ----------
-    filepath : str
-        Path to the .xyz file to be used in the calculation
+    base_mol : Molecule
+        Molecule object to be used in the calculation
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
@@ -129,13 +134,12 @@ def calculate_states(
 
     Returns
     -------
-    container : Container
-        Container object with the singlets and radicals for the given input molecule
+    species : Species
+        Species object with the singlets and radicals for the given input molecule
     """
 
-    container = Container()
+    species = Species()
 
-    base_mol = Molecule(filepath, charge=0, spin=1)
     molname = base_mol.name
 
     try:
@@ -146,13 +150,13 @@ def calculate_states(
 
         ### SINGLET SPECIES ###
         singlet = xtb.spe(base_mol, charge=0, spin=1)
-        container.singlets = calculate_deprotomers(
+        species.singlets = calculate_deprotomers(
             mol=singlet, method=method, nproc=nproc, conformer_search=conformer_search
         )
 
         ### RADICAL SPECIES ###
         radical = xtb.spe(base_mol, charge=1, spin=2)
-        container.radicals = calculate_deprotomers(
+        species.radicals = calculate_deprotomers(
             mol=radical, method=method, nproc=nproc, conformer_search=conformer_search
         )
 
@@ -161,15 +165,15 @@ def calculate_states(
         print(e)
         return
 
-    return container
+    return species
 
 
-def generate_potential_data(container: Container, method, pH_step: float = 1.0):
+def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> Iterator[Any]:
     """Calculates the 1-el oxidation potential for the given molecule in the pH range 0-14
 
     Parameters
     ----------
-    container : Container
+    species : Species
         Container object with the singlet and radical deprotomers for the input molecule
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
@@ -188,10 +192,10 @@ def generate_potential_data(container: Container, method, pH_step: float = 1.0):
 
     last_potential = None
 
-    molname = container.singlets[0].name
+    molname = species.singlets[0].name
 
-    singlets = container.singlets
-    radicals = container.radicals
+    singlets = species.singlets
+    radicals = species.radicals
 
     for current_pH in np.around(np.arange(0, 14, pH_step), 1):
 
@@ -229,10 +233,10 @@ def generate_potential_data(container: Container, method, pH_step: float = 1.0):
         yield current_pH, potential
 
 
-def one_el_ox(
-    xyz_filepath: str,
+def one_electron_oxidation_potentials(
+    molecule: Molecule,
     method,
-    nproc: int,
+    nproc: int = 1,
     conformer_search: bool = True,
     tautomer_search: bool = True,
     pH_step: float = 1.0,
@@ -240,14 +244,16 @@ def one_el_ox(
 
     os.makedirs("pickle_files", exist_ok=True)
 
-    molecule = calculate_states(
-        filepath=xyz_filepath,
+    species = generate_species(
+        base_mol=molecule,
         method=method,
         nproc=nproc,
         conformer_search=conformer_search,
         tautomer_search=tautomer_search,
     )
 
-    pickle.dump(molecule, open(f"pickle_files/{molecule.singlets[0].name}.ctr", "wb"))
+    pickle.dump(species, open(f"pickle_files/{species.singlets[0].name}.species", "wb"))
 
-    return generate_potential_data(container=molecule, method=method, pH_step=pH_step)
+    data_generator = generate_potential_data(species=species, method=method, pH_step=pH_step)
+
+    return data_generator

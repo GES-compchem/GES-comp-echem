@@ -4,7 +4,12 @@ from compechem.molecule import Molecule
 from compechem import tools
 
 
-def tautomer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
+def tautomer_search(
+    mol: Molecule,
+    nproc: int = len(os.sched_getaffinity(0)),
+    remove_tdir: bool = True,
+    optionals: str = "",
+):
     """Tautomer search using CREST.
 
     Parameters
@@ -12,7 +17,7 @@ def tautomer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, opt
     mol : Molecule object
         input molecule to use in the calculation
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -69,7 +74,12 @@ def tautomer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, opt
         return [mol]
 
 
-def conformer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
+def conformer_search(
+    mol: Molecule,
+    nproc: int = len(os.sched_getaffinity(0)),
+    remove_tdir: bool = True,
+    optionals: str = "",
+):
     """Conformer search using CREST.
 
     Parameters
@@ -77,7 +87,7 @@ def conformer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, op
     mol : Molecule object
         input molecule to use in the calculation
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -132,7 +142,12 @@ def conformer_search(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, op
         return [mol]
 
 
-def deprotonate(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
+def deprotonate(
+    mol: Molecule,
+    nproc: int = len(os.sched_getaffinity(0)),
+    remove_tdir: bool = True,
+    optionals: str = "",
+):
     """Deprotomer search using CREST.
 
     Parameters
@@ -140,7 +155,7 @@ def deprotonate(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optiona
     mol : Molecule object
         input molecule to use in the calculation
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -196,7 +211,12 @@ def deprotonate(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optiona
         return None
 
 
-def protonate(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals: str = ""):
+def protonate(
+    mol: Molecule,
+    nproc: int = len(os.sched_getaffinity(0)),
+    remove_tdir: bool = True,
+    optionals: str = "",
+):
     """Protomer search using CREST.
 
     Parameters
@@ -204,7 +224,7 @@ def protonate(mol: Molecule, nproc: int = 1, remove_tdir: bool = True, optionals
     mol : Molecule object
         input molecule to use in the calculation
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -267,7 +287,7 @@ def qcg_grow(
     spin: int = None,
     method: str = "gfn2",
     nsolv: int = 0,
-    nproc: int = 1,
+    nproc: int = len(os.sched_getaffinity(0)),
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -291,7 +311,7 @@ def qcg_grow(
         If a number is not specified, the program will keep adding solvent
         molecules until convergence is reached, or 150 molecules are added.
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
@@ -348,7 +368,7 @@ def qcg_ensemble(
     enslvl: str = "gfn2",
     ensemble_choice: str = "full_ensemble",
     nsolv: int = 0,
-    nproc: int = 1,
+    nproc: int = len(os.sched_getaffinity(0)),
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -381,7 +401,7 @@ def qcg_ensemble(
         If a number is not specified, the program will keep adding solvent
         molecules until convergence is reached, or 150 molecules are added.
     nproc : int, optional
-        number of cores, by default 1
+        number of cores, by default all available cores
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
