@@ -1,5 +1,5 @@
 {% set name = "GES-comp-echem" %}
-{% set version = "0.1.25a" %}
+{% set version = "0.1.26a" %}
 
 
 
