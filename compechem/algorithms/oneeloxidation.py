@@ -188,7 +188,9 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 
     """
 
-    print("INFO: starting potentials calculation")
+    print(
+        f"INFO: starting potentials calculation for {species.singlets[0].name}, method: {method.method}, pH step: {pH_step}"
+    )
 
     last_potential = None
 
