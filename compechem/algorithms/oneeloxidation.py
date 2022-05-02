@@ -21,7 +21,9 @@ class Species:
         self.radicals: list = []
 
 
-def calculate_deprotomers(mol: Molecule, method, nproc: int = 1, conformer_search: bool = True):
+def calculate_deprotomers(
+    mol: Molecule, method, nproc: int = len(os.sched_getaffinity(0)), conformer_search: bool = True
+):
     """Calculates all the deprotomers with a pKa < 20 for a given Molecule object
 
     Parameters
@@ -32,7 +34,7 @@ def calculate_deprotomers(mol: Molecule, method, nproc: int = 1, conformer_searc
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
     nproc : int
-        number of cores, by default 1
+        number of cores, by default all available cores
     conformer_search : Bool
         If True (default), also carries out conformer searches at all stages
 
@@ -111,7 +113,7 @@ def calculate_deprotomers(mol: Molecule, method, nproc: int = 1, conformer_searc
 def generate_species(
     base_mol: Molecule,
     method,
-    nproc: int = 1,
+    nproc: int = len(os.sched_getaffinity(0)),
     conformer_search: bool = True,
     tautomer_search: bool = True,
 ):
@@ -126,7 +128,7 @@ def generate_species(
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
     nproc : int
-        number of cores, by default 1
+        number of cores, by default all available cores
     conformer_search : Bool
         If True (default), also carries out a preliminary conformer search on the given structure
     tautomer_search : Bool
@@ -238,7 +240,7 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 def one_electron_oxidation_potentials(
     molecule: Molecule,
     method,
-    nproc: int = 1,
+    nproc: int = len(os.sched_getaffinity(0)),
     conformer_search: bool = True,
     tautomer_search: bool = True,
     pH_step: float = 1.0,
