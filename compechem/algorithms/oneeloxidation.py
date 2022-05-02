@@ -223,7 +223,7 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
             method_vib=xtb.method,
         )
 
-        if last_potential is not None and abs(potential - last_potential) > 0.1:
+        if last_potential is not None and abs(potential - last_potential) > 0.3:
             print(
                 f"WARNING: potential changed by {abs(potential - last_potential)} at pH {current_pH}"
             )
