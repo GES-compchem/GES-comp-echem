@@ -199,7 +199,7 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
     singlets = species.singlets
     radicals = species.radicals
 
-    for current_pH in np.around(np.arange(0, 14, pH_step), 1):
+    for current_pH in np.around(np.arange(0, 14 + pH_step, pH_step), 1):
 
         # getting deprotomers with pKa > current_pH or with sentinel value (deprotonation was
         # unsuccessful)
