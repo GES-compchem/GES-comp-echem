@@ -1,7 +1,7 @@
 import os, copy
 from tempfile import mkdtemp
-from compechem.modules import tools
-from compechem.molecule import Molecule
+from compechem import tools
+from compechem.molecule import Molecule, Energies
 
 
 class XtbInput:
@@ -11,7 +11,7 @@ class XtbInput:
     def __init__(
         self,
         method: str = "gfn2",
-        nproc: int = 1,
+        nproc: int = len(os.sched_getaffinity(0)),
         solvation: bool = True,
         solvent: str = "water",
         optionals: str = "",
@@ -22,7 +22,7 @@ class XtbInput:
         method : str, optional
             level of theory, by default "gfn2"
         nproc : int, optional
-            number of cores, by default 1
+            number of cores, by default all available cores
         solvation : bool, optional
             ALPB implicit solvation model, by default True
         solvent : str, optional
@@ -109,12 +109,12 @@ class XtbInput:
 
             newmol.energies = copy.copy(mol.energies)
 
-            newmol.energies[f"{self.method}"] = newmol.Energies(
+            newmol.energies[f"{self.method}"] = Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
         else:
-            mol.energies[f"{self.method}"] = mol.Energies(
+            mol.energies[f"{self.method}"] = Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
@@ -209,14 +209,14 @@ class XtbInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.method}"] = newmol.Energies(
+                newmol.energies[f"{self.method}"] = Energies(
                     method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
                 )
 
                 newmol.update_geometry("xtbopt.xyz")
 
             else:
-                mol.energies[f"{self.method}"] = mol.Energies(
+                mol.energies[f"{self.method}"] = Energies(
                     method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
                 )
 
@@ -297,12 +297,12 @@ class XtbInput:
 
             newmol.energies = copy.copy(mol.energies)
 
-            newmol.energies[f"{self.method}"] = newmol.Energies(
+            newmol.energies[f"{self.method}"] = Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
         else:
-            mol.energies[f"{self.method}"] = mol.Energies(
+            mol.energies[f"{self.method}"] = Energies(
                 method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
             )
 
