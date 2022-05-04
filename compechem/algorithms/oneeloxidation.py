@@ -61,12 +61,11 @@ def calculate_deprotomers(
 
         deprotomer_list = crest.deprotonate(currently_protonated, nproc=nproc)
 
-        if type(method) != XtbInput:
-            deprotomer_list = tools.reorder_energies(
-                deprotomer_list, nproc=nproc, method_opt=xtb, method_el=method, method_vib=xtb,
-            )
-
         if deprotomer_list:
+            if type(method) != XtbInput:
+                deprotomer_list = tools.reorder_energies(
+                    deprotomer_list, nproc=nproc, method_opt=xtb, method_el=method, method_vib=xtb,
+                )
             currently_deprotonated = deprotomer_list[0]
 
         # if deprotonation is unsuccessful (e.g., topology change), save the molecule but with
