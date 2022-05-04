@@ -72,7 +72,8 @@ def calculate_deprotomers(
         # if deprotonation is unsuccessful (e.g., topology change), save the molecule but with
         # sentinel values for pKa (which cannot be calculated)
         else:
-            mol_list.append([currently_protonated, None, None])
+            currently_protonated.properties.pka[method.method] = None
+            mol_list.append(currently_protonated)
             break
 
         if conformer_search:
