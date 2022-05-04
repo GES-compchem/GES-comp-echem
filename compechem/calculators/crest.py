@@ -136,8 +136,8 @@ def conformer_search(
         return conformers
 
     else:
-        print("ERROR: conformer search failed.")
-        tools.add_flag(mol, "Error during conformer search.")
+        print(f"ERROR: {mol.name}, conformer search failed. Reverting to original molecule.")
+        tools.add_flag(mol, "Conformer search failed.")
         os.chdir(parent_dir)
         return [mol]
 
@@ -204,9 +204,17 @@ def deprotonate(
             mol, "CREST", mol.charge, mol.spin, "deprotomers", tdir, remove_tdir, parent_dir
         )
 
-        return deprotomers
+        if deprotomers:
+            return deprotomers
+        else:
+            print(f"ERROR: {mol.name}, no suitable deprotomers found.")
+            tools.add_flag(mol, "No suitable deprotomers.")
+            os.chdir(parent_dir)
+            return None
+
     else:
-        print("ERROR: deprotomer search failed.")
+        print(f"ERROR: {mol.name}, deprotomer search failed.")
+        tools.add_flag(mol, "Deprotomer search failed.")
         os.chdir(parent_dir)
         return None
 
@@ -273,9 +281,16 @@ def protonate(
             mol, "CREST", mol.charge, mol.spin, "protomers", tdir, remove_tdir, parent_dir
         )
 
-        return protomers
+        if protomers:
+            return protomers
+        else:
+            print(f"ERROR: {mol.name}, no suitable protomers found.")
+            tools.add_flag(mol, "No suitable protomers.")
+            os.chdir(parent_dir)
+            return None
     else:
-        print("ERROR: protomer search failed.")
+        print(f"ERROR: {mol.name}, protomer search failed.")
+        tools.add_flag(mol, "Protomer search failed.")
         os.chdir(parent_dir)
         return None
 
@@ -349,7 +364,7 @@ def qcg_grow(
     try:
         cluster.update_geometry("grow/cluster.xyz")
     except:
-        print("ERROR: cluster growth failed.")
+        print(f"ERROR: {solute.name}, cluster growth failed.")
         tools.add_flag(solute, "Cluster growth failed.")
         os.chdir(parent_dir)
         return None
@@ -440,7 +455,7 @@ def qcg_ensemble(
         ensemble = tools.split_multixyz(solute, file=f"ensemble/{ensemble_choice}.xyz", suffix="e")
 
     except:
-        print("ERROR: cluster growth failed.")
+        print(f"ERROR: {solute.name}, cluster growth failed.")
         tools.add_flag(solute, "Cluster growth failed.")
         os.chdir(parent_dir)
         return None
