@@ -8,7 +8,11 @@ from compechem.functions.potential import calculate_potential
 from compechem.calculators import crest
 from compechem.calculators.xtb import XtbInput
 
+import logging
+
 from typing import Iterator, Any
+
+logger = logging.getLogger(__name__)
 
 xtb = XtbInput()
 
@@ -93,8 +97,8 @@ def calculate_deprotomers(
         except:
             pKa = None
 
-        print(
-            f"INFO: {currently_protonated.name} (charge {currently_protonated.charge} spin {currently_protonated.spin}) pKa{i} = {pKa} ({method.method})"
+        logger.info(
+            f"{currently_protonated.name} (charge {currently_protonated.charge} spin {currently_protonated.spin}) pKa{i} = {pKa} ({method.method})"
         )
 
         currently_protonated.properties.pka[method.method] = pKa
@@ -163,8 +167,8 @@ def generate_species(
         )
 
     except Exception as e:
-        print(f"ERROR: Error occurred for {molname}! Skipping molecule")
-        print(e)
+        logger.error(f"Error occurred for {molname}! Skipping molecule")
+        logger.error(e)
         return
 
     return species
@@ -190,8 +194,8 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 
     """
 
-    print(
-        f"INFO: generating potentials data for {species.singlets[0].name}, method: {method.method}, pH step: {pH_step}"
+    logger.info(
+        f"Generating potentials data for {species.singlets[0].name}, method: {method.method}, pH step: {pH_step}"
     )
 
     last_potential = None
@@ -228,8 +232,8 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
         )
 
         if last_potential is not None and abs(potential - last_potential) > 0.3:
-            print(
-                f"WARNING: potential changed by {abs(potential - last_potential)} at pH {current_pH}"
+            logger.warning(
+                f"Potential changed by {abs(potential - last_potential)} at pH {current_pH}"
             )
 
         last_potential = potential

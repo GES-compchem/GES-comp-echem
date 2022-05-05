@@ -2,6 +2,9 @@ import os
 from tempfile import mkdtemp
 from compechem.molecule import Molecule
 from compechem import tools
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def tautomer_search(
@@ -30,7 +33,7 @@ def tautomer_search(
     """
 
     parent_dir = os.getcwd()
-    print(f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search")
+    logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_TAUT", dir=os.getcwd())
 
@@ -50,8 +53,8 @@ def tautomer_search(
             tautomer = tautomers_to_check.pop(0)
             tautomer.write_xyz(f"{tautomer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
-                print(
-                    f"WARNING: cyclization change spotted for {tautomer.name}. Removing from list."
+                logger.warning(
+                    f"Cyclization change spotted for {tautomer.name}. Removing from list."
                 )
                 tools.add_flag(
                     mol,
@@ -66,7 +69,7 @@ def tautomer_search(
         return tautomers
 
     else:
-        print(f"WARNING: no tautomers possible for {mol.name}. Ignoring tautomer search.")
+        logger.warning(f"No tautomers possible for {mol.name}. Ignoring tautomer search.")
         tools.process_output(
             mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
         )
@@ -100,7 +103,7 @@ def conformer_search(
     """
 
     parent_dir = os.getcwd()
-    print(f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search")
+    logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_CONF", dir=os.getcwd())
 
@@ -120,8 +123,8 @@ def conformer_search(
             conformer = conformers_to_check.pop(0)
             conformer.write_xyz(f"{conformer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
-                print(
-                    f"WARNING: cyclization change spotted for {conformer.name}. Removing from list."
+                logger.warning(
+                    f"Cyclization change spotted for {conformer.name}. Removing from list."
                 )
                 tools.add_flag(
                     mol,
@@ -136,7 +139,7 @@ def conformer_search(
         return conformers
 
     else:
-        print(f"ERROR: {mol.name}, conformer search failed. Reverting to original molecule.")
+        logger.error(f"{mol.name}, conformer search failed. Reverting to original molecule.")
         tools.add_flag(mol, "Conformer search failed.")
         os.chdir(parent_dir)
         return [mol]
@@ -168,7 +171,7 @@ def deprotonate(
     """
 
     parent_dir = os.getcwd()
-    print(f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation")
+    logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_DEPROT", dir=os.getcwd())
 
@@ -190,8 +193,8 @@ def deprotonate(
             deprotomer = deprotomers_to_check.pop(0)
             deprotomer.write_xyz(f"{deprotomer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{deprotomer.name}.xyz") is True:
-                print(
-                    f"WARNING: cyclization change spotted for {deprotomer.name}. Removing from list."
+                logger.warning(
+                    f"Cyclization change spotted for {deprotomer.name}. Removing from list."
                 )
                 tools.add_flag(
                     mol,
@@ -207,13 +210,13 @@ def deprotonate(
         if deprotomers:
             return deprotomers
         else:
-            print(f"ERROR: {mol.name}, no suitable deprotomers found.")
+            logger.error(f"{mol.name}, no suitable deprotomers found.")
             tools.add_flag(mol, "No suitable deprotomers.")
             os.chdir(parent_dir)
             return None
 
     else:
-        print(f"ERROR: {mol.name}, deprotomer search failed.")
+        logger.error(f"{mol.name}, deprotomer search failed.")
         tools.add_flag(mol, "Deprotomer search failed.")
         os.chdir(parent_dir)
         return None
@@ -245,7 +248,7 @@ def protonate(
     """
 
     parent_dir = os.getcwd()
-    print(f"INFO: {mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
+    logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_PROT", dir=os.getcwd())
 
@@ -267,8 +270,8 @@ def protonate(
             protomer = protomers_to_check.pop(0)
             protomer.write_xyz(f"{protomer.name}.xyz")
             if tools.cyclization_check("geom.xyz", f"{protomer.name}.xyz") is True:
-                print(
-                    f"WARNING: cyclization change spotted for {protomer.name}. Removing from list."
+                logger.warning(
+                    f"Cyclization change spotted for {protomer.name}. Removing from list."
                 )
                 tools.add_flag(
                     mol,
@@ -284,12 +287,12 @@ def protonate(
         if protomers:
             return protomers
         else:
-            print(f"ERROR: {mol.name}, no suitable protomers found.")
+            logger.error(f"{mol.name}, no suitable protomers found.")
             tools.add_flag(mol, "No suitable protomers.")
             os.chdir(parent_dir)
             return None
     else:
-        print(f"ERROR: {mol.name}, protomer search failed.")
+        logger.error(f"{mol.name}, protomer search failed.")
         tools.add_flag(mol, "Protomer search failed.")
         os.chdir(parent_dir)
         return None
@@ -344,8 +347,8 @@ def qcg_grow(
         spin = solute.spin
 
     parent_dir = os.getcwd()
-    print(
-        f"INFO: {solute.name}, charge {charge} spin {spin} - CREST QCG GROW - {nsolv} solvent molecules"
+    logger.info(
+        f"{solute.name}, charge {charge} spin {spin} - CREST QCG GROW - {nsolv} solvent molecules"
     )
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_G", dir=os.getcwd())
@@ -364,7 +367,7 @@ def qcg_grow(
     try:
         cluster.update_geometry("grow/cluster.xyz")
     except:
-        print(f"ERROR: {solute.name}, cluster growth failed.")
+        logger.error(f"{solute.name}, cluster growth failed.")
         tools.add_flag(solute, "Cluster growth failed.")
         os.chdir(parent_dir)
         return None
@@ -437,8 +440,8 @@ def qcg_ensemble(
         spin = solute.spin
 
     parent_dir = os.getcwd()
-    print(
-        f"INFO: {solute.name}, charge {charge} spin {spin} - CREST QCG ENSEMBLE - {nsolv} solvent molecules"
+    logger.info(
+        f"{solute.name}, charge {charge} spin {spin} - CREST QCG ENSEMBLE - {nsolv} solvent molecules"
     )
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_E", dir=os.getcwd())
@@ -455,7 +458,7 @@ def qcg_ensemble(
         ensemble = tools.split_multixyz(solute, file=f"ensemble/{ensemble_choice}.xyz", suffix="e")
 
     except:
-        print(f"ERROR: {solute.name}, cluster growth failed.")
+        logger.error(f"{solute.name}, cluster growth failed.")
         tools.add_flag(solute, "Cluster growth failed.")
         os.chdir(parent_dir)
         return None
