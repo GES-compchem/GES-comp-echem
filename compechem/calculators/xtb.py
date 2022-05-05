@@ -2,6 +2,9 @@ import os, copy
 from tempfile import mkdtemp
 from compechem import tools
 from compechem.molecule import Molecule, Energies
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class XtbInput:
@@ -74,7 +77,7 @@ class XtbInput:
             spin = mol.spin
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name}, charge {charge} spin {spin} - {self.method} SPE")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_spe", dir=os.getcwd(),
@@ -162,7 +165,7 @@ class XtbInput:
             spin = mol.spin
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name}, charge {charge} spin {spin} - {self.method} OPT")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_opt", dir=os.getcwd(),
@@ -182,14 +185,14 @@ class XtbInput:
             )
 
         if tools.dissociation_check() is True:
-            print(f"ERROR: dissociation spotted for {mol.name}.")
+            logger.error(f"Dissociation spotted for {mol.name}.")
             tools.add_flag(
                 mol, f"Dissociation occurred during geometry optimization with {self.method}."
             )
             os.chdir(parent_dir)
             return None
         elif tools.cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
-            print(f"ERROR: cyclization change spotted for {mol.name}.")
+            logger.error(f"Cyclization change spotted for {mol.name}.")
             tools.add_flag(
                 mol, f"Cyclization change occurred during geometry optimization with {self.method}."
             )
@@ -265,7 +268,7 @@ class XtbInput:
             spin = mol.spin
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_freq", dir=os.getcwd(),

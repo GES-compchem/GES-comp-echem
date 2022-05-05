@@ -2,6 +2,9 @@ import os, copy
 from tempfile import mkdtemp
 from compechem.molecule import Molecule, Energies
 from compechem import tools
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class OrcaInput:
@@ -85,7 +88,7 @@ class OrcaInput:
             spin = mol.spin
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name}, charge {charge} spin {spin} - {self.method} SPE")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_spe", dir=os.getcwd(),
@@ -173,7 +176,7 @@ class OrcaInput:
             spin = mol.spin
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name}, charge {charge} spin {spin} - {self.method} OPT")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_opt", dir=os.getcwd(),
@@ -273,7 +276,7 @@ class OrcaInput:
             spin = mol.spin
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_freq", dir=os.getcwd(),
@@ -366,7 +369,7 @@ class OrcaInput:
             spin = mol.spin
 
         parent_dir = os.getcwd()
-        print(f"INFO: {mol.name}, charge {charge} spin {spin} - {self.method} NFREQ")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} NFREQ")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_nfreq", dir=os.getcwd(),

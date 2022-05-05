@@ -1,5 +1,8 @@
 from compechem.ensemble import Ensemble
 from compechem.molecule import Molecule
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_pka(
@@ -26,11 +29,11 @@ def calculate_pka(
     """
 
     if type(protonated) == Ensemble or type(deprotonated) == Ensemble:
-        print(f"ERROR: calculating pKa for Ensemble instead of Molecule. Currently not supported.")
+        logger.error(f"Calculating pKa for Ensemble instead of Molecule. Currently not supported.")
         return None
 
     if protonated.atomcount - deprotonated.atomcount != 1:
-        print(f"ERROR: {protonated.name} deprotomer differs for more than 1 atom.")
+        logger.error(f"{protonated.name} deprotomer differs for more than 1 atom.")
         return None
 
     if method_vib is None:
