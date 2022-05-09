@@ -1,17 +1,14 @@
 import os
 from tempfile import mkdtemp
 from compechem.molecule import Molecule
-from compechem import tools
+from compechem import tools, config
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 def tautomer_search(
-    mol: Molecule,
-    nproc: int = len(os.sched_getaffinity(0)),
-    remove_tdir: bool = True,
-    optionals: str = "",
+    mol: Molecule, nproc: int = config.__NCORES__, remove_tdir: bool = True, optionals: str = "",
 ):
     """Tautomer search using CREST.
 
@@ -31,9 +28,6 @@ def tautomer_search(
     tautomers : list
         list containing the found tautomers, in order of ascending energy
     """
-
-    if os.environ["OMP_NUM_THREADS"]:
-        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search")
@@ -81,10 +75,7 @@ def tautomer_search(
 
 
 def conformer_search(
-    mol: Molecule,
-    nproc: int = len(os.sched_getaffinity(0)),
-    remove_tdir: bool = True,
-    optionals: str = "",
+    mol: Molecule, nproc: int = config.__NCORES__, remove_tdir: bool = True, optionals: str = "",
 ):
     """Conformer search using CREST.
 
@@ -105,8 +96,7 @@ def conformer_search(
         list containing the found conformers, in order of ascending energy
     """
 
-    if os.environ["OMP_NUM_THREADS"]:
-        nproc = int(os.environ["OMP_NUM_THREADS"])
+
 
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search")
@@ -152,10 +142,7 @@ def conformer_search(
 
 
 def deprotonate(
-    mol: Molecule,
-    nproc: int = len(os.sched_getaffinity(0)),
-    remove_tdir: bool = True,
-    optionals: str = "",
+    mol: Molecule, nproc: int = config.__NCORES__, remove_tdir: bool = True, optionals: str = "",
 ):
     """Deprotomer search using CREST.
 
@@ -176,8 +163,7 @@ def deprotonate(
         list containing the found deprotomers, in order of ascending energy
     """
 
-    if os.environ["OMP_NUM_THREADS"]:
-        nproc = int(os.environ["OMP_NUM_THREADS"])
+
 
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation")
@@ -232,10 +218,7 @@ def deprotonate(
 
 
 def protonate(
-    mol: Molecule,
-    nproc: int = len(os.sched_getaffinity(0)),
-    remove_tdir: bool = True,
-    optionals: str = "",
+    mol: Molecule, nproc: int = config.__NCORES__, remove_tdir: bool = True, optionals: str = "",
 ):
     """Protomer search using CREST.
 
@@ -256,8 +239,6 @@ def protonate(
         list containing the found protomers, in order of ascending energy
     """
 
-    if os.environ["OMP_NUM_THREADS"]:
-        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
@@ -317,7 +298,7 @@ def qcg_grow(
     spin: int = None,
     method: str = "gfn2",
     nsolv: int = 0,
-    nproc: int = len(os.sched_getaffinity(0)),
+    nproc: int = config.__NCORES__,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -352,9 +333,6 @@ def qcg_grow(
     cluster : Molecule object
         Molecule object containing the explicitly solvated input molecule
     """
-
-    if os.environ["OMP_NUM_THREADS"]:
-        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     if charge is None:
         charge = solute.charge
@@ -401,7 +379,7 @@ def qcg_ensemble(
     enslvl: str = "gfn2",
     ensemble_choice: str = "full_ensemble",
     nsolv: int = 0,
-    nproc: int = len(os.sched_getaffinity(0)),
+    nproc: int = config.__NCORES__,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -448,9 +426,6 @@ def qcg_ensemble(
         is taken from the input solute molecule (if present), while the electronic contribution
         is taken as the weighted average of all generated ensembles.
     """
-
-    if os.environ["OMP_NUM_THREADS"]:
-        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     if charge is None:
         charge = solute.charge

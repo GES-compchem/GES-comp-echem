@@ -2,6 +2,7 @@ import os
 import shutil
 import pickle
 from rdkit import Chem
+from compechem import config
 from compechem.molecule import Molecule
 from compechem.calculators.orca import r2SCAN
 from compechem.calculators.xtb import XtbInput
@@ -295,7 +296,7 @@ def split_multixyz(mol: Molecule, file: str, suffix: str, charge: int = None, sp
 
 def reorder_energies(
     molecule_list: list,
-    nproc: int = len(os.sched_getaffinity(0)),
+    nproc: int = config.__NCORES__,
     maxcore: int = 350,
     method_opt: str = None,
     method_el: str = None,
@@ -324,9 +325,6 @@ def reorder_energies(
     molecule_list : list
         molecule list, reordered at the new level of theory.
     """
-
-    if os.environ["OMP_NUM_THREADS"]:
-        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     if method_opt is None:
         method_opt = XtbInput(nproc=nproc)

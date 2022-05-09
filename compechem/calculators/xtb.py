@@ -1,6 +1,6 @@
 import os, copy
 from tempfile import mkdtemp
-from compechem import tools
+from compechem import tools, config
 from compechem.molecule import Molecule, Energies
 import logging
 
@@ -14,7 +14,7 @@ class XtbInput:
     def __init__(
         self,
         method: str = "gfn2",
-        nproc: int = len(os.sched_getaffinity(0)),
+        nproc: int = config.__NCORES__,
         solvation: bool = True,
         solvent: str = "water",
         optionals: str = "",
@@ -33,9 +33,6 @@ class XtbInput:
         optionals : str, optional
             optional keywords/flags, by default ""
         """
-
-        if os.environ["OMP_NUM_THREADS"]:
-            nproc = int(os.environ["OMP_NUM_THREADS"])
 
         self.method = method
 

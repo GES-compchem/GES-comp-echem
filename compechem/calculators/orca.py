@@ -1,7 +1,8 @@
 import os, copy
 from tempfile import mkdtemp
+from compechem.calculators import main_ncores, ncores
 from compechem.molecule import Molecule, Energies
-from compechem import tools
+from compechem import tools, config
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ class OrcaInput:
         method: str,
         basis_set: str = "def2-TZVP",
         aux_basis: str = "def2/J",
-        nproc: int = len(os.sched_getaffinity(0)),
+        nproc: int = config.__NCORES__,
         maxcore: int = 350,
         solvation: bool = False,
         solvent: str = "water",
@@ -42,9 +43,6 @@ class OrcaInput:
         optionals : str, optional
             optional keywords, by default ""
         """
-
-        if os.environ["OMP_NUM_THREADS"]:
-            nproc = int(os.environ["OMP_NUM_THREADS"])
 
         self.method = method
         self.basis_set = basis_set
