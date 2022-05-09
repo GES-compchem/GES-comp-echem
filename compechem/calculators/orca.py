@@ -1,6 +1,5 @@
 import os, copy
 from tempfile import mkdtemp
-from compechem.calculators import main_ncores, ncores
 from compechem.molecule import Molecule, Energies
 from compechem import tools, config
 import logging
