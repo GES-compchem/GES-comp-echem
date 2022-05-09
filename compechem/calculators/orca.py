@@ -43,6 +43,9 @@ class OrcaInput:
             optional keywords, by default ""
         """
 
+        if os.environ["OMP_NUM_THREADS"]:
+            nproc = int(os.environ["OMP_NUM_THREADS"])
+
         self.method = method
         self.basis_set = basis_set
         self.aux_basis = aux_basis

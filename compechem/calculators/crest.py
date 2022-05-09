@@ -32,6 +32,9 @@ def tautomer_search(
         list containing the found tautomers, in order of ascending energy
     """
 
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
+
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search")
 
@@ -102,6 +105,9 @@ def conformer_search(
         list containing the found conformers, in order of ascending energy
     """
 
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
+
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search")
 
@@ -169,6 +175,9 @@ def deprotonate(
     deprotomers : list
         list containing the found deprotomers, in order of ascending energy
     """
+
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation")
@@ -246,6 +255,9 @@ def protonate(
     protomers : list
         list containing the found protomers, in order of ascending energy
     """
+
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
@@ -341,6 +353,9 @@ def qcg_grow(
         Molecule object containing the explicitly solvated input molecule
     """
 
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
+
     if charge is None:
         charge = solute.charge
     if spin is None:
@@ -433,6 +448,9 @@ def qcg_ensemble(
         is taken from the input solute molecule (if present), while the electronic contribution
         is taken as the weighted average of all generated ensembles.
     """
+
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     if charge is None:
         charge = solute.charge

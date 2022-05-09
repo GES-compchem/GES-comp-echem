@@ -295,7 +295,7 @@ def split_multixyz(mol: Molecule, file: str, suffix: str, charge: int = None, sp
 
 def reorder_energies(
     molecule_list: list,
-    nproc: int = 1,
+    nproc: int = len(os.sched_getaffinity(0)),
     maxcore: int = 350,
     method_opt: str = None,
     method_el: str = None,
@@ -324,6 +324,9 @@ def reorder_energies(
     molecule_list : list
         molecule list, reordered at the new level of theory.
     """
+
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     if method_opt is None:
         method_opt = XtbInput(nproc=nproc)
