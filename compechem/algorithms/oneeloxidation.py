@@ -252,6 +252,8 @@ def one_electron_oxidation_potentials(
 
     os.makedirs("pickle_files", exist_ok=True)
 
+    basename = molecule.name
+
     species = generate_species(
         base_mol=molecule,
         method=method,
@@ -260,7 +262,7 @@ def one_electron_oxidation_potentials(
         tautomer_search=tautomer_search,
     )
 
-    pickle.dump(species, open(f"pickle_files/{species.singlets[0].name}.species", "wb"))
+    pickle.dump(species, open(f"pickle_files/{basename}.species", "wb"))
 
     data_generator = generate_potential_data(species=species, method=method, pH_step=pH_step)
 
