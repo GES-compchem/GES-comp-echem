@@ -34,6 +34,9 @@ class XtbInput:
             optional keywords/flags, by default ""
         """
 
+        if os.environ["OMP_NUM_THREADS"]:
+            nproc = int(os.environ["OMP_NUM_THREADS"])
+
         self.method = method
 
         self.nproc = nproc

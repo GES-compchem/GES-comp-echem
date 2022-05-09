@@ -48,6 +48,9 @@ def calculate_deprotomers(
         List containing all the deprotomers with pKa < 20 for the given molecule
     """
 
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
+
     mol_list = []
 
     if conformer_search:
@@ -143,6 +146,9 @@ def generate_species(
     species : Species
         Species object with the singlets and radicals for the given input molecule
     """
+
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     species = Species()
 
@@ -249,6 +255,9 @@ def one_electron_oxidation_potentials(
     tautomer_search: bool = True,
     pH_step: float = 1.0,
 ):
+
+    if os.environ["OMP_NUM_THREADS"]:
+        nproc = int(os.environ["OMP_NUM_THREADS"])
 
     os.makedirs("pickle_files", exist_ok=True)
 
