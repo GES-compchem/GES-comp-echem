@@ -1,7 +1,7 @@
 import os
 
 
-if os.environ["OMP_NUM_THREADS"]:
+try:
     __NCORES__ = int(os.environ["OMP_NUM_THREADS"])
-else:
+except:
     __NCORES__ = len(os.sched_getaffinity(0))
