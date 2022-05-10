@@ -1,12 +1,13 @@
 import os, pickle
 import numpy as np
 
+from compechem.config import Config
 from compechem.molecule import Molecule
-from compechem import tools, config
+from compechem.calculators.xtb import XtbInput
+from compechem.calculators import crest
+from compechem import tools
 from compechem.functions.pka import calculate_pka
 from compechem.functions.potential import calculate_potential
-from compechem.calculators import crest
-from compechem.calculators.xtb import XtbInput
 
 import logging
 
@@ -15,6 +16,8 @@ from typing import Iterator, Any
 logger = logging.getLogger(__name__)
 
 xtb = XtbInput()
+
+config = Config()
 
 
 class Species:
@@ -26,7 +29,7 @@ class Species:
 
 
 def calculate_deprotomers(
-    mol: Molecule, method, nproc: int = config.__NCORES__, conformer_search: bool = True
+    mol: Molecule, method, nproc: int = config.ncores, conformer_search: bool = True
 ):
     """Calculates all the deprotomers with a pKa < 20 for a given Molecule object
 
@@ -117,7 +120,7 @@ def calculate_deprotomers(
 def generate_species(
     base_mol: Molecule,
     method,
-    nproc: int = config.__NCORES__,
+    nproc: int = config.ncores,
     conformer_search: bool = True,
     tautomer_search: bool = True,
 ):
@@ -242,11 +245,13 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 def one_electron_oxidation_potentials(
     molecule: Molecule,
     method,
-    nproc: int = config.__NCORES__,
+    nproc: int = config.ncores,
     conformer_search: bool = True,
     tautomer_search: bool = True,
     pH_step: float = 1.0,
 ):
+
+    logger.debug(f"Requested 1-el oxidation calculation on {nproc} cores")
 
     os.makedirs("pickle_files", exist_ok=True)
 

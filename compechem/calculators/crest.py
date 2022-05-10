@@ -1,14 +1,17 @@
 import os
 from tempfile import mkdtemp
+from compechem.config import Config
 from compechem.molecule import Molecule
-from compechem import tools, config
+from compechem import tools
 import logging
 
 logger = logging.getLogger(__name__)
 
+config = Config()
+
 
 def tautomer_search(
-    mol: Molecule, nproc: int = config.__NCORES__, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, nproc: int = config.ncores, remove_tdir: bool = True, optionals: str = "",
 ):
     """Tautomer search using CREST.
 
@@ -31,6 +34,7 @@ def tautomer_search(
 
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search")
+    logger.debug(f"Running CREST calculation on {nproc} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_TAUT", dir=os.getcwd())
 
@@ -75,7 +79,7 @@ def tautomer_search(
 
 
 def conformer_search(
-    mol: Molecule, nproc: int = config.__NCORES__, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, nproc: int = config.ncores, remove_tdir: bool = True, optionals: str = "",
 ):
     """Conformer search using CREST.
 
@@ -96,10 +100,9 @@ def conformer_search(
         list containing the found conformers, in order of ascending energy
     """
 
-
-
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search")
+    logger.debug(f"Running CREST calculation on {nproc} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_CONF", dir=os.getcwd())
 
@@ -142,7 +145,7 @@ def conformer_search(
 
 
 def deprotonate(
-    mol: Molecule, nproc: int = config.__NCORES__, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, nproc: int = config.ncores, remove_tdir: bool = True, optionals: str = "",
 ):
     """Deprotomer search using CREST.
 
@@ -163,10 +166,9 @@ def deprotonate(
         list containing the found deprotomers, in order of ascending energy
     """
 
-
-
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation")
+    logger.debug(f"Running CREST calculation on {nproc} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_DEPROT", dir=os.getcwd())
 
@@ -218,7 +220,7 @@ def deprotonate(
 
 
 def protonate(
-    mol: Molecule, nproc: int = config.__NCORES__, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, nproc: int = config.ncores, remove_tdir: bool = True, optionals: str = "",
 ):
     """Protomer search using CREST.
 
@@ -239,9 +241,9 @@ def protonate(
         list containing the found protomers, in order of ascending energy
     """
 
-
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
+    logger.debug(f"Running CREST calculation on {nproc} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_PROT", dir=os.getcwd())
 
@@ -298,7 +300,7 @@ def qcg_grow(
     spin: int = None,
     method: str = "gfn2",
     nsolv: int = 0,
-    nproc: int = config.__NCORES__,
+    nproc: int = config.ncores,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -343,6 +345,7 @@ def qcg_grow(
     logger.info(
         f"{solute.name}, charge {charge} spin {spin} - CREST QCG GROW - {nsolv} solvent molecules"
     )
+    logger.debug(f"Running CREST calculation on {nproc} cores")
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_G", dir=os.getcwd())
 
@@ -379,7 +382,7 @@ def qcg_ensemble(
     enslvl: str = "gfn2",
     ensemble_choice: str = "full_ensemble",
     nsolv: int = 0,
-    nproc: int = config.__NCORES__,
+    nproc: int = config.ncores,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -436,6 +439,7 @@ def qcg_ensemble(
     logger.info(
         f"{solute.name}, charge {charge} spin {spin} - CREST QCG ENSEMBLE - {nsolv} solvent molecules"
     )
+    logger.debug(f"Running CREST calculation on {nproc} cores")
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_E", dir=os.getcwd())
 

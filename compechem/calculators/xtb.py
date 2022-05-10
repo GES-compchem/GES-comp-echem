@@ -1,10 +1,12 @@
 import os, copy
 from tempfile import mkdtemp
-from compechem import tools, config
+from compechem.config import Config
 from compechem.molecule import Molecule, Energies
+from compechem import tools
 import logging
 
 logger = logging.getLogger(__name__)
+config = Config()
 
 
 class XtbInput:
@@ -14,7 +16,7 @@ class XtbInput:
     def __init__(
         self,
         method: str = "gfn2",
-        nproc: int = config.__NCORES__,
+        nproc: int = config.ncores,
         solvation: bool = True,
         solvent: str = "water",
         optionals: str = "",
@@ -78,6 +80,7 @@ class XtbInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
+        logger.debug(f"Running xTB calculation on {self.nproc} cores")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_spe", dir=os.getcwd(),
@@ -166,6 +169,7 @@ class XtbInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
+        logger.debug(f"Running xTB calculation on {self.nproc} cores")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_opt", dir=os.getcwd(),
@@ -269,6 +273,7 @@ class XtbInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
+        logger.debug(f"Running xTB calculation on {self.nproc} cores")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_freq", dir=os.getcwd(),

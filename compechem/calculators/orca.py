@@ -1,10 +1,12 @@
 import os, copy
 from tempfile import mkdtemp
+from compechem.config import Config
 from compechem.molecule import Molecule, Energies
-from compechem import tools, config
+from compechem import tools
 import logging
 
 logger = logging.getLogger(__name__)
+config = Config()
 
 
 class OrcaInput:
@@ -16,7 +18,7 @@ class OrcaInput:
         method: str,
         basis_set: str = "def2-TZVP",
         aux_basis: str = "def2/J",
-        nproc: int = config.__NCORES__,
+        nproc: int = config.ncores,
         maxcore: int = 350,
         solvation: bool = False,
         solvent: str = "water",
@@ -89,6 +91,7 @@ class OrcaInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
+        logger.debug(f"Running ORCA calculation on {self.nproc} cores and {self.maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_spe", dir=os.getcwd(),
@@ -177,6 +180,7 @@ class OrcaInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
+        logger.debug(f"Running ORCA calculation on {self.nproc} cores and {self.maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_opt", dir=os.getcwd(),
@@ -277,6 +281,7 @@ class OrcaInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
+        logger.debug(f"Running ORCA calculation on {self.nproc} cores and {self.maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_freq", dir=os.getcwd(),
@@ -370,6 +375,7 @@ class OrcaInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} NFREQ")
+        logger.debug(f"Running ORCA calculation on {self.nproc} cores and {self.maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_nfreq", dir=os.getcwd(),
@@ -424,7 +430,7 @@ class OrcaInput:
 
 
 class M06(OrcaInput):
-    def __init__(self, nproc=len(os.sched_getaffinity(0)), maxcore=350):
+    def __init__(self, nproc=config.ncores, maxcore=350):
         super().__init__(
             method="M062X",
             basis_set="def2-TZVP",
@@ -438,11 +444,25 @@ class M06(OrcaInput):
 
 
 class r2SCAN(OrcaInput):
-    def __init__(self, nproc=len(os.sched_getaffinity(0)), maxcore=350):
+    def __init__(self, nproc=config.ncores, maxcore=350):
         super().__init__(
             method="r2SCAN-3c",
             basis_set="",
             aux_basis="",
+            nproc=nproc,
+            maxcore=maxcore,
+            solvation=True,
+            solvent="water",
+            optionals="",
+        )
+
+
+class CCSD(OrcaInput):
+    def __init__(self, nproc=config.ncores, maxcore=3750):
+        super().__init__(
+            method="DLPNO-CCSD",
+            basis_set="Extrapolate(2/3,ANO)",
+            aux_basis="AutoAux",
             nproc=nproc,
             maxcore=maxcore,
             solvation=True,

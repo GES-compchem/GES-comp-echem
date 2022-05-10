@@ -2,10 +2,12 @@ import os
 import shutil
 import pickle
 from rdkit import Chem
-from compechem import config
+from compechem.config import Config
 from compechem.molecule import Molecule
 from compechem.calculators.orca import r2SCAN
 from compechem.calculators.xtb import XtbInput
+
+config = Config()
 
 
 def generate_inchikey(molfile: str):
@@ -296,7 +298,7 @@ def split_multixyz(mol: Molecule, file: str, suffix: str, charge: int = None, sp
 
 def reorder_energies(
     molecule_list: list,
-    nproc: int = config.__NCORES__,
+    nproc: int = config.ncores,
     maxcore: int = 350,
     method_opt: str = None,
     method_el: str = None,
