@@ -213,14 +213,12 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
             pka = singlet.properties.pka[method.method]
             if pka is None or pka > current_pH:
                 current_singlet = singlet
-                current_singlet_pka = pka
                 break
 
         for radical in radicals:
             pka = radical.properties.pka[method.method]
             if pka is None or pka > current_pH:
                 current_radical = radical
-                current_radical_pka = pka
                 break
 
         potential = calculate_potential(
@@ -233,7 +231,7 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 
         if last_potential is not None and abs(potential - last_potential) > 0.3:
             logger.warning(
-                f"Potential changed by {abs(potential - last_potential)} at pH {current_pH}"
+                f"{molname} Potential changed by {abs(potential - last_potential)} at pH {current_pH}"
             )
 
         last_potential = potential
