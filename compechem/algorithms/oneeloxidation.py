@@ -26,7 +26,9 @@ class Species:
         self.radicals: list = []
 
 
-def calculate_deprotomers(mol: Molecule, method, ncores: int = None, conformer_search: bool = True):
+def calculate_deprotomers(
+    mol: Molecule, method, ncores: int = None, maxcore: int = 350, conformer_search: bool = True
+):
     """Calculates all the deprotomers with a pKa < 20 for a given Molecule object
 
     Parameters
@@ -38,6 +40,8 @@ def calculate_deprotomers(mol: Molecule, method, ncores: int = None, conformer_s
         to evaluate the pKa for the deprotomers.
     ncores : int
         number of cores, by default all available cores
+    maxcore : int, optional
+        memory per core, in MB, by default 350
     conformer_search : Bool
         If True (default), also carries out conformer searches at all stages
 
@@ -54,10 +58,10 @@ def calculate_deprotomers(mol: Molecule, method, ncores: int = None, conformer_s
 
     if conformer_search:
         mol = crest.conformer_search(mol, ncores=ncores)[0]
-    xtb.opt(mol, inplace=True)
+    xtb.opt(mol, ncores=ncores, inplace=True)
 
     if type(method) != XtbInput:
-        method.spe(mol, inplace=True)
+        method.spe(mol, ncores=ncores, maxcore=maxcore, inplace=True)
 
     pKa = 0
     i = 1
@@ -72,6 +76,7 @@ def calculate_deprotomers(mol: Molecule, method, ncores: int = None, conformer_s
                 deprotomer_list = reorder_energies(
                     deprotomer_list,
                     ncores=ncores,
+                    maxcore=maxcore,
                     method_opt=xtb,
                     method_el=method,
                     method_vib=xtb,
@@ -92,7 +97,7 @@ def calculate_deprotomers(mol: Molecule, method, ncores: int = None, conformer_s
 
         xtb.opt(currently_deprotonated, inplace=True)
         if type(method) != XtbInput:
-            method.spe(currently_deprotonated, inplace=True)
+            method.spe(currently_deprotonated, ncores=ncores, maxcore=maxcore, inplace=True)
 
         try:
             pKa = calculate_pka(
@@ -126,6 +131,7 @@ def generate_species(
     base_mol: Molecule,
     method,
     ncores: int = None,
+    maxcore: int = 350,
     conformer_search: bool = True,
     tautomer_search: bool = True,
 ):
@@ -141,6 +147,8 @@ def generate_species(
         to evaluate the pKa for the deprotomers.
     ncores : int
         number of cores, by default all available cores
+    maxcore : int, optional
+        memory per core, in MB, by default 350
     conformer_search : Bool
         If True (default), also carries out a preliminary conformer search on the given structure
     tautomer_search : Bool
@@ -163,18 +171,38 @@ def generate_species(
         if conformer_search:
             base_mol = crest.conformer_search(base_mol, ncores=ncores, optionals="--noreftopo")[0]
         if tautomer_search:
-            base_mol = crest.tautomer_search(base_mol, ncores=ncores, optionals="--noreftopo")[0]
+            tautomer_list = crest.tautomer_search(base_mol, ncores=ncores, optionals="--noreftopo")
+            if type(method) != XtbInput:
+                tautomer_list = reorder_energies(
+                    tautomer_list,
+                    ncores=ncores,
+                    maxcore=maxcore,
+                    method_opt=xtb,
+                    method_el=method,
+                    method_vib=xtb,
+                )
+            base_mol = tautomer_list[0]
 
         ### SINGLET SPECIES ###
-        singlet = xtb.spe(base_mol, charge=0, spin=1)
+        singlet = xtb.spe(base_mol, ncores=ncores, charge=base_mol.charge, spin=base_mol.spin)
         species.singlets = calculate_deprotomers(
-            mol=singlet, method=method, ncores=ncores, conformer_search=conformer_search
+            mol=singlet,
+            method=method,
+            ncores=ncores,
+            maxcore=maxcore,
+            conformer_search=conformer_search,
         )
 
         ### RADICAL SPECIES ###
-        radical = xtb.spe(base_mol, charge=1, spin=2)
+        radical = xtb.spe(
+            base_mol, ncores=ncores, charge=base_mol.charge + 1, spin=base_mol.spin + 1
+        )
         species.radicals = calculate_deprotomers(
-            mol=radical, method=method, ncores=ncores, conformer_search=conformer_search
+            mol=radical,
+            method=method,
+            ncores=ncores,
+            maxcore=maxcore,
+            conformer_search=conformer_search,
         )
 
     except Exception as e:
@@ -254,6 +282,7 @@ def one_electron_oxidation_potentials(
     molecule: Molecule,
     method,
     ncores: int = None,
+    maxcore: int = 350,
     conformer_search: bool = True,
     tautomer_search: bool = True,
     pH_step: float = 1.0,
@@ -262,7 +291,7 @@ def one_electron_oxidation_potentials(
     if ncores is None:
         ncores = get_ncores()
 
-    logger.debug(f"Requested 1-el oxidation calculation on {ncores} cores")
+    logger.debug(f"Requested 1-el oxidation calculation on {ncores} cores with {maxcore} MB of RAM")
 
     os.makedirs("pickle_files", exist_ok=True)
 
@@ -272,6 +301,7 @@ def one_electron_oxidation_potentials(
         base_mol=molecule,
         method=method,
         ncores=ncores,
+        maxcore=maxcore,
         conformer_search=conformer_search,
         tautomer_search=tautomer_search,
     )

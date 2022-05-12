@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def tautomer_search(
-    mol: Molecule, ncores: int = None, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, ncores: int = None, maxcore=None, remove_tdir: bool = True, optionals: str = "",
 ):
     """Tautomer search using CREST.
 
@@ -19,6 +19,8 @@ def tautomer_search(
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
+    maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -80,7 +82,7 @@ def tautomer_search(
 
 
 def conformer_search(
-    mol: Molecule, ncores: int = None, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, ncores: int = None, maxcore=None, remove_tdir: bool = True, optionals: str = "",
 ):
     """Conformer search using CREST.
 
@@ -90,6 +92,8 @@ def conformer_search(
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
+    maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -149,7 +153,7 @@ def conformer_search(
 
 
 def deprotonate(
-    mol: Molecule, ncores: int = None, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, ncores: int = None, maxcore=None, remove_tdir: bool = True, optionals: str = "",
 ):
     """Deprotomer search using CREST.
 
@@ -159,6 +163,8 @@ def deprotonate(
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
+    maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -227,7 +233,7 @@ def deprotonate(
 
 
 def protonate(
-    mol: Molecule, ncores: int = None, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, ncores: int = None, maxcore=None, remove_tdir: bool = True, optionals: str = "",
 ):
     """Protomer search using CREST.
 
@@ -237,6 +243,8 @@ def protonate(
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
+    maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -311,6 +319,7 @@ def qcg_grow(
     method: str = "gfn2",
     nsolv: int = 0,
     ncores: int = None,
+    maxcore=None,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -335,6 +344,8 @@ def qcg_grow(
         molecules until convergence is reached, or 150 molecules are added.
     ncores : int, optional
         number of cores, by default all available cores
+    maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
@@ -396,6 +407,7 @@ def qcg_ensemble(
     ensemble_choice: str = "full_ensemble",
     nsolv: int = 0,
     ncores: int = None,
+    maxcore=None,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -429,6 +441,8 @@ def qcg_ensemble(
         molecules until convergence is reached, or 150 molecules are added.
     ncores : int, optional
         number of cores, by default all available cores
+    maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional

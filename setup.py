@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="GES-comp-echem",
-    version="0.1.35a",
+    version="0.1.36a",
     description="",
     long_description="",
     packages=["compechem"],
