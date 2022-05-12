@@ -1,17 +1,15 @@
 import os
 from tempfile import mkdtemp
-from compechem.config import Config
+from compechem.config import get_ncores
 from compechem.molecule import Molecule
 from compechem import tools
 import logging
 
 logger = logging.getLogger(__name__)
 
-config = Config()
-
 
 def tautomer_search(
-    mol: Molecule, nproc: int = config.ncores, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, ncores: int = None, remove_tdir: bool = True, optionals: str = "",
 ):
     """Tautomer search using CREST.
 
@@ -19,7 +17,7 @@ def tautomer_search(
     ----------
     mol : Molecule object
         input molecule to use in the calculation
-    nproc : int, optional
+    ncores : int, optional
         number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
@@ -32,9 +30,12 @@ def tautomer_search(
         list containing the found tautomers, in order of ascending energy
     """
 
+    if ncores is None:
+        ncores = get_ncores()
+
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search")
-    logger.debug(f"Running CREST calculation on {nproc} cores")
+    logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_TAUT", dir=os.getcwd())
 
@@ -42,7 +43,7 @@ def tautomer_search(
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
     )
 
     if os.path.exists("tautomers.xyz"):
@@ -79,7 +80,7 @@ def tautomer_search(
 
 
 def conformer_search(
-    mol: Molecule, nproc: int = config.ncores, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, ncores: int = None, remove_tdir: bool = True, optionals: str = "",
 ):
     """Conformer search using CREST.
 
@@ -87,7 +88,7 @@ def conformer_search(
     ----------
     mol : Molecule object
         input molecule to use in the calculation
-    nproc : int, optional
+    ncores : int, optional
         number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
@@ -100,9 +101,12 @@ def conformer_search(
         list containing the found conformers, in order of ascending energy
     """
 
+    if ncores is None:
+        ncores = get_ncores()
+
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search")
-    logger.debug(f"Running CREST calculation on {nproc} cores")
+    logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_CONF", dir=os.getcwd())
 
@@ -110,7 +114,7 @@ def conformer_search(
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
     )
 
     if os.path.exists("crest_conformers.xyz"):
@@ -145,7 +149,7 @@ def conformer_search(
 
 
 def deprotonate(
-    mol: Molecule, nproc: int = config.ncores, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, ncores: int = None, remove_tdir: bool = True, optionals: str = "",
 ):
     """Deprotomer search using CREST.
 
@@ -153,7 +157,7 @@ def deprotonate(
     ----------
     mol : Molecule object
         input molecule to use in the calculation
-    nproc : int, optional
+    ncores : int, optional
         number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
@@ -166,9 +170,12 @@ def deprotonate(
         list containing the found deprotomers, in order of ascending energy
     """
 
+    if ncores is None:
+        ncores = get_ncores()
+
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation")
-    logger.debug(f"Running CREST calculation on {nproc} cores")
+    logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_DEPROT", dir=os.getcwd())
 
@@ -176,7 +183,7 @@ def deprotonate(
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
     )
 
     if os.path.exists("deprotonated.xyz"):
@@ -220,7 +227,7 @@ def deprotonate(
 
 
 def protonate(
-    mol: Molecule, nproc: int = config.ncores, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule, ncores: int = None, remove_tdir: bool = True, optionals: str = "",
 ):
     """Protomer search using CREST.
 
@@ -228,7 +235,7 @@ def protonate(
     ----------
     mol : Molecule object
         input molecule to use in the calculation
-    nproc : int, optional
+    ncores : int, optional
         number of cores, by default all available cores
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
@@ -241,9 +248,12 @@ def protonate(
         list containing the found protomers, in order of ascending energy
     """
 
+    if ncores is None:
+        ncores = get_ncores()
+
     parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
-    logger.debug(f"Running CREST calculation on {nproc} cores")
+    logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_PROT", dir=os.getcwd())
 
@@ -251,7 +261,7 @@ def protonate(
     mol.write_xyz("geom.xyz")
 
     os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {nproc} > output.out 2>> output.err"
+        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
     )
 
     if os.path.exists("protonated.xyz"):
@@ -300,7 +310,7 @@ def qcg_grow(
     spin: int = None,
     method: str = "gfn2",
     nsolv: int = 0,
-    nproc: int = config.ncores,
+    ncores: int = None,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -323,7 +333,7 @@ def qcg_grow(
         number of solvent molecules to add to the cluster, by default 0 (unconstrained).
         If a number is not specified, the program will keep adding solvent
         molecules until convergence is reached, or 150 molecules are added.
-    nproc : int, optional
+    ncores : int, optional
         number of cores, by default all available cores
     optionals : str, optional
         optional flags for calculation
@@ -336,6 +346,9 @@ def qcg_grow(
         Molecule object containing the explicitly solvated input molecule
     """
 
+    if ncores is None:
+        ncores = get_ncores()
+
     if charge is None:
         charge = solute.charge
     if spin is None:
@@ -345,7 +358,7 @@ def qcg_grow(
     logger.info(
         f"{solute.name}, charge {charge} spin {spin} - CREST QCG GROW - {nsolv} solvent molecules"
     )
-    logger.debug(f"Running CREST calculation on {nproc} cores")
+    logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_G", dir=os.getcwd())
 
@@ -354,7 +367,7 @@ def qcg_grow(
     solvent.write_xyz("solvent.xyz")
 
     os.system(
-        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {nproc} > output.out 2>> output.err"
+        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
     )
 
     solute.write_xyz(f"{solute.name}.xyz")
@@ -382,7 +395,7 @@ def qcg_ensemble(
     enslvl: str = "gfn2",
     ensemble_choice: str = "full_ensemble",
     nsolv: int = 0,
-    nproc: int = config.ncores,
+    ncores: int = None,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -414,7 +427,7 @@ def qcg_ensemble(
         number of solvent molecules to add to the cluster, by default 0 (unconstrained).
         If a number is not specified, the program will keep adding solvent
         molecules until convergence is reached, or 150 molecules are added.
-    nproc : int, optional
+    ncores : int, optional
         number of cores, by default all available cores
     optionals : str, optional
         optional flags for calculation
@@ -430,6 +443,9 @@ def qcg_ensemble(
         is taken as the weighted average of all generated ensembles.
     """
 
+    if ncores is None:
+        ncores = get_ncores()
+
     if charge is None:
         charge = solute.charge
     if spin is None:
@@ -439,7 +455,7 @@ def qcg_ensemble(
     logger.info(
         f"{solute.name}, charge {charge} spin {spin} - CREST QCG ENSEMBLE - {nsolv} solvent molecules"
     )
-    logger.debug(f"Running CREST calculation on {nproc} cores")
+    logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_E", dir=os.getcwd())
 
@@ -448,7 +464,7 @@ def qcg_ensemble(
     solvent.write_xyz("solvent.xyz")
 
     os.system(
-        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {nproc} > output.out 2>> output.err"
+        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
     )
 
     try:

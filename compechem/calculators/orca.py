@@ -1,12 +1,11 @@
 import os, copy
 from tempfile import mkdtemp
-from compechem.config import Config
+from compechem.config import get_ncores
 from compechem.molecule import Molecule, Energies
 from compechem import tools
 import logging
 
 logger = logging.getLogger(__name__)
-config = Config()
 
 
 class OrcaInput:
@@ -18,8 +17,6 @@ class OrcaInput:
         method: str,
         basis_set: str = "def2-TZVP",
         aux_basis: str = "def2/J",
-        nproc: int = config.ncores,
-        maxcore: int = 350,
         solvation: bool = False,
         solvent: str = "water",
         optionals: str = "",
@@ -33,10 +30,6 @@ class OrcaInput:
             basis set, by default "def2-TZVP"
         aux_basis : str, optional
             auxiliary basis set for RIJCOSX, by default "def2/J"
-        nproc : int, optional
-            number of cores, by default all available cores
-        maxcore : int, optional
-            memory per core, in MB, by default 350
         solvation : bool, optional
             CPCM(SMD) implicit solvation model, by default False
         solvent : str, optional
@@ -48,8 +41,6 @@ class OrcaInput:
         self.method = method
         self.basis_set = basis_set
         self.aux_basis = aux_basis
-        self.nproc = nproc
-        self.maxcore = maxcore
         self.solvation = solvation
         self.solvent = solvent
         self.optionals = optionals
@@ -57,6 +48,8 @@ class OrcaInput:
     def spe(
         self,
         mol: Molecule,
+        ncores: int = None,
+        maxcore: int = 350,
         charge: int = None,
         spin: int = None,
         inplace: bool = False,
@@ -68,6 +61,10 @@ class OrcaInput:
         ----------
         mol : Molecule object
             input molecule to use in the calculation
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : int, optional
+            memory per core, in MB, by default 350
         charge : int, optional
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
@@ -84,6 +81,9 @@ class OrcaInput:
             Output molecule containing the new energies.
         """
 
+        if ncores is None:
+            ncores = get_ncores()
+
         if charge is None:
             charge = mol.charge
         if spin is None:
@@ -91,7 +91,7 @@ class OrcaInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
-        logger.debug(f"Running ORCA calculation on {self.nproc} cores and {self.maxcore} MB of RAM")
+        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_spe", dir=os.getcwd(),
@@ -102,8 +102,8 @@ class OrcaInput:
 
         with open("input.inp", "w") as inp:
             inp.write(
-                f"%pal nproc {self.nproc} end\n"
-                f"%maxcore {self.maxcore}\n"
+                f"%pal ncores {ncores} end\n"
+                f"%maxcore {maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
                 f"! RIJCOSX {self.aux_basis}\n"
             )
@@ -146,6 +146,8 @@ class OrcaInput:
     def opt(
         self,
         mol: Molecule,
+        ncores: int = None,
+        maxcore: int = 350,
         charge: int = None,
         spin: int = None,
         inplace: bool = False,
@@ -157,6 +159,10 @@ class OrcaInput:
         ----------
         mol : Molecule object
             input molecule to use in the calculation
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : int, optional
+            memory per core, in MB, by default 350
         charge : int, optional
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
@@ -173,6 +179,9 @@ class OrcaInput:
             Output molecule containing the new geometry and energies.
         """
 
+        if ncores is None:
+            ncores = get_ncores()
+
         if charge is None:
             charge = mol.charge
         if spin is None:
@@ -180,7 +189,7 @@ class OrcaInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
-        logger.debug(f"Running ORCA calculation on {self.nproc} cores and {self.maxcore} MB of RAM")
+        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_opt", dir=os.getcwd(),
@@ -191,8 +200,8 @@ class OrcaInput:
 
         with open("input.inp", "w") as inp:
             inp.write(
-                f"%pal nproc {self.nproc} end\n"
-                f"%maxcore {self.maxcore}\n"
+                f"%pal ncores {ncores} end\n"
+                f"%maxcore {maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
                 f"! RIJCOSX {self.aux_basis}\n"
             )
@@ -244,6 +253,8 @@ class OrcaInput:
     def freq(
         self,
         mol: Molecule,
+        ncores: int = None,
+        maxcore: int = 350,
         charge: int = None,
         spin: int = None,
         inplace: bool = False,
@@ -258,6 +269,10 @@ class OrcaInput:
         ----------
         mol : Molecule object
             input molecule to use in the calculation
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : int, optional
+            memory per core, in MB, by default 350
         charge : int, optional
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
@@ -281,7 +296,7 @@ class OrcaInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
-        logger.debug(f"Running ORCA calculation on {self.nproc} cores and {self.maxcore} MB of RAM")
+        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_freq", dir=os.getcwd(),
@@ -292,8 +307,8 @@ class OrcaInput:
 
         with open("input.inp", "w") as inp:
             inp.write(
-                f"%pal nproc {self.nproc} end\n"
-                f"%maxcore {self.maxcore}\n"
+                f"%pal ncores {ncores} end\n"
+                f"%maxcore {maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
                 f"! RIJCOSX {self.aux_basis}\n"
             )
@@ -341,6 +356,8 @@ class OrcaInput:
     def nfreq(
         self,
         mol: Molecule,
+        ncores: int = None,
+        maxcore: int = 350,
         charge: int = None,
         spin: int = None,
         inplace: bool = False,
@@ -352,6 +369,10 @@ class OrcaInput:
         ----------
         mol : Molecule object
             input molecule to use in the calculation
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : int, optional
+            memory per core, in MB, by default 350
         charge : int, optional
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
@@ -368,6 +389,9 @@ class OrcaInput:
             Output molecule containing the new energies.
         """
 
+        if ncores is None:
+            ncores = get_ncores()
+
         if charge is None:
             charge = mol.charge
         if spin is None:
@@ -375,7 +399,7 @@ class OrcaInput:
 
         parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} NFREQ")
-        logger.debug(f"Running ORCA calculation on {self.nproc} cores and {self.maxcore} MB of RAM")
+        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_nfreq", dir=os.getcwd(),
@@ -386,8 +410,8 @@ class OrcaInput:
 
         with open("input.inp", "w") as inp:
             inp.write(
-                f"%pal nproc {self.nproc} end\n"
-                f"%maxcore {self.maxcore}\n"
+                f"%pal ncores {ncores} end\n"
+                f"%maxcore {maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
                 f"! RIJCOSX {self.aux_basis}\n"
                 "! NumFreq\n"
@@ -430,13 +454,11 @@ class OrcaInput:
 
 
 class M06(OrcaInput):
-    def __init__(self, nproc=config.ncores, maxcore=350):
+    def __init__(self):
         super().__init__(
             method="M062X",
             basis_set="def2-TZVP",
             aux_basis="def2/J",
-            nproc=nproc,
-            maxcore=maxcore,
             solvation=True,
             solvent="water",
             optionals="D3ZERO",
@@ -444,13 +466,11 @@ class M06(OrcaInput):
 
 
 class r2SCAN(OrcaInput):
-    def __init__(self, nproc=config.ncores, maxcore=350):
+    def __init__(self):
         super().__init__(
             method="r2SCAN-3c",
             basis_set="",
             aux_basis="",
-            nproc=nproc,
-            maxcore=maxcore,
             solvation=True,
             solvent="water",
             optionals="",
@@ -458,13 +478,11 @@ class r2SCAN(OrcaInput):
 
 
 class CCSD(OrcaInput):
-    def __init__(self, nproc=config.ncores, maxcore=3750):
+    def __init__(self):
         super().__init__(
             method="DLPNO-CCSD",
             basis_set="Extrapolate(2/3,ANO)",
             aux_basis="AutoAux",
-            nproc=nproc,
-            maxcore=maxcore,
             solvation=True,
             solvent="water",
             optionals="",
