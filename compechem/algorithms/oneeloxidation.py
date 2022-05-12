@@ -26,6 +26,95 @@ class Species:
         self.radicals: list = []
 
 
+def find_highest_protonation_state(
+    mol: Molecule, method, ncores: int = None, maxcore: int = 350, conformer_search: bool = True
+):
+    """Calculates the highest protonation state for a given molecule, as the first protomer
+    with pKa < 0
+
+    Parameters
+    ----------
+    mol : Molecule object
+        Molecule object of the molecule under examination
+    method : calculator
+        Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
+        to evaluate the pKa for the protomers.
+    ncores : int
+        number of cores, by default all available cores
+    maxcore : int, optional
+        memory per core, in MB, by default 350
+    conformer_search : Bool
+        If True (default), also carries out conformer searches at all stages
+
+    Returns
+    -------
+    currently_protonated : Molecule object
+        Molecule object representing the highest protonation state for the input molecule
+    """
+
+    if ncores is None:
+        ncores = get_ncores()
+
+    if conformer_search:
+        mol = crest.conformer_search(mol, ncores=ncores)[0]
+    xtb.opt(mol, ncores=ncores, inplace=True)
+
+    if type(method) != XtbInput:
+        method.spe(mol, ncores=ncores, maxcore=maxcore, inplace=True)
+
+    pKa = 0
+    currently_deprotonated = mol
+
+    while pKa > -2:
+
+        protomer_list = crest.protonate(currently_deprotonated, ncores=ncores)
+
+        if protomer_list:
+            if type(method) != XtbInput:
+                protomer_list = reorder_energies(
+                    protomer_list,
+                    ncores=ncores,
+                    maxcore=maxcore,
+                    method_opt=xtb,
+                    method_el=method,
+                    method_vib=xtb,
+                )
+            currently_protonated = protomer_list[0]
+
+        # if protonation is unsuccessful (e.g., topology change), return the original molecule.
+        else:
+            return currently_protonated
+
+        if conformer_search:
+            currently_protonated = crest.conformer_search(currently_protonated, ncores=ncores)[0]
+
+        xtb.opt(currently_protonated, inplace=True)
+        if type(method) != XtbInput:
+            method.spe(currently_protonated, ncores=ncores, maxcore=maxcore, inplace=True)
+
+        try:
+            pKa = calculate_pka(
+                protonated=currently_protonated,
+                deprotonated=currently_deprotonated,
+                method_el=method.method,
+                method_vib=xtb.method,
+            )
+
+        except:
+            pKa = None
+
+        logger.info(
+            f"{currently_protonated.name} (charge {currently_protonated.charge} spin {currently_protonated.spin}) pKa = {pKa} ({method.method})"
+        )
+
+        if pKa is None:
+            break
+        else:
+            currently_deprotonated = currently_protonated
+
+    return currently_protonated
+
+
 def calculate_deprotomers(
     mol: Molecule, method, ncores: int = None, maxcore: int = 350, conformer_search: bool = True
 ):
@@ -185,6 +274,13 @@ def generate_species(
 
         ### SINGLET SPECIES ###
         singlet = xtb.spe(base_mol, ncores=ncores, charge=base_mol.charge, spin=base_mol.spin)
+        singlet = find_highest_protonation_state(
+            mol=singlet,
+            method=method,
+            ncores=ncores,
+            maxcore=maxcore,
+            conformer_search=conformer_search,
+        )
         species.singlets = calculate_deprotomers(
             mol=singlet,
             method=method,
@@ -196,6 +292,13 @@ def generate_species(
         ### RADICAL SPECIES ###
         radical = xtb.spe(
             base_mol, ncores=ncores, charge=base_mol.charge + 1, spin=base_mol.spin + 1
+        )
+        radical = find_highest_protonation_state(
+            mol=radical,
+            method=method,
+            ncores=ncores,
+            maxcore=maxcore,
+            conformer_search=conformer_search,
         )
         species.radicals = calculate_deprotomers(
             mol=radical,
