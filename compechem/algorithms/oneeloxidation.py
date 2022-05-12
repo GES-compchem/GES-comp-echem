@@ -1,11 +1,11 @@
 import os, pickle
 import numpy as np
 
-from compechem.config import Config
+from compechem.config import get_ncores
 from compechem.molecule import Molecule
 from compechem.calculators.xtb import XtbInput
 from compechem.calculators import crest
-from compechem import tools
+from compechem.functions.reorderenergies import reorder_energies
 from compechem.functions.pka import calculate_pka
 from compechem.functions.potential import calculate_potential
 
@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 xtb = XtbInput()
 
-config = Config()
-
 
 class Species:
     """Class containing the singlets and radicals lists"""
@@ -28,9 +26,7 @@ class Species:
         self.radicals: list = []
 
 
-def calculate_deprotomers(
-    mol: Molecule, method, nproc: int = config.ncores, conformer_search: bool = True
-):
+def calculate_deprotomers(mol: Molecule, method, ncores: int = None, conformer_search: bool = True):
     """Calculates all the deprotomers with a pKa < 20 for a given Molecule object
 
     Parameters
@@ -40,7 +36,7 @@ def calculate_deprotomers(
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
-    nproc : int
+    ncores : int
         number of cores, by default all available cores
     conformer_search : Bool
         If True (default), also carries out conformer searches at all stages
@@ -51,10 +47,13 @@ def calculate_deprotomers(
         List containing all the deprotomers with pKa < 20 for the given molecule
     """
 
+    if ncores is None:
+        ncores = get_ncores()
+
     mol_list = []
 
     if conformer_search:
-        mol = crest.conformer_search(mol, nproc=nproc)[0]
+        mol = crest.conformer_search(mol, ncores=ncores)[0]
     xtb.opt(mol, inplace=True)
 
     if type(method) != XtbInput:
@@ -66,12 +65,16 @@ def calculate_deprotomers(
 
     while pKa < 20:
 
-        deprotomer_list = crest.deprotonate(currently_protonated, nproc=nproc)
+        deprotomer_list = crest.deprotonate(currently_protonated, ncores=ncores)
 
         if deprotomer_list:
             if type(method) != XtbInput:
-                deprotomer_list = tools.reorder_energies(
-                    deprotomer_list, nproc=nproc, method_opt=xtb, method_el=method, method_vib=xtb,
+                deprotomer_list = reorder_energies(
+                    deprotomer_list,
+                    ncores=ncores,
+                    method_opt=xtb,
+                    method_el=method,
+                    method_vib=xtb,
                 )
             currently_deprotonated = deprotomer_list[0]
 
@@ -83,7 +86,9 @@ def calculate_deprotomers(
             break
 
         if conformer_search:
-            currently_deprotonated = crest.conformer_search(currently_deprotonated, nproc=nproc)[0]
+            currently_deprotonated = crest.conformer_search(currently_deprotonated, ncores=ncores)[
+                0
+            ]
 
         xtb.opt(currently_deprotonated, inplace=True)
         if type(method) != XtbInput:
@@ -120,7 +125,7 @@ def calculate_deprotomers(
 def generate_species(
     base_mol: Molecule,
     method,
-    nproc: int = config.ncores,
+    ncores: int = None,
     conformer_search: bool = True,
     tautomer_search: bool = True,
 ):
@@ -134,7 +139,7 @@ def generate_species(
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
-    nproc : int
+    ncores : int
         number of cores, by default all available cores
     conformer_search : Bool
         If True (default), also carries out a preliminary conformer search on the given structure
@@ -147,26 +152,29 @@ def generate_species(
         Species object with the singlets and radicals for the given input molecule
     """
 
+    if ncores is None:
+        ncores = get_ncores()
+
     species = Species()
 
     molname = base_mol.name
 
     try:
         if conformer_search:
-            base_mol = crest.conformer_search(base_mol, nproc=nproc, optionals="--noreftopo")[0]
+            base_mol = crest.conformer_search(base_mol, ncores=ncores, optionals="--noreftopo")[0]
         if tautomer_search:
-            base_mol = crest.tautomer_search(base_mol, nproc=nproc, optionals="--noreftopo")[0]
+            base_mol = crest.tautomer_search(base_mol, ncores=ncores, optionals="--noreftopo")[0]
 
         ### SINGLET SPECIES ###
         singlet = xtb.spe(base_mol, charge=0, spin=1)
         species.singlets = calculate_deprotomers(
-            mol=singlet, method=method, nproc=nproc, conformer_search=conformer_search
+            mol=singlet, method=method, ncores=ncores, conformer_search=conformer_search
         )
 
         ### RADICAL SPECIES ###
         radical = xtb.spe(base_mol, charge=1, spin=2)
         species.radicals = calculate_deprotomers(
-            mol=radical, method=method, nproc=nproc, conformer_search=conformer_search
+            mol=radical, method=method, ncores=ncores, conformer_search=conformer_search
         )
 
     except Exception as e:
@@ -245,13 +253,16 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 def one_electron_oxidation_potentials(
     molecule: Molecule,
     method,
-    nproc: int = config.ncores,
+    ncores: int = None,
     conformer_search: bool = True,
     tautomer_search: bool = True,
     pH_step: float = 1.0,
 ):
 
-    logger.debug(f"Requested 1-el oxidation calculation on {nproc} cores")
+    if ncores is None:
+        ncores = get_ncores()
+
+    logger.debug(f"Requested 1-el oxidation calculation on {ncores} cores")
 
     os.makedirs("pickle_files", exist_ok=True)
 
@@ -260,7 +271,7 @@ def one_electron_oxidation_potentials(
     species = generate_species(
         base_mol=molecule,
         method=method,
-        nproc=nproc,
+        ncores=ncores,
         conformer_search=conformer_search,
         tautomer_search=tautomer_search,
     )

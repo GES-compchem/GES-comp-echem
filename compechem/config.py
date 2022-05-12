@@ -1,12 +1,17 @@
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-class Config:
-    def __init__(self) -> None:
-        self.ncores = self.get_ncores()
+def get_ncores():
+    try:
+        ncores = int(os.environ["OMP_NUM_THREADS"])
+        logger.debug("Environment variable OMP_NUM_THREADS found")
+    except:
+        ncores = len(os.sched_getaffinity(0))
+        logger.debug("Environment variable OMP_NUM_THREADS not found")
 
-    def get_ncores(self):
-        try:
-            return int(os.environ["OMP_NUM_THREADS"])
-        except:
-            return len(os.sched_getaffinity(0))
+    logger.debug(f"Number of cores: {ncores}")
+    return ncores
+
