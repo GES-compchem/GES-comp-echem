@@ -102,7 +102,7 @@ class OrcaInput:
 
         with open("input.inp", "w") as inp:
             inp.write(
-                f"%pal ncores {ncores} end\n"
+                f"%pal nprocs {ncores} end\n"
                 f"%maxcore {maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
                 f"! RIJCOSX {self.aux_basis}\n"
@@ -200,7 +200,7 @@ class OrcaInput:
 
         with open("input.inp", "w") as inp:
             inp.write(
-                f"%pal ncores {ncores} end\n"
+                f"%pal nprocs {ncores} end\n"
                 f"%maxcore {maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
                 f"! RIJCOSX {self.aux_basis}\n"
@@ -307,7 +307,7 @@ class OrcaInput:
 
         with open("input.inp", "w") as inp:
             inp.write(
-                f"%pal ncores {ncores} end\n"
+                f"%pal nprocs {ncores} end\n"
                 f"%maxcore {maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
                 f"! RIJCOSX {self.aux_basis}\n"
@@ -410,7 +410,7 @@ class OrcaInput:
 
         with open("input.inp", "w") as inp:
             inp.write(
-                f"%pal ncores {ncores} end\n"
+                f"%pal nprocs {ncores} end\n"
                 f"%maxcore {maxcore}\n"
                 f"! {self.method} {self.basis_set} {self.optionals}\n"
                 f"! RIJCOSX {self.aux_basis}\n"
