@@ -56,7 +56,7 @@ def reorder_energies(
 
     for molecule in molecule_list:
 
-        method_opt.opt(molecule, ncores=ncores, inplace=True)
+        method_opt.opt(molecule, ncores=ncores, maxcore=maxcore, inplace=True)
 
         if (
             method_el.method in molecule.energies
@@ -64,7 +64,7 @@ def reorder_energies(
         ):
             pass
         else:
-            method_el.spe(molecule, ncores=ncores, inplace=True)
+            method_el.spe(molecule, ncores=ncores, maxcore=maxcore, inplace=True)
 
         if (
             method_vib.method in molecule.energies
@@ -72,7 +72,7 @@ def reorder_energies(
         ):
             pass
         else:
-            method_vib.freq(molecule, ncores=ncores, inplace=True)
+            method_vib.freq(molecule, ncores=ncores, maxcore=maxcore, inplace=True)
 
     molecule_list.sort(key=get_total_energy)
 

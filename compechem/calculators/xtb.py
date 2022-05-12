@@ -41,6 +41,7 @@ class XtbInput:
         self,
         mol: Molecule,
         ncores: int = None,
+        maxcore=None,
         charge: int = None,
         spin: int = None,
         inplace: bool = False,
@@ -54,6 +55,8 @@ class XtbInput:
             Input molecule to use in the calculation.
         ncores : int, optional
             number of cores, by default all available cores
+        maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
         charge : int, optional
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
@@ -133,6 +136,7 @@ class XtbInput:
         self,
         mol: Molecule,
         ncores: int = None,
+        maxcore=None,
         charge: int = None,
         spin: int = None,
         inplace: bool = False,
@@ -146,6 +150,8 @@ class XtbInput:
             Input molecule to use in the calculation
         ncores : int, optional
             number of cores, by default all available cores
+        maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
         charge : int, optional
             Total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
@@ -246,6 +252,7 @@ class XtbInput:
         self,
         mol: Molecule,
         ncores: int = None,
+        maxcore=None,
         charge: int = None,
         spin: int = None,
         inplace: bool = False,
@@ -259,6 +266,8 @@ class XtbInput:
             input molecule to use in the calculation
         ncores : int, optional
             number of cores, by default all available cores
+        maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
         charge : int, optional
             Total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
