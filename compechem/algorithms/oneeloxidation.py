@@ -411,6 +411,11 @@ def one_electron_oxidation_potentials(
 
     pickle.dump(species, open(f"pickle_files/{basename}.species", "wb"))
 
-    data_generator = generate_potential_data(species=species, method=method, pH_step=pH_step)
+    try:
+        data_generator = generate_potential_data(species=species, method=method, pH_step=pH_step)
+    except Exception as e:
+        logger.error(f"Could not calculate potential data for {basename}!")
+        logger.error(e)
+        return []
 
     return data_generator
