@@ -2,7 +2,7 @@ import os
 
 
 class Energies:
-    """Molecular energies.
+    """Molecular energies in Hartree
     """
 
     def __init__(
@@ -98,6 +98,39 @@ class Molecule:
             file.write("\n\n")
             for line in self.geometry:
                 file.write(line)
+
+    def write_gen(self, gen_file: str, geom_type: str, box_side: float):
+        """Writes the current geometry to a .gen file.
+
+        Parameters
+        ----------
+        gen_file : str
+            path to the output .gen file
+        geom_type : str
+            type of geometry. C = cluster (single molecule), S = supercell (periodic system)
+        box_side : float
+            size of the periodic box size (in Angstrom).
+        """
+        with open(gen_file, "w") as file:
+            file.write(f" {str(self.atomcount)} {geom_type}\n")
+            atom_types = []
+            for line in self.geometry:
+                if line.split()[0] not in atom_types:
+                    atom_types.append(line.split()[0])
+            for atom in atom_types:
+                file.write(f" {atom}")
+            file.write("\n")
+            i = 1
+            for line in self.geometry:
+                for index, atom in enumerate(atom_types):
+                    if line.split()[0] == atom:
+                        file.write(f"{i} {line.replace(atom, str(index + 1))}")
+                        i += 1
+            if geom_type == "S":
+                file.write(f" 0.000 0.000 0.000\n")
+                file.write(f" {box_side} 0.000 0.000\n")
+                file.write(f" 0.000 {box_side} 0.000\n")
+                file.write(f" 0.000 0.000 {box_side}")
 
     def update_geometry(self, xyz_file: str):
         """Updates the current geometry from an external .xyz file
