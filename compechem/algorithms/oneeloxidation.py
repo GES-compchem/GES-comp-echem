@@ -336,16 +336,19 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 
     """
 
+    last_potential = None
+
+    try:
+        molname = species.singlets[0].name
+        singlets = species.singlets
+        radicals = species.radicals
+    except AttributeError as e:
+        logger.error(f"Missing suitable singlet/radical species in file {species}")
+        logger.exception(e)
+
     logger.info(
         f"Generating potentials data for {species.singlets[0].name}, method: {method.method}, pH step: {pH_step}"
     )
-
-    last_potential = None
-
-    molname = species.singlets[0].name
-
-    singlets = species.singlets
-    radicals = species.radicals
 
     for current_pH in np.around(np.arange(0, 14 + pH_step, pH_step), 1):
 
@@ -372,7 +375,7 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
                 method_vib=xtb.method,
             )
         except KeyError as e:
-            logger.error("Requested level of theory not available in provided data")
+            logger.error(f"Requested level of theory not available in provided data for {molname}")
             logger.exception(e)
 
         if last_potential is not None and abs(potential - last_potential) > 0.3:
