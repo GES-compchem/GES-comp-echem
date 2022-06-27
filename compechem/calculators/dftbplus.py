@@ -175,6 +175,8 @@ class DFTBInput:
         ### NEEDS TO BE FIXED vvv
         if inplace is False:
 
+            mol.write_xyz(f"{mol.name}.xyz")
+
             newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
             newmol.energies = copy.copy(mol.energies)

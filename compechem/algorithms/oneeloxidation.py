@@ -83,7 +83,7 @@ def find_highest_protonation_state(
 
         # if protonation is unsuccessful (e.g., topology change), return the original molecule.
         else:
-            return currently_protonated
+            return currently_deprotonated
 
         if conformer_search:
             currently_protonated = crest.conformer_search(currently_protonated, ncores=ncores)[0]
