@@ -363,13 +363,17 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
                 current_radical = radical
                 break
 
-        potential = calculate_potential(
-            oxidised=current_radical,
-            reduced=current_singlet,
-            pH=current_pH,
-            method_el=method.method,
-            method_vib=xtb.method,
-        )
+        try:
+            potential = calculate_potential(
+                oxidised=current_radical,
+                reduced=current_singlet,
+                pH=current_pH,
+                method_el=method.method,
+                method_vib=xtb.method,
+            )
+        except KeyError as e:
+            logger.error("Requested level of theory not available in provided data")
+            logger.exception(e)
 
         if last_potential is not None and abs(potential - last_potential) > 0.3:
             logger.warning(
@@ -415,7 +419,7 @@ def one_electron_oxidation_potentials(
         data_generator = generate_potential_data(species=species, method=method, pH_step=pH_step)
     except Exception as e:
         logger.error(f"Could not calculate potential data for {basename}!")
-        logger.error(e)
+        logger.exception(e)
         return []
 
     return data_generator
