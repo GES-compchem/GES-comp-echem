@@ -9,8 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class DFTBInput:
-    """Interface for running DFTB+ calculations
-    """
+    """Interface for running DFTB+ calculations"""
 
     def __init__(
         self,
@@ -18,6 +17,7 @@ class DFTBInput:
         box_side: float = None,
         hamiltonian: str = "DFTB",
         parameters: str = "3ob/3ob-3-1/",
+        dispersion: bool = False,
         parallel: str = "mpi",
     ) -> None:
         """
@@ -31,12 +31,15 @@ class DFTBInput:
             level of theory, by default "DFTB". "xTB" also supported.
         parameters : str, optional
             parameters to be used for the DFTB Hamiltonian (by default 3ob)
+        dispersion : bool, optional
+            activates D3 dispersion corrections (off by default)
         parallel : str, optional
             selects either openmpi-parallel version (mpi) or shared memory version (nompi)
         """
 
         self.hamiltonian = hamiltonian
         self.parameters = parameters
+        self.dispersion = dispersion
         self.geom_type = geom_type
         self.box_side = box_side
         self.parallel = parallel
@@ -51,6 +54,13 @@ class DFTBInput:
             "Cl": "d",
             "Br": "d",
             "I": "d",
+        }
+
+        self.hubbard_derivs = {
+            "C": -0.1492,
+            "O": -0.1575,
+            "H": -0.1857,
+            "N": -0.1535,
         }
 
     def spe(
@@ -102,7 +112,9 @@ class DFTBInput:
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.hamiltonian.split()[0]}_spe", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.hamiltonian.split()[0]}_spe",
+            dir=os.getcwd(),
         )
 
         os.chdir(tdir)
@@ -114,46 +126,73 @@ class DFTBInput:
 
         with open("dftb_in.hsd", "w") as inp:
 
-            inp.write("Geometry = GenFormat {\n")
-            inp.write(f'  <<< "{mol.name}.gen"\n')
-            inp.write("}\n")
+            inp.write(
+                f"""Geometry = GenFormat {{
+  <<< "{mol.name}.gen"
+}}
 
-            inp.write("\n")
+Driver = GeometryOptimization{{
+  MaxSteps = 0
+}}
 
-            inp.write("Driver = GeometryOptimization{\n")
-            inp.write("  MaxSteps = 0\n")  # for SPE calculations
-            inp.write("}\n")
-
-            inp.write("\n")
-
-            inp.write(f"Hamiltonian = {self.hamiltonian} {{\n")
-
+Hamiltonian = {self.hamiltonian} {{"""
+            )
             if self.hamiltonian == "DFTB":
-                inp.write("  Scc = Yes\n")
-                inp.write("  SlaterKosterFiles = Type2FileNames {\n")
-                inp.write(f'    Prefix = "{self.parameters}"\n')
-                inp.write('    Separator = "-"\n')
-                inp.write('    Suffix = ".skf"\n')
-                inp.write("  }\n")
-                inp.write("  MaxAngularMomentum {\n")
+                inp.write(
+                    f"""
+  Scc = Yes
+  SlaterKosterFiles = Type2FileNames {{
+    Prefix = "{self.parameters}"
+    Separator = "-"
+    Suffix = ".skf"
+  }}
+  MaxAngularMomentum {{
+"""
+                )
+            for atom in atom_types:
+                inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
+            inp.write("  }\n")
+            if self.geom_type == "S":
+                inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
+            if self.parameters == "3ob/3ob-3-1/":
+                inp.write(
+                    """  ThirdOrderFull = Yes
+  HubbardDerivs {
+"""
+                )
                 for atom in atom_types:
-                    inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
-                inp.write("  }\n")
-                if self.geom_type == "S":
-                    inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                inp.write("}\n")
-
+                    inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
+                inp.write(
+                    """  }
+  HCorrection = Damping {
+    Exponent = 4.00
+  }
+"""
+                )
+            if self.dispersion:
+                inp.write(
+                    """  Dispersion = SimpleDftD3 {
+    a1 = 0.746
+    a2 = 4.191
+    s6 = 1.0
+    s8 = 3.209
+  }"""
+                )
+            inp.write("}\n")
             if self.hamiltonian == "xTB":
                 self.parameters = "gfn2"
                 inp.write('  Method = "GFN2-xTB"\n')
                 if self.geom_type == "S":
                     inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                inp.write("}\n")
-            inp.write("\n")
+                    inp.write("}\n")
+            inp.write(
+                """
+ParserOptions {
+  ParserVersion = 11
+}"""
+            )
 
-            inp.write("ParserOptions {\n")
-            inp.write("  ParserVersion = 11\n")
-            inp.write("}\n")
+        exit()
 
         if self.parallel == "mpi":
             os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
@@ -182,13 +221,17 @@ class DFTBInput:
             newmol.energies = copy.copy(mol.energies)
 
             newmol.energies[f"{self.parameters}"] = Energies(
-                method=f"{self.parameters}", electronic=electronic_energy, vibronic=vibronic_energy
+                method=f"{self.parameters}",
+                electronic=electronic_energy,
+                vibronic=vibronic_energy,
             )
         ### NEEDS TO BE FIXED ^^^
 
         else:
             mol.energies[f"{self.parameters}"] = Energies(
-                method=f"{self.parameters}", electronic=electronic_energy, vibronic=vibronic_energy
+                method=f"{self.parameters}",
+                electronic=electronic_energy,
+                vibronic=vibronic_energy,
             )
 
         tools.process_output(
@@ -197,4 +240,3 @@ class DFTBInput:
 
         if inplace is False:
             return newmol
-
