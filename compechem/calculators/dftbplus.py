@@ -45,22 +45,39 @@ class DFTBInput:
         self.parallel = parallel
 
         self.atom_dict = {
-            "H": "s",
-            "O": "p",
-            "C": "p",
-            "N": "p",
-            "S": "d",
-            "F": "p",
-            "Cl": "d",
             "Br": "d",
+            "C": "p",
+            "Ca": "p",
+            "Cl": "d",
+            "F": "p",
+            "H": "s",
             "I": "d",
+            "K": "p",
+            "Mg": "p",
+            "N": "p",
+            "Na": "p",
+            "O": "p",
+            "P": "d",
+            "S": "d",
+            "Zn": "d",
         }
 
         self.hubbard_derivs = {
+            "Br": -0.0573,
             "C": -0.1492,
-            "O": -0.1575,
+            "Ca": -0.0340,
+            "Cl": -0.0697,
+            "F": -0.1623,
             "H": -0.1857,
+            "I": -0.0433,
+            "K": -0.0339,
+            "Mg": -0.02,
             "N": -0.1535,
+            "Na": -0.0454,
+            "O": -0.1575,
+            "P": -0.14,
+            "S": -0.11,
+            "Zn": -0.03,
         }
 
     def spe(
@@ -127,74 +144,245 @@ class DFTBInput:
         with open("dftb_in.hsd", "w") as inp:
 
             inp.write(
-                f"""Geometry = GenFormat {{
-  <<< "{mol.name}.gen"
-}}
-
-Driver = GeometryOptimization{{
-  MaxSteps = 0
-}}
-
-Hamiltonian = {self.hamiltonian} {{"""
+                "Geometry = GenFormat {\n"
+                f'  <<< "{mol.name}.gen"\n'
+                "}\n"
+                "\n"
+                "Driver = GeometryOptimization{\n"
+                "  MaxSteps = 0\n"
+                "}\n"
+                "\n"
+                f"Hamiltonian = {self.hamiltonian} {{\n"
             )
+
             if self.hamiltonian == "DFTB":
                 inp.write(
-                    f"""
-  Scc = Yes
-  SlaterKosterFiles = Type2FileNames {{
-    Prefix = "{self.parameters}"
-    Separator = "-"
-    Suffix = ".skf"
-  }}
-  MaxAngularMomentum {{
-"""
+                    "  Scc = Yes\n"
+                    "  SlaterKosterFiles = Type2FileNames {\n"
+                    f'    Prefix = "{self.parameters}"\n'
+                    '    Separator = "-"\n'
+                    '    Suffix = ".skf"\n'
+                    "  }\n"
+                    "  MaxAngularMomentum {\n"
                 )
-            for atom in atom_types:
-                inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
-            inp.write("  }\n")
-            if self.geom_type == "S":
-                inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-            if self.parameters == "3ob/3ob-3-1/":
-                inp.write(
-                    """  ThirdOrderFull = Yes
-  HubbardDerivs {
-"""
-                )
+                for atom in atom_types:
+                    inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
+                inp.write("  }\n")
+                if self.geom_type == "S":
+                    inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
+                if "3ob" in self.parameters:
+                    inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
                 for atom in atom_types:
                     inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
                 inp.write(
-                    """  }
-  HCorrection = Damping {
-    Exponent = 4.00
-  }
-"""
+                    "  }\n" "  HCorrection = Damping {\n" "    Exponent = 4.00\n" "  }\n"
                 )
-            if self.dispersion:
-                inp.write(
-                    """  Dispersion = SimpleDftD3 {
-    a1 = 0.746
-    a2 = 4.191
-    s6 = 1.0
-    s8 = 3.209
-  }"""
-                )
-            inp.write("}\n")
-            if self.hamiltonian == "xTB":
+                if self.dispersion:
+                    inp.write(
+                        "  Dispersion = SimpleDftD3 {\n"
+                        "    a1 = 0.746\n"
+                        "    a2 = 4.191\n"
+                        "    s6 = 1.0\n"
+                        "    s8 = 3.209\n"
+                        "  }\n"
+                    )
+                inp.write("}\n")
+
+            elif self.hamiltonian == "xTB":
                 self.parameters = "gfn2"
                 inp.write('  Method = "GFN2-xTB"\n')
                 if self.geom_type == "S":
                     inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    inp.write("}\n")
-            inp.write(
-                """
-ParserOptions {
-  ParserVersion = 11
-}"""
-            )
+                inp.write("}\n")
 
-        exit()
+            inp.write("\n" "ParserOptions {\n" "  ParserVersion = 11\n" "}")
 
         if self.parallel == "mpi":
+            os.environ["OMP_NUM_THREADS"] = "1"
+            os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
+        elif self.parallel == "nompi":
+            os.system(f"dftb+ > output.out 2>> output.err")
+
+        with open("output.out", "r") as out:
+            for line in out:
+                if "Total Energy" in line:
+                    print(line.split())
+                    electronic_energy = float(line.split()[2])
+                    print(electronic_energy)
+
+        vibronic_energy = None
+
+        if self.parameters in mol.energies:
+            vibronic_energy = mol.energies[f"{self.parameters}"].vibronic
+
+        ### NEEDS TO BE FIXED vvv
+        if inplace is False:
+
+            mol.write_xyz(f"{mol.name}.xyz")
+
+            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+
+            newmol.energies = copy.copy(mol.energies)
+
+            newmol.energies[f"{self.parameters}"] = Energies(
+                method=f"{self.parameters}",
+                electronic=electronic_energy,
+                vibronic=vibronic_energy,
+            )
+        ### NEEDS TO BE FIXED ^^^
+
+        else:
+            mol.energies[f"{self.parameters}"] = Energies(
+                method=f"{self.parameters}",
+                electronic=electronic_energy,
+                vibronic=vibronic_energy,
+            )
+
+        tools.process_output(
+            mol, self.hamiltonian, charge, spin, "spe", tdir, remove_tdir, parent_dir
+        )
+
+        if inplace is False:
+            return newmol
+
+    def md_nvt(
+        self,
+        mol: Molecule,
+        steps: int,
+        timestep: float = 1.0,
+        temperature: int = 298,
+        mdrestartfreq: int = 100,
+        ncores: int = None,
+        maxcore=None,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
+        """Molecular Dynamics simulation.
+
+        Parameters
+        ----------
+        mol : Molecule object
+            Input molecule to use in the calculation.
+        steps : int
+            Total steps of the simulation
+        timestep : float
+            Time step (in fs) for the simulation.
+        temperature : int
+            Temperature (in Kelvin) of the simulation
+        mdrestartfreq : int
+            MD information is printed to md.out every mdrestartfreq steps, by default 100
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
+        charge : int, optional
+            total charge of the molecule. Default is taken from the input molecule.
+        spin : int, optional
+            total spin of the molecule. Default is taken from the input molecule.
+        inplace : bool, optional
+            updates info for the input molecule instead of outputting a new molecule object,
+            by default False
+        remove_tdir : bool, optional
+            Temporary work directory will be removed, by default True
+
+        Returns
+        -------
+        newmol : Molecule object
+            Output molecule containing the new energies.
+        """
+
+        if ncores is None:
+            ncores = get_ncores()
+
+        if charge is None:
+            charge = mol.charge
+        if spin is None:
+            spin = mol.spin
+
+        parent_dir = os.getcwd()
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} MD")
+        logger.debug(f"Running DFTB+ calculation on {ncores} cores")
+
+        tdir = mkdtemp(
+            prefix=mol.name + "_",
+            suffix=f"_{self.hamiltonian.split()[0]}_md",
+            dir=os.getcwd(),
+        )
+
+        os.chdir(tdir)
+        mol.write_gen(f"{mol.name}.gen", geom_type=self.geom_type, box_side=self.box_side)
+
+        with open(f"{mol.name}.gen") as file:
+            lines = file.readlines()
+            atom_types = lines[1].split()
+
+        with open("dftb_in.hsd", "w") as inp:
+
+            inp.write(
+                "Geometry = GenFormat {\n"
+                f'  <<< "{mol.name}.gen"\n'
+                "}\n"
+                "\n"
+                "Driver = VelocityVerlet{\n"
+                f"  TimeStep [fs] = {timestep}\n"
+                "  Thermostat = NoseHoover {\n"
+                f"    Temperature [Kelvin] = {temperature}\n"
+                "    CouplingStrength [cm^-1] = 3200\n"
+                "  }\n"
+                f"  Steps = {steps}\n"
+                "  MovedAtoms = 1:-1\n"
+                f"  MDRestartFrequency = {mdrestartfreq}\n"
+                "}\n"
+                "\n"
+                f"Hamiltonian = {self.hamiltonian} {{\n"
+            )
+
+            if self.hamiltonian == "DFTB":
+                inp.write(
+                    "  Scc = Yes\n"
+                    "  SlaterKosterFiles = Type2FileNames {\n"
+                    f'    Prefix = "{self.parameters}"\n'
+                    '    Separator = "-"\n'
+                    '    Suffix = ".skf"\n'
+                    "  }\n"
+                    "  MaxAngularMomentum {\n"
+                )
+                for atom in atom_types:
+                    inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
+                inp.write("  }\n")
+                if self.geom_type == "S":
+                    inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
+                if "3ob" in self.parameters:
+                    inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
+                for atom in atom_types:
+                    inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
+                inp.write(
+                    "  }\n" "  HCorrection = Damping {\n" "    Exponent = 4.00\n" "  }\n"
+                )
+                if self.dispersion:
+                    inp.write(
+                        "  Dispersion = SimpleDftD3 {\n"
+                        "    a1 = 0.746\n"
+                        "    a2 = 4.191\n"
+                        "    s6 = 1.0\n"
+                        "    s8 = 3.209\n"
+                        "  }\n"
+                    )
+                inp.write("}\n")
+
+            elif self.hamiltonian == "xTB":
+                self.parameters = "gfn2"
+                inp.write('  Method = "GFN2-xTB"\n')
+                if self.geom_type == "S":
+                    inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
+                inp.write("}\n")
+
+            inp.write("\n" "ParserOptions {\n" "  ParserVersion = 11\n" "}")
+
+        if self.parallel == "mpi":
+            os.environ["OMP_NUM_THREADS"] = "1"
             os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
         elif self.parallel == "nompi":
             os.system(f"dftb+ > output.out 2>> output.err")

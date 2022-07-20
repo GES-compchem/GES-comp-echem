@@ -8,7 +8,7 @@ class Ensemble:
     Attributes
     ----------
     name : str
-        name of the molecule represented in the ensemble, taken from the first element of the 
+        name of the molecule represented in the ensemble, taken from the first element of the
         ensemble
     atomcount : int
         number of atoms contained each ensemble, taken from the first element of the ensemble
@@ -35,24 +35,24 @@ class Ensemble:
     def boltzmann_average(
         self, method_el: str, method_vib: str = None, temperature: float = 297.15
     ):
-        """Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted for each 
+        """Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted for each
         molecule by its Boltzmann factor.
-        
+
         Parameters
         ----------
         method_el : str
             level of theory for the electronic energies
         method_vib : str, optional
-            level of theory for the vibronic contributions, if method_vib is None (default), 
+            level of theory for the vibronic contributions, if method_vib is None (default),
             the ensemble energy will be evaluated only considering the electronic component
         temperature : float
             temperature at which to calculate the Boltzmann average, by default 297.15 K
 
         Returns
         -------
-        Creates an Energies object with the total free Gibbs energy of the ensemble. 
+        Creates an Energies object with the total free Gibbs energy of the ensemble.
 
-        NOTE: the vibronic contributions are included in the electronic component, which actually 
+        NOTE: the vibronic contributions are included in the electronic component, which actually
         contains the TOTAL energy of the system. Maybe in the future I'll think of how to separate
         the two contributions - LB
         """
@@ -74,7 +74,12 @@ class Ensemble:
         temperature = temperature
 
         partition_function = np.sum(
-            np.exp([-energy / (boltzmann_constant * temperature) for energy in relative_energies])
+            np.exp(
+                [
+                    -energy / (boltzmann_constant * temperature)
+                    for energy in relative_energies
+                ]
+            )
         )
 
         populations = [
