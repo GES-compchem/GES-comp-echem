@@ -200,21 +200,20 @@ class DFTBInput:
             with open("output.out", "r") as out:
                 for line in out:
                     if "Total Energy" in line:
-                        print(line.split())
                         electronic_energy = float(line.split()[2])
-                        print(electronic_energy)
 
             vibronic_energy = None
 
             if self.parameters in mol.energies:
                 vibronic_energy = mol.energies[f"{self.parameters}"].vibronic
 
-            ### NEEDS TO BE FIXED vvv
             if inplace is False:
 
                 mol.write_xyz(f"{mol.name}.xyz")
 
-                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+                newmol = Molecule(
+                    f"{mol.name}.xyz", charge, spin, mol.geom_type, mol.box_side
+                )
 
                 newmol.energies = copy.copy(mol.energies)
 
@@ -223,7 +222,6 @@ class DFTBInput:
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
-            ### NEEDS TO BE FIXED ^^^
 
             else:
                 mol.energies[f"{self.parameters}"] = Energies(
@@ -246,6 +244,7 @@ class DFTBInput:
         timestep: float = 1.0,
         temperature: int = 298,
         mdrestartfreq: int = 100,
+        box_side: float = None,
         ncores: int = None,
         maxcore=None,
         charge: int = None,
@@ -267,6 +266,8 @@ class DFTBInput:
             Temperature (in Kelvin) of the simulation
         mdrestartfreq : int
             MD information is printed to md.out every mdrestartfreq steps, by default 100
+        box_side : float, optional
+            for periodic systems, defines the length (in Å) of the box side
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : dummy variable
@@ -294,8 +295,10 @@ class DFTBInput:
             charge = mol.charge
         if spin is None:
             spin = mol.spin
+        if box_side is None:
+            box_side = mol.box_side
 
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} MD")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} NVT MD")
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
@@ -306,7 +309,7 @@ class DFTBInput:
 
         with sh.pushd(tdir):
 
-            mol.write_gen(f"{mol.name}.gen", geom_type=mol.geom_type, box_side=mol.box_side)
+            mol.write_gen(f"{mol.name}.gen", box_side)
 
             with open(f"{mol.name}.gen") as file:
                 lines = file.readlines()
@@ -382,46 +385,11 @@ class DFTBInput:
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
             elif self.parallel == "nompi":
+                os.environ["OMP_NUM_THREADS"] = f"{ncores}"
                 os.system(f"dftb+ > output.out 2>> output.err")
 
-            with open("output.out", "r") as out:
+            with open("md.out", "r") as out:
                 for line in out:
-                    if "Total Energy" in line:
-                        print(line.split())
+                    if "Total MD Energy" in line:
                         electronic_energy = float(line.split()[2])
-                        print(electronic_energy)
 
-            vibronic_energy = None
-
-            if self.parameters in mol.energies:
-                vibronic_energy = mol.energies[f"{self.parameters}"].vibronic
-
-            ### NEEDS TO BE FIXED vvv
-            if inplace is False:
-
-                mol.write_xyz(f"{mol.name}.xyz")
-
-                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
-
-                newmol.energies = copy.copy(mol.energies)
-
-                newmol.energies[f"{self.parameters}"] = Energies(
-                    method=f"{self.parameters}",
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
-            ### NEEDS TO BE FIXED ^^^
-
-            else:
-                mol.energies[f"{self.parameters}"] = Energies(
-                    method=f"{self.parameters}",
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
-
-            tools.process_output(mol, self.hamiltonian, "spe", charge, spin)
-            if remove_tdir:
-                shutil.rmtree(tdir)
-
-            if inplace is False:
-                return newmol

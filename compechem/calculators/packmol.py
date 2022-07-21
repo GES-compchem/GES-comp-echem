@@ -73,7 +73,6 @@ def packmol_cube(
         target_volume = (solvent_grams + solute_grams) / target_dens  # L
 
         cube_side = (target_volume / 1e-27) ** (1.0 / 3)
-        print(cube_side)
 
     elif nsolv and cube_side:
 
@@ -87,7 +86,6 @@ def packmol_cube(
         volume = (cube_side ** 3) * 1e-27  # L
 
         target_dens = (solvent_grams + solute_grams) / volume
-        print(target_dens)
 
     elif target_dens and cube_side:
 

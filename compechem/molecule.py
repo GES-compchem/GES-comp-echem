@@ -24,7 +24,7 @@ class Energies:
         self.vibronic = vibronic
 
     def __str__(self):
-        return f"method: {self.method}, el={self.electronic}, vib={self.vibronic}"
+        return f"method: {self.method}, el: {self.electronic} Eh, vib: {self.vibronic} Eh"
 
 
 class Properties:
@@ -118,14 +118,20 @@ class Molecule:
             for line in self.geometry:
                 file.write(line)
 
-    def write_gen(self, gen_file: str):
+    def write_gen(self, gen_file: str, box_side: float = None):
         """Writes the current geometry to a .gen file.
 
         Parameters
         ----------
         gen_file : str
             path to the output .gen file
+        box_side : float, optional
+            for periodic systems, defines the length (in Å) of the box side
         """
+
+        if box_side is None:
+            box_side = self.box_side
+
         with open(gen_file, "w") as file:
             file.write(f" {str(self.atomcount)} {self.geom_type}\n")
             atom_types = []
@@ -143,9 +149,9 @@ class Molecule:
                         i += 1
             if self.geom_type == "S":
                 file.write(f" 0.000 0.000 0.000\n")
-                file.write(f" {self.box_side} 0.000 0.000\n")
-                file.write(f" 0.000 {self.box_side} 0.000\n")
-                file.write(f" 0.000 0.000 {self.box_side}")
+                file.write(f" {box_side} 0.000 0.000\n")
+                file.write(f" 0.000 {box_side} 0.000\n")
+                file.write(f" 0.000 0.000 {box_side}")
 
     def update_geometry(self, xyz_file: str):
         """Updates the current geometry from an external .xyz file
