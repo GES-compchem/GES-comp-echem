@@ -2,6 +2,7 @@ import os, shutil, sh
 import logging
 from tempfile import mkdtemp
 from compechem.molecule import Molecule
+from compechem.tools import process_output
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,11 @@ def packmol_cube(
         )
         return None
 
+    logger.info(f"{solute_mol.name} - Generating solvation box with Packmol")
+    logger.debug(f"Packmol - cubic box with {nsolv} {solvent_mol.name} molecules.")
+    logger.debug(f"Packmol - cubic box with side {cube_side} Å.")
+    logger.debug(f"Packmol - cubic box with density {target_dens} g/L.")
+
     tdir = mkdtemp(prefix=solute_mol.name + "_", suffix=f"_packmol", dir=os.getcwd(),)
 
     with sh.pushd(tdir):
@@ -139,7 +145,8 @@ def packmol_cube(
 
         solvated_molecule = Molecule(f"solvated_{solute}")
 
-    shutil.rmtree(tdir)
+        process_output(mol=solute_mol, method="packmol", calc="cube")
+        shutil.rmtree(tdir)
 
     return solvated_molecule
 

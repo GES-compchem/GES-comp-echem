@@ -1,4 +1,4 @@
-import os
+import os, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.molecule import Molecule
@@ -9,7 +9,11 @@ logger = logging.getLogger(__name__)
 
 
 def tautomer_search(
-    mol: Molecule, ncores: int = None, maxcore=None, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule,
+    ncores: int = None,
+    maxcore=None,
+    remove_tdir: bool = True,
+    optionals: str = "",
 ):
     """Tautomer search using CREST.
 
@@ -35,54 +39,60 @@ def tautomer_search(
     if ncores is None:
         ncores = get_ncores()
 
-    parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search")
     logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_TAUT", dir=os.getcwd())
 
-    os.chdir(tdir)
-    mol.write_xyz("geom.xyz")
+    with sh.pushd(tdir):
 
-    os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
-    )
+        mol.write_xyz("geom.xyz")
 
-    if os.path.exists("tautomers.xyz"):
-        tautomers_to_check = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
-
-        tautomers = []
-
-        while tautomers_to_check:
-            tautomer = tautomers_to_check.pop(0)
-            tautomer.write_xyz(f"{tautomer.name}.xyz")
-            if tools.cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
-                logger.warning(
-                    f"Cyclization change spotted for {tautomer.name}. Removing from list."
-                )
-                tools.add_flag(
-                    mol,
-                    f"Cyclization change occurred for {tautomer.name} during conformer search. Conformer was removed.",
-                )
-            else:
-                tautomers.append(tautomer)
-
-        tools.process_output(
-            mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
+        os.system(
+            f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
         )
-        return tautomers
 
-    else:
-        logger.warning(f"No tautomers possible for {mol.name}. Ignoring tautomer search.")
-        tools.process_output(
-            mol, "CREST", mol.charge, mol.spin, "tautomers", tdir, remove_tdir, parent_dir
-        )
-        tools.add_flag(mol, "No possible tautomers. Tautomer search was ignored.")
-        return [mol]
+        if os.path.exists("tautomers.xyz"):
+            tautomers_to_check = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
+
+            tautomers = []
+
+            while tautomers_to_check:
+                tautomer = tautomers_to_check.pop(0)
+                tautomer.write_xyz(f"{tautomer.name}.xyz")
+                if tools.cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
+                    logger.warning(
+                        f"Cyclization change spotted for {tautomer.name}. Removing from list."
+                    )
+                    tools.add_flag(
+                        mol,
+                        f"Cyclization change occurred for {tautomer.name} during conformer search. Conformer was removed.",
+                    )
+                else:
+                    tautomers.append(tautomer)
+
+            tools.process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+            return tautomers
+
+        else:
+            logger.warning(
+                f"No tautomers possible for {mol.name}. Ignoring tautomer search."
+            )
+            tools.add_flag(mol, "No possible tautomers. Tautomer search was ignored.")
+            tools.process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+            return [mol]
 
 
 def conformer_search(
-    mol: Molecule, ncores: int = None, maxcore=None, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule,
+    ncores: int = None,
+    maxcore=None,
+    remove_tdir: bool = True,
+    optionals: str = "",
 ):
     """Conformer search using CREST.
 
@@ -108,52 +118,59 @@ def conformer_search(
     if ncores is None:
         ncores = get_ncores()
 
-    parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search")
     logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_CONF", dir=os.getcwd())
 
-    os.chdir(tdir)
-    mol.write_xyz("geom.xyz")
+    with sh.pushd(tdir):
 
-    os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
-    )
+        mol.write_xyz("geom.xyz")
 
-    if os.path.exists("crest_conformers.xyz"):
-        conformers_to_check = tools.split_multixyz(mol, file="crest_conformers.xyz", suffix="c")
-
-        conformers = []
-
-        while conformers_to_check:
-            conformer = conformers_to_check.pop(0)
-            conformer.write_xyz(f"{conformer.name}.xyz")
-            if tools.cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
-                logger.warning(
-                    f"Cyclization change spotted for {conformer.name}. Removing from list."
-                )
-                tools.add_flag(
-                    mol,
-                    f"Cyclization change occurred for {conformer.name} during conformer search. Conformer was removed.",
-                )
-            else:
-                conformers.append(conformer)
-
-        tools.process_output(
-            mol, "CREST", mol.charge, mol.spin, "conformers", tdir, remove_tdir, parent_dir
+        os.system(
+            f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
         )
-        return conformers
 
-    else:
-        logger.error(f"{mol.name}, conformer search failed. Reverting to original molecule.")
-        tools.add_flag(mol, "Conformer search failed.")
-        os.chdir(parent_dir)
-        return [mol]
+        if os.path.exists("crest_conformers.xyz"):
+            conformers_to_check = tools.split_multixyz(
+                mol, file="crest_conformers.xyz", suffix="c"
+            )
+
+            conformers = []
+
+            while conformers_to_check:
+                conformer = conformers_to_check.pop(0)
+                conformer.write_xyz(f"{conformer.name}.xyz")
+                if tools.cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
+                    logger.warning(
+                        f"Cyclization change spotted for {conformer.name}. Removing from list."
+                    )
+                    tools.add_flag(
+                        mol,
+                        f"Cyclization change occurred for {conformer.name} during conformer search. Conformer was removed.",
+                    )
+                else:
+                    conformers.append(conformer)
+
+            tools.process_output(mol, "CREST", "conformers", mol.charge, mol.spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+            return conformers
+
+        else:
+            logger.error(
+                f"{mol.name}, conformer search failed. Reverting to original molecule."
+            )
+            tools.add_flag(mol, "Conformer search failed.")
+            return [mol]
 
 
 def deprotonate(
-    mol: Molecule, ncores: int = None, maxcore=None, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule,
+    ncores: int = None,
+    maxcore=None,
+    remove_tdir: bool = True,
+    optionals: str = "",
 ):
     """Deprotomer search using CREST.
 
@@ -179,61 +196,62 @@ def deprotonate(
     if ncores is None:
         ncores = get_ncores()
 
-    parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation")
     logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_DEPROT", dir=os.getcwd())
 
-    os.chdir(tdir)
-    mol.write_xyz("geom.xyz")
+    with sh.pushd(tdir):
+        mol.write_xyz("geom.xyz")
 
-    os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
-    )
-
-    if os.path.exists("deprotonated.xyz"):
-        deprotomers_to_check = tools.split_multixyz(
-            mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1
+        os.system(
+            f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
         )
 
-        deprotomers = []
+        if os.path.exists("deprotonated.xyz"):
+            deprotomers_to_check = tools.split_multixyz(
+                mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1
+            )
 
-        while deprotomers_to_check:
-            deprotomer = deprotomers_to_check.pop(0)
-            deprotomer.write_xyz(f"{deprotomer.name}.xyz")
-            if tools.cyclization_check("geom.xyz", f"{deprotomer.name}.xyz") is True:
-                logger.warning(
-                    f"Cyclization change spotted for {deprotomer.name}. Removing from list."
-                )
-                tools.add_flag(
-                    mol,
-                    f"Cyclization change occurred for {deprotomer.name} during deprotomer search. Deprotomer was removed.",
-                )
+            deprotomers = []
+
+            while deprotomers_to_check:
+                deprotomer = deprotomers_to_check.pop(0)
+                deprotomer.write_xyz(f"{deprotomer.name}.xyz")
+                if tools.cyclization_check("geom.xyz", f"{deprotomer.name}.xyz") is True:
+                    logger.warning(
+                        f"Cyclization change spotted for {deprotomer.name}. Removing from list."
+                    )
+                    tools.add_flag(
+                        mol,
+                        f"Cyclization change occurred for {deprotomer.name} during deprotomer search. Deprotomer was removed.",
+                    )
+                else:
+                    deprotomers.append(deprotomer)
+
+            tools.process_output(mol, "CREST", "deprotomers", mol.charge, mol.spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+
+            if deprotomers:
+                return deprotomers
             else:
-                deprotomers.append(deprotomer)
+                logger.error(f"{mol.name}, no suitable deprotomers found.")
+                tools.add_flag(mol, "No suitable deprotomers.")
+                return None
 
-        tools.process_output(
-            mol, "CREST", mol.charge, mol.spin, "deprotomers", tdir, remove_tdir, parent_dir
-        )
-
-        if deprotomers:
-            return deprotomers
         else:
-            logger.error(f"{mol.name}, no suitable deprotomers found.")
-            tools.add_flag(mol, "No suitable deprotomers.")
-            os.chdir(parent_dir)
+            logger.error(f"{mol.name}, deprotomer search failed.")
+            tools.add_flag(mol, "Deprotomer search failed.")
             return None
-
-    else:
-        logger.error(f"{mol.name}, deprotomer search failed.")
-        tools.add_flag(mol, "Deprotomer search failed.")
-        os.chdir(parent_dir)
-        return None
 
 
 def protonate(
-    mol: Molecule, ncores: int = None, maxcore=None, remove_tdir: bool = True, optionals: str = "",
+    mol: Molecule,
+    ncores: int = None,
+    maxcore=None,
+    remove_tdir: bool = True,
+    optionals: str = "",
 ):
     """Protomer search using CREST.
 
@@ -259,56 +277,54 @@ def protonate(
     if ncores is None:
         ncores = get_ncores()
 
-    parent_dir = os.getcwd()
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
     logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_PROT", dir=os.getcwd())
 
-    os.chdir(tdir)
-    mol.write_xyz("geom.xyz")
+    with sh.pushd(tdir):
 
-    os.system(
-        f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
-    )
+        mol.write_xyz("geom.xyz")
 
-    if os.path.exists("protonated.xyz"):
-        protomers_to_check = tools.split_multixyz(
-            mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1
+        os.system(
+            f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
         )
 
-        protomers = []
+        if os.path.exists("protonated.xyz"):
+            protomers_to_check = tools.split_multixyz(
+                mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1
+            )
 
-        while protomers_to_check:
-            protomer = protomers_to_check.pop(0)
-            protomer.write_xyz(f"{protomer.name}.xyz")
-            if tools.cyclization_check("geom.xyz", f"{protomer.name}.xyz") is True:
-                logger.warning(
-                    f"Cyclization change spotted for {protomer.name}. Removing from list."
-                )
-                tools.add_flag(
-                    mol,
-                    f"Cyclization change occurred for {protomer.name} during deprotomer search. Protomer was removed.",
-                )
+            protomers = []
+
+            while protomers_to_check:
+                protomer = protomers_to_check.pop(0)
+                protomer.write_xyz(f"{protomer.name}.xyz")
+                if tools.cyclization_check("geom.xyz", f"{protomer.name}.xyz") is True:
+                    logger.warning(
+                        f"Cyclization change spotted for {protomer.name}. Removing from list."
+                    )
+                    tools.add_flag(
+                        mol,
+                        f"Cyclization change occurred for {protomer.name} during deprotomer search. Protomer was removed.",
+                    )
+                else:
+                    protomers.append(protomer)
+
+            tools.process_output(mol, "CREST", "protomers", mol.charge, mol.spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+
+            if protomers:
+                return protomers
             else:
-                protomers.append(protomer)
-
-        tools.process_output(
-            mol, "CREST", mol.charge, mol.spin, "protomers", tdir, remove_tdir, parent_dir
-        )
-
-        if protomers:
-            return protomers
+                logger.error(f"{mol.name}, no suitable protomers found.")
+                tools.add_flag(mol, "No suitable protomers.")
+                return None
         else:
-            logger.error(f"{mol.name}, no suitable protomers found.")
-            tools.add_flag(mol, "No suitable protomers.")
-            os.chdir(parent_dir)
+            logger.error(f"{mol.name}, protomer search failed.")
+            tools.add_flag(mol, "Protomer search failed.")
             return None
-    else:
-        logger.error(f"{mol.name}, protomer search failed.")
-        tools.add_flag(mol, "Protomer search failed.")
-        os.chdir(parent_dir)
-        return None
 
 
 def qcg_grow(
@@ -365,7 +381,6 @@ def qcg_grow(
     if spin is None:
         spin = solute.spin
 
-    parent_dir = os.getcwd()
     logger.info(
         f"{solute.name}, charge {charge} spin {spin} - CREST QCG GROW - {nsolv} solvent molecules"
     )
@@ -373,28 +388,30 @@ def qcg_grow(
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_G", dir=os.getcwd())
 
-    os.chdir(tdir)
-    solute.write_xyz("solute.xyz")
-    solvent.write_xyz("solvent.xyz")
+    with sh.pushd(tdir):
 
-    os.system(
-        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
-    )
+        solute.write_xyz("solute.xyz")
+        solvent.write_xyz("solvent.xyz")
 
-    solute.write_xyz(f"{solute.name}.xyz")
-    cluster = Molecule(f"{solute.name}.xyz", charge, spin)
+        os.system(
+            f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+        )
 
-    try:
-        cluster.update_geometry("grow/cluster.xyz")
-    except:
-        logger.error(f"{solute.name}, cluster growth failed.")
-        tools.add_flag(solute, "Cluster growth failed.")
-        os.chdir(parent_dir)
-        return None
+        solute.write_xyz(f"{solute.name}.xyz")
+        cluster = Molecule(f"{solute.name}.xyz", charge, spin)
 
-    tools.process_output(solute, "QCG", charge, spin, "grow", tdir, remove_tdir, parent_dir)
+        try:
+            cluster.update_geometry("grow/cluster.xyz")
+        except:
+            logger.error(f"{solute.name}, cluster growth failed.")
+            tools.add_flag(solute, "Cluster growth failed.")
+            return None
 
-    return cluster
+        tools.process_output(solute, "QCG", "grow", charge, spin)
+        if remove_tdir:
+            shutil.rmtree(tdir)
+
+        return cluster
 
 
 def qcg_ensemble(
@@ -465,7 +482,6 @@ def qcg_ensemble(
     if spin is None:
         spin = solute.spin
 
-    parent_dir = os.getcwd()
     logger.info(
         f"{solute.name}, charge {charge} spin {spin} - CREST QCG ENSEMBLE - {nsolv} solvent molecules"
     )
@@ -473,23 +489,27 @@ def qcg_ensemble(
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_E", dir=os.getcwd())
 
-    os.chdir(tdir)
-    solute.write_xyz("solute.xyz")
-    solvent.write_xyz("solvent.xyz")
+    with sh.pushd(tdir):
 
-    os.system(
-        f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
-    )
+        solute.write_xyz("solute.xyz")
+        solvent.write_xyz("solvent.xyz")
 
-    try:
-        ensemble = tools.split_multixyz(solute, file=f"ensemble/{ensemble_choice}.xyz", suffix="e")
+        os.system(
+            f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+        )
 
-    except:
-        logger.error(f"{solute.name}, cluster growth failed.")
-        tools.add_flag(solute, "Cluster growth failed.")
-        os.chdir(parent_dir)
-        return None
+        try:
+            ensemble = tools.split_multixyz(
+                solute, file=f"ensemble/{ensemble_choice}.xyz", suffix="e"
+            )
 
-    tools.process_output(solute, "QCG", charge, spin, "ensemble", tdir, remove_tdir, parent_dir)
+        except:
+            logger.error(f"{solute.name}, cluster growth failed.")
+            tools.add_flag(solute, "Cluster growth failed.")
+            return None
 
-    return ensemble
+        tools.process_output(solute, "QCG", "ensemble", charge, spin)
+        if remove_tdir:
+            shutil.rmtree(tdir)
+
+        return ensemble

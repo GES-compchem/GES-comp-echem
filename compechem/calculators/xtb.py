@@ -1,4 +1,4 @@
-import os, copy
+import os, copy, sh, shutil
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.molecule import Molecule, Energies
@@ -81,7 +81,6 @@ class XtbInput:
         if spin is None:
             spin = mol.spin
 
-        parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
@@ -89,45 +88,52 @@ class XtbInput:
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_spe", dir=os.getcwd(),
         )
 
-        os.chdir(tdir)
-        mol.write_xyz(f"{mol.name}.xyz")
+        with sh.pushd(tdir):
 
-        if self.solvation is True:
-            os.system(
-                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
-            )
+            mol.write_xyz(f"{mol.name}.xyz")
 
-        else:
-            os.system(
-                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
-            )
+            if self.solvation is True:
+                os.system(
+                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                )
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "TOTAL ENERGY" in line:
-                    electronic_energy = float(line.split()[-3])
+            else:
+                os.system(
+                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                )
 
-        vibronic_energy = None
+            with open("output.out", "r") as out:
+                for line in out:
+                    if "TOTAL ENERGY" in line:
+                        electronic_energy = float(line.split()[-3])
 
-        if self.method in mol.energies:
-            vibronic_energy = mol.energies[f"{self.method}"].vibronic
+            vibronic_energy = None
 
-        if inplace is False:
+            if self.method in mol.energies:
+                vibronic_energy = mol.energies[f"{self.method}"].vibronic
 
-            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+            if inplace is False:
 
-            newmol.energies = copy.copy(mol.energies)
+                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
+                newmol.energies = copy.copy(mol.energies)
 
-        else:
-            mol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
+                newmol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
 
-        tools.process_output(mol, self.method, charge, spin, "spe", tdir, remove_tdir, parent_dir)
+            else:
+                mol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
+
+            tools.process_output(mol, self.method, "spe", charge, spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
 
         if inplace is False:
             return newmol
@@ -179,7 +185,6 @@ class XtbInput:
         if spin is None:
             spin = mol.spin
 
-        parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
@@ -187,66 +192,71 @@ class XtbInput:
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_opt", dir=os.getcwd(),
         )
 
-        os.chdir(tdir)
-        mol.write_xyz(f"{mol.name}.xyz")
+        with sh.pushd(tdir):
 
-        if self.solvation is True:
-            os.system(
-                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
-            )
+            mol.write_xyz(f"{mol.name}.xyz")
 
-        else:
-            os.system(
-                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
-            )
-
-        if tools.dissociation_check() is True:
-            logger.error(f"Dissociation spotted for {mol.name}.")
-            tools.add_flag(
-                mol, f"Dissociation occurred during geometry optimization with {self.method}."
-            )
-            os.chdir(parent_dir)
-            return None
-        elif tools.cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
-            logger.error(f"Cyclization change spotted for {mol.name}.")
-            tools.add_flag(
-                mol, f"Cyclization change occurred during geometry optimization with {self.method}."
-            )
-            os.chdir(parent_dir)
-            return None
-        else:
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "TOTAL ENERGY" in line:
-                        electronic_energy = float(line.split()[-3])
-                    if "G(RRHO) contrib." in line:
-                        vibronic_energy = float(line.split()[-3])
-
-            if inplace is False:
-
-                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
-
-                newmol.energies = copy.copy(mol.energies)
-
-                newmol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+            if self.solvation is True:
+                os.system(
+                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
-
-                newmol.update_geometry("xtbopt.xyz")
 
             else:
-                mol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
+                os.system(
+                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
-                mol.update_geometry("xtbopt.xyz")
+            if tools.dissociation_check() is True:
+                logger.error(f"Dissociation spotted for {mol.name}.")
+                tools.add_flag(
+                    mol,
+                    f"Dissociation occurred during geometry optimization with {self.method}.",
+                )
+                return None
+            elif tools.cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
+                logger.error(f"Cyclization change spotted for {mol.name}.")
+                tools.add_flag(
+                    mol,
+                    f"Cyclization change occurred during geometry optimization with {self.method}.",
+                )
+                return None
+            else:
+                with open("output.out", "r") as out:
+                    for line in out:
+                        if "TOTAL ENERGY" in line:
+                            electronic_energy = float(line.split()[-3])
+                        if "G(RRHO) contrib." in line:
+                            vibronic_energy = float(line.split()[-3])
 
-            tools.process_output(
-                mol, self.method, charge, spin, "opt", tdir, remove_tdir, parent_dir
-            )
+                if inplace is False:
 
-            if inplace is False:
-                return newmol
+                    newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+
+                    newmol.energies = copy.copy(mol.energies)
+
+                    newmol.energies[f"{self.method}"] = Energies(
+                        method=f"{self.method}",
+                        electronic=electronic_energy,
+                        vibronic=vibronic_energy,
+                    )
+
+                    newmol.update_geometry("xtbopt.xyz")
+
+                else:
+                    mol.energies[f"{self.method}"] = Energies(
+                        method=f"{self.method}",
+                        electronic=electronic_energy,
+                        vibronic=vibronic_energy,
+                    )
+
+                    mol.update_geometry("xtbopt.xyz")
+
+                tools.process_output(mol, self.method, "opt", charge, spin)
+                if remove_tdir:
+                    shutil.rmtree(tdir)
+
+        if inplace is False:
+            return newmol
 
     def freq(
         self,
@@ -292,50 +302,58 @@ class XtbInput:
         if spin is None:
             spin = mol.spin
 
-        parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_freq", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_freq",
+            dir=os.getcwd(),
         )
 
-        os.chdir(tdir)
-        mol.write_xyz(f"{mol.name}.xyz")
+        with sh.pushd(tdir):
 
-        if self.solvation is True:
-            os.system(
-                f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
-            )
+            mol.write_xyz(f"{mol.name}.xyz")
 
-        else:
-            os.system(
-                f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
-            )
+            if self.solvation is True:
+                os.system(
+                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                )
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "TOTAL ENERGY" in line:
-                    electronic_energy = float(line.split()[-3])
-                if "G(RRHO) contrib." in line:
-                    vibronic_energy = float(line.split()[-3])
+            else:
+                os.system(
+                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                )
 
-        if inplace is False:
+            with open("output.out", "r") as out:
+                for line in out:
+                    if "TOTAL ENERGY" in line:
+                        electronic_energy = float(line.split()[-3])
+                    if "G(RRHO) contrib." in line:
+                        vibronic_energy = float(line.split()[-3])
 
-            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+            if inplace is False:
 
-            newmol.energies = copy.copy(mol.energies)
+                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
+                newmol.energies = copy.copy(mol.energies)
 
-        else:
-            mol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
+                newmol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
 
-        tools.process_output(mol, self.method, charge, spin, "freq", tdir, remove_tdir, parent_dir)
+            else:
+                mol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
+
+            tools.process_output(mol, self.method, "freq", charge, spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
 
         if inplace is False:
             return newmol

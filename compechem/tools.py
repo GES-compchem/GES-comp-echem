@@ -134,14 +134,7 @@ def save_ext(ext: list, output_dir: str):
 
 
 def process_output(
-    mol: Molecule,
-    method: str,
-    charge: int,
-    spin: int,
-    calc: str,
-    tdir: str,
-    remove_tdir: bool,
-    parent_dir: str,
+    mol: Molecule, method: str, calc: str, charge: int = None, spin: int = None,
 ):
     """Processes the output of a calculation, copying the output files to a safe directory in the
     parent directory tree, and cleans the temporary directory if requested.
@@ -152,20 +145,18 @@ def process_output(
         Molecules processed in the calculation
     method : str
         level of theory for the calculation
-    charge : int
-        Charge of the molecule in the calculation
-    spin : int
-        Spin of the molecule in the calculation
     calc : str
         Type of calculation
-    tdir : str
-        Temporary directory
-    remove_tdir : bool
-        If true, removes the temporary directory
-    parent_dir : str
-        Parent directory to return to after the calculation is done    
-
+    charge : int, optional
+        Charge of the molecule in the calculation
+    spin : int, optional
+        Spin of the molecule in the calculation
     """
+
+    if charge is None:
+        charge = mol.charge
+    if spin is None:
+        spin = mol.spin
 
     os.makedirs("../output_files", exist_ok=True)
     shutil.copy(
@@ -177,10 +168,6 @@ def process_output(
         shutil.copy(
             "output.err", f"../error_files/{mol.name}_{charge}_{spin}_{method}_{calc}.err",
         )
-
-    if remove_tdir is True:
-        shutil.rmtree(tdir)
-    os.chdir(parent_dir)
 
 
 def cyclization_check(start_file: str, end_file: str):
@@ -239,7 +226,9 @@ def dissociation_check():
     """
 
     mol_file = [f for f in os.listdir(".") if f.endswith(".mol")][-1]
-    end_mol = Chem.MolFromMolFile(mol_file, sanitize=False, removeHs=False, strictParsing=False)
+    end_mol = Chem.MolFromMolFile(
+        mol_file, sanitize=False, removeHs=False, strictParsing=False
+    )
     end_smiles = Chem.MolToSmiles(end_mol)
 
     if "." in end_smiles:
@@ -248,7 +237,9 @@ def dissociation_check():
         return False
 
 
-def split_multixyz(mol: Molecule, file: str, suffix: str, charge: int = None, spin: int = None):
+def split_multixyz(
+    mol: Molecule, file: str, suffix: str, charge: int = None, spin: int = None
+):
     """Splits a .xyz file containing multiple structures into individual structures.
 
     Parameters

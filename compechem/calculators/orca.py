@@ -1,4 +1,4 @@
-import os, copy
+import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.molecule import Molecule, Energies
@@ -89,7 +89,6 @@ class OrcaInput:
         if spin is None:
             spin = mol.spin
 
-        parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
@@ -97,51 +96,60 @@ class OrcaInput:
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_spe", dir=os.getcwd(),
         )
 
-        os.chdir(tdir)
-        mol.write_xyz(f"{mol.name}.xyz")
+        with sh.pushd(tdir):
 
-        with open("input.inp", "w") as inp:
-            inp.write(
-                f"%pal nprocs {ncores} end\n"
-                f"%maxcore {maxcore}\n"
-                f"! {self.method} {self.basis_set} {self.optionals}\n"
-                f"! RIJCOSX {self.aux_basis}\n"
-            )
-            if self.solvation is True:
-                inp.write("%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n")
-            inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            mol.write_xyz(f"{mol.name}.xyz")
 
-        os.system("$ORCADIR/orca input.inp > output.out")
+            with open("input.inp", "w") as inp:
+                inp.write(
+                    f"%pal nprocs {ncores} end\n"
+                    f"%maxcore {maxcore}\n"
+                    f"! {self.method} {self.basis_set} {self.optionals}\n"
+                    f"! RIJCOSX {self.aux_basis}\n"
+                )
+                if self.solvation is True:
+                    inp.write(
+                        "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+                    )
+                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "FINAL SINGLE POINT ENERGY" in line:
-                    electronic_energy = float(line.split()[-1])
+            os.system("$ORCADIR/orca input.inp > output.out")
 
-        vibronic_energy = None
+            with open("output.out", "r") as out:
+                for line in out:
+                    if "FINAL SINGLE POINT ENERGY" in line:
+                        electronic_energy = float(line.split()[-1])
 
-        if self.method in mol.energies:
-            vibronic_energy = mol.energies[f"{self.method}"].vibronic
+            vibronic_energy = None
 
-        if inplace is False:
+            if self.method in mol.energies:
+                vibronic_energy = mol.energies[f"{self.method}"].vibronic
 
-            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+            if inplace is False:
 
-            newmol.energies = copy.copy(mol.energies)
+                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
+                newmol.energies = copy.copy(mol.energies)
 
-        else:
-            mol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
+                newmol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
 
-        tools.process_output(mol, self.method, charge, spin, "spe", tdir, remove_tdir, parent_dir)
+            else:
+                mol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
 
-        if inplace is False:
-            return newmol
+            tools.process_output(mol, self.method, "spe", charge, spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+
+            if inplace is False:
+                return newmol
 
     def opt(
         self,
@@ -187,7 +195,6 @@ class OrcaInput:
         if spin is None:
             spin = mol.spin
 
-        parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
@@ -195,60 +202,66 @@ class OrcaInput:
             prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_opt", dir=os.getcwd(),
         )
 
-        os.chdir(tdir)
-        mol.write_xyz(f"{mol.name}.xyz")
+        with sh.pushd(tdir):
+            mol.write_xyz(f"{mol.name}.xyz")
 
-        with open("input.inp", "w") as inp:
-            inp.write(
-                f"%pal nprocs {ncores} end\n"
-                f"%maxcore {maxcore}\n"
-                f"! {self.method} {self.basis_set} {self.optionals}\n"
-                f"! RIJCOSX {self.aux_basis}\n"
-            )
-            if self.solvation is True:
+            with open("input.inp", "w") as inp:
                 inp.write(
-                    "! Opt NumFreq\n"
-                    "%CPCM\n"
-                    "  SMD True\n"
-                    f'  SMDsolvent "{self.solvent}"\n'
-                    "end\n"
+                    f"%pal nprocs {ncores} end\n"
+                    f"%maxcore {maxcore}\n"
+                    f"! {self.method} {self.basis_set} {self.optionals}\n"
+                    f"! RIJCOSX {self.aux_basis}\n"
                 )
+                if self.solvation is True:
+                    inp.write(
+                        "! Opt NumFreq\n"
+                        "%CPCM\n"
+                        "  SMD True\n"
+                        f'  SMDsolvent "{self.solvent}"\n'
+                        "end\n"
+                    )
+                else:
+                    inp.write("! Opt Freq\n")
+                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+
+            os.system("$ORCADIR/orca input.inp > output.out")
+
+            with open("output.out", "r") as out:
+                for line in out:
+                    if "FINAL SINGLE POINT ENERGY" in line:
+                        electronic_energy = float(line.split()[-1])
+                    if "G-E(el)" in line:
+                        vibronic_energy = float(line.split()[-4])
+
+            if inplace is False:
+
+                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+
+                newmol.energies = copy.copy(mol.energies)
+
+                newmol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
+
+                newmol.update_geometry(f"{mol.name}.xyz")
+
             else:
-                inp.write("! Opt Freq\n")
-            inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+                mol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
 
-        os.system("$ORCADIR/orca input.inp > output.out")
+                mol.update_geometry(f"{mol.name}.xyz")
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "FINAL SINGLE POINT ENERGY" in line:
-                    electronic_energy = float(line.split()[-1])
-                if "G-E(el)" in line:
-                    vibronic_energy = float(line.split()[-4])
+            tools.process_output(mol, self.method, "opt", charge, spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
 
-        if inplace is False:
-
-            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
-
-            newmol.energies = copy.copy(mol.energies)
-
-            newmol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
-
-            newmol.update_geometry(f"{mol.name}.xyz")
-
-        else:
-            mol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
-
-            mol.update_geometry(f"{mol.name}.xyz")
-
-        tools.process_output(mol, self.method, charge, spin, "opt", tdir, remove_tdir, parent_dir)
-
-        if inplace is False:
-            return newmol
+            if inplace is False:
+                return newmol
 
     def freq(
         self,
@@ -294,64 +307,72 @@ class OrcaInput:
         if spin is None:
             spin = mol.spin
 
-        parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_freq", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_freq",
+            dir=os.getcwd(),
         )
 
-        os.chdir(tdir)
-        mol.write_xyz(f"{mol.name}.xyz")
+        with sh.pushd(tdir):
 
-        with open("input.inp", "w") as inp:
-            inp.write(
-                f"%pal nprocs {ncores} end\n"
-                f"%maxcore {maxcore}\n"
-                f"! {self.method} {self.basis_set} {self.optionals}\n"
-                f"! RIJCOSX {self.aux_basis}\n"
-            )
-            if self.solvation is True:
+            mol.write_xyz(f"{mol.name}.xyz")
+
+            with open("input.inp", "w") as inp:
                 inp.write(
-                    "! NumFreq\n"
-                    "%CPCM\n"
-                    "  SMD True\n"
-                    f'  SMDsolvent "{self.solvent}"\n'
-                    "end\n"
+                    f"%pal nprocs {ncores} end\n"
+                    f"%maxcore {maxcore}\n"
+                    f"! {self.method} {self.basis_set} {self.optionals}\n"
+                    f"! RIJCOSX {self.aux_basis}\n"
                 )
+                if self.solvation is True:
+                    inp.write(
+                        "! NumFreq\n"
+                        "%CPCM\n"
+                        "  SMD True\n"
+                        f'  SMDsolvent "{self.solvent}"\n'
+                        "end\n"
+                    )
+                else:
+                    inp.write("! Freq\n")
+                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+
+            os.system("$ORCADIR/orca input.inp > output.out")
+
+            with open("output.out", "r") as out:
+                for line in out:
+                    if "FINAL SINGLE POINT ENERGY" in line:
+                        electronic_energy = float(line.split()[-1])
+                    if "G-E(el)" in line:
+                        vibronic_energy = float(line.split()[-4])
+
+            if inplace is False:
+
+                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+
+                newmol.energies = copy.copy(mol.energies)
+
+                newmol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
+
             else:
-                inp.write("! Freq\n")
-            inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+                mol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
 
-        os.system("$ORCADIR/orca input.inp > output.out")
+            tools.process_output(mol, self.method, "freq", charge, spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "FINAL SINGLE POINT ENERGY" in line:
-                    electronic_energy = float(line.split()[-1])
-                if "G-E(el)" in line:
-                    vibronic_energy = float(line.split()[-4])
-
-        if inplace is False:
-
-            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
-
-            newmol.energies = copy.copy(mol.energies)
-
-            newmol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
-
-        else:
-            mol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
-
-        tools.process_output(mol, self.method, charge, spin, "freq", tdir, remove_tdir, parent_dir)
-
-        if inplace is False:
-            return newmol
+            if inplace is False:
+                return newmol
 
     def nfreq(
         self,
@@ -397,60 +418,68 @@ class OrcaInput:
         if spin is None:
             spin = mol.spin
 
-        parent_dir = os.getcwd()
         logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} NFREQ")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_nfreq", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_nfreq",
+            dir=os.getcwd(),
         )
 
-        os.chdir(tdir)
-        mol.write_xyz(f"{mol.name}.xyz")
+        with sh.pushd(tdir):
 
-        with open("input.inp", "w") as inp:
-            inp.write(
-                f"%pal nprocs {ncores} end\n"
-                f"%maxcore {maxcore}\n"
-                f"! {self.method} {self.basis_set} {self.optionals}\n"
-                f"! RIJCOSX {self.aux_basis}\n"
-                "! NumFreq\n"
-            )
-            if self.solvation is True:
-                inp.write("%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n")
+            mol.write_xyz(f"{mol.name}.xyz")
 
-            inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            with open("input.inp", "w") as inp:
+                inp.write(
+                    f"%pal nprocs {ncores} end\n"
+                    f"%maxcore {maxcore}\n"
+                    f"! {self.method} {self.basis_set} {self.optionals}\n"
+                    f"! RIJCOSX {self.aux_basis}\n"
+                    "! NumFreq\n"
+                )
+                if self.solvation is True:
+                    inp.write(
+                        "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+                    )
 
-        os.system("$ORCADIR/orca input.inp > output.out")
+                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-        with open("output.out", "r") as out:
-            for line in out:
-                if "FINAL SINGLE POINT ENERGY" in line:
-                    electronic_energy = float(line.split()[-1])
-                if "G-E(el)" in line:
-                    vibronic_energy = float(line.split()[-4])
+            os.system("$ORCADIR/orca input.inp > output.out")
 
-        if inplace is False:
+            with open("output.out", "r") as out:
+                for line in out:
+                    if "FINAL SINGLE POINT ENERGY" in line:
+                        electronic_energy = float(line.split()[-1])
+                    if "G-E(el)" in line:
+                        vibronic_energy = float(line.split()[-4])
 
-            newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+            if inplace is False:
 
-            newmol.energies = copy.copy(mol.energies)
+                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
 
-            newmol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
+                newmol.energies = copy.copy(mol.energies)
 
-        else:
-            mol.energies[f"{self.method}"] = Energies(
-                method=f"{self.method}", electronic=electronic_energy, vibronic=vibronic_energy
-            )
+                newmol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
 
-        tools.process_output(
-            mol, self.method, charge, spin, "numfreq", tdir, remove_tdir, parent_dir
-        )
+            else:
+                mol.energies[f"{self.method}"] = Energies(
+                    method=f"{self.method}",
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
 
-        if inplace is False:
-            return newmol
+            tools.process_output(mol, self.method, "numfreq", charge, spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+
+            if inplace is False:
+                return newmol
 
 
 class M06(OrcaInput):
