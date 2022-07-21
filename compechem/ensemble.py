@@ -1,5 +1,5 @@
 import numpy as np
-from compechem.molecule import Energies
+from compechem.molecule import Energies, Molecule
 
 
 class Ensemble:
@@ -17,20 +17,27 @@ class Ensemble:
         calculated at various levels of theory
     """
 
-    def __init__(self, molecules_list: list) -> None:
+    def __init__(self, molecules_list) -> None:
         """
         Parameters
         ----------
-        molecules_list : list
-            list of Molecule objects generating the ensemble.
+        molecules_list : any
+            generator for creating the Ensemble.
+            Options:
+                - list of Molecule objects
+                - .xyz trajectory file
         """
 
-        self.name = molecules_list[0].name
-        self.atomcount = molecules_list[0].atomcount
+        if type(molecules_list) == list and type(molecules_list[0] == Molecule):
+            self.name = molecules_list[0].name
+            self.atomcount = molecules_list[0].atomcount
 
-        self.molecules = [mol for mol in molecules_list]
+            self.molecules = [mol for mol in molecules_list]
 
-        self.energies: dict = {}
+            self.energies: dict = {}
+
+        elif type(molecules_list) == str and ".xyz" in molecules_list:
+            print("I am a trajectory file!")
 
     def boltzmann_average(
         self, method_el: str, method_vib: str = None, temperature: float = 297.15

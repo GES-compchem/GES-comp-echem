@@ -2,6 +2,7 @@ import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.molecule import Molecule, Energies
+from compechem.ensemble import Ensemble
 from compechem import tools
 import logging
 
@@ -303,7 +304,7 @@ class DFTBInput:
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.hamiltonian.split()[0]}_md",
+            suffix=f"_{self.hamiltonian.split()[0]}_md_nvt",
             dir=os.getcwd(),
         )
 
@@ -388,8 +389,10 @@ class DFTBInput:
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
                 os.system(f"dftb+ > output.out 2>> output.err")
 
-            with open("md.out", "r") as out:
-                for line in out:
-                    if "Total MD Energy" in line:
-                        electronic_energy = float(line.split()[2])
+            tools.save_dftb_trajectory(f"{mol.name}.xyz")
 
+            tools.process_output(mol, self.hamiltonian, "md_nvt", charge, spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+
+        trajectory = Ensemble(f"MD_trajectories/{mol.name}.xyz")

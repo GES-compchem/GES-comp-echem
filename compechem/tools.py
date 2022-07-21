@@ -283,3 +283,40 @@ def split_multixyz(
             num += 1
 
     return molecules_list
+
+
+def save_dftb_trajectory(output_name):
+    """Parses a geo_end.xyz trajectory and an md.out file to export a single trajectory
+    file also containing the energies for all frames
+
+    Parameters
+    ----------
+    output_name : str
+        name of the output trajectory file
+    """
+
+    os.makedirs("../MD_trajectories", exist_ok=True)
+
+    energies = []
+    with open("md.out", "r") as f:
+        for line in f:
+            if "Total MD Energy" in line:
+                energies.append(float(line.split()[3]))
+
+    with open("geo_end.xyz", "r") as inp:
+        with open(f"../MD_trajectories/{output_name}", "w") as out:
+            for linenum, line in enumerate(inp):
+                if linenum == 0:
+                    atomcount = int(line)
+                if linenum % (atomcount + 2) == 0:
+                    out.write(line)
+                if linenum % (atomcount + 2) == 1:
+                    md_iter = line.rstrip("\n")
+                    out.write(f"  {md_iter}\tEnergy: {energies.pop(0)} Eh\n")
+                if linenum % (atomcount + 2) > 1:
+                    out.write(
+                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
+                    )
+                if linenum // 40 > 3:
+                    break
+
