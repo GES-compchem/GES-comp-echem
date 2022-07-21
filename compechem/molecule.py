@@ -56,7 +56,14 @@ class Molecule:
         list containing all "warning" flags which might be encountered during calculations.
     """
 
-    def __init__(self, xyz_file: str, charge: int = 0, spin: int = 1) -> None:
+    def __init__(
+        self,
+        xyz_file: str,
+        charge: int = 0,
+        spin: int = 1,
+        geom_type: str = "C",
+        box_side: float = None,
+    ) -> None:
         """
         Parameters
         ----------
@@ -66,13 +73,25 @@ class Molecule:
             total charge of the molecule. Defaults to 0 (neutral)
         spin : int, optional
             total spin of the molecule. Defaults to 1 (singlet)
+        geom_type : str, optional
+            type of geometry for the molecule. 
+                Options: 
+                - C (default) = cluster (single molecule)
+                - S = Supercell (periodic system)
+        box_side : float, optional
+            for periodic systems, defines the length (in Å) of the box side
         """
 
         self.name = os.path.basename(xyz_file).strip(".xyz")
         self.charge: int = charge
         self.spin: int = spin
+
         self.atomcount: int = None
         self.geometry: list = []
+
+        self.geom_type = geom_type
+        self.box_side = box_side
+
         self.flags: list = []
 
         self.energies: dict = {}
@@ -99,20 +118,16 @@ class Molecule:
             for line in self.geometry:
                 file.write(line)
 
-    def write_gen(self, gen_file: str, geom_type: str, box_side: float):
+    def write_gen(self, gen_file: str):
         """Writes the current geometry to a .gen file.
 
         Parameters
         ----------
         gen_file : str
             path to the output .gen file
-        geom_type : str
-            type of geometry. C = cluster (single molecule), S = supercell (periodic system)
-        box_side : float
-            size of the periodic box size (in Angstrom).
         """
         with open(gen_file, "w") as file:
-            file.write(f" {str(self.atomcount)} {geom_type}\n")
+            file.write(f" {str(self.atomcount)} {self.geom_type}\n")
             atom_types = []
             for line in self.geometry:
                 if line.split()[0] not in atom_types:
@@ -126,11 +141,11 @@ class Molecule:
                     if line.split()[0] == atom:
                         file.write(f"{i} {line.replace(atom, str(index + 1))}")
                         i += 1
-            if geom_type == "S":
+            if self.geom_type == "S":
                 file.write(f" 0.000 0.000 0.000\n")
-                file.write(f" {box_side} 0.000 0.000\n")
-                file.write(f" 0.000 {box_side} 0.000\n")
-                file.write(f" 0.000 0.000 {box_side}")
+                file.write(f" {self.box_side} 0.000 0.000\n")
+                file.write(f" 0.000 {self.box_side} 0.000\n")
+                file.write(f" 0.000 0.000 {self.box_side}")
 
     def update_geometry(self, xyz_file: str):
         """Updates the current geometry from an external .xyz file

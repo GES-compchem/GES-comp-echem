@@ -30,7 +30,7 @@ def packmol_cube(
     target_dens : float, optional
         target density for the solvated box, in g/L
     cube_side : float, optional
-        length of the box side, in Angstrom
+        length of the box side, in Å
     
     Returns
     -------
@@ -143,7 +143,9 @@ def packmol_cube(
 
         os.system("packmol < input.inp > output.out")
 
-        solvated_molecule = Molecule(f"solvated_{solute}")
+        solvated_molecule = Molecule(
+            f"solvated_{solute}", geom_type="S", box_side=cube_side
+        )
 
         process_output(mol=solute_mol, method="packmol", calc="cube")
         shutil.rmtree(tdir)
