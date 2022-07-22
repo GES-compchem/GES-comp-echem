@@ -110,7 +110,7 @@ class XtbInput:
             vibronic_energy = None
 
             if self.method in mol.energies:
-                vibronic_energy = mol.energies[f"{self.method}"].vibronic
+                vibronic_energy = mol.energies[self.method].vibronic
 
             if inplace is False:
 
@@ -118,15 +118,15 @@ class XtbInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                newmol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
 
             else:
-                mol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                mol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -234,8 +234,8 @@ class XtbInput:
 
                     newmol.energies = copy.copy(mol.energies)
 
-                    newmol.energies[f"{self.method}"] = Energies(
-                        method=f"{self.method}",
+                    newmol.energies[self.method] = Energies(
+                        method=self.method,
                         electronic=electronic_energy,
                         vibronic=vibronic_energy,
                     )
@@ -243,8 +243,8 @@ class XtbInput:
                     newmol.update_geometry("xtbopt.xyz")
 
                 else:
-                    mol.energies[f"{self.method}"] = Energies(
-                        method=f"{self.method}",
+                    mol.energies[self.method] = Energies(
+                        method=self.method,
                         electronic=electronic_energy,
                         vibronic=vibronic_energy,
                     )
@@ -338,15 +338,15 @@ class XtbInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                newmol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
 
             else:
-                mol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                mol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )

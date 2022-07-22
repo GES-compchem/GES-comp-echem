@@ -206,7 +206,7 @@ class DFTBInput:
             vibronic_energy = None
 
             if self.parameters in mol.energies:
-                vibronic_energy = mol.energies[f"{self.parameters}"].vibronic
+                vibronic_energy = mol.energies[self.parameters].vibronic
 
             if inplace is False:
 
@@ -218,15 +218,15 @@ class DFTBInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.parameters}"] = Energies(
-                    method=f"{self.parameters}",
+                newmol.energies[self.parameters] = Energies(
+                    method=self.parameters,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
 
             else:
-                mol.energies[f"{self.parameters}"] = Energies(
-                    method=f"{self.parameters}",
+                mol.energies[self.parameters] = Energies(
+                    method=self.parameters,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -396,3 +396,4 @@ class DFTBInput:
                 shutil.rmtree(tdir)
 
         trajectory = Ensemble(f"MD_trajectories/{mol.name}.xyz")
+        trajectory.read_energies(self.parameters)

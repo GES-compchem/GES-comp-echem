@@ -317,6 +317,4 @@ def save_dftb_trajectory(output_name):
                     out.write(
                         f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                     )
-                if linenum // 40 > 3:
-                    break
 

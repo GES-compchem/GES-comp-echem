@@ -123,7 +123,7 @@ class OrcaInput:
             vibronic_energy = None
 
             if self.method in mol.energies:
-                vibronic_energy = mol.energies[f"{self.method}"].vibronic
+                vibronic_energy = mol.energies[self.method].vibronic
 
             if inplace is False:
 
@@ -131,15 +131,15 @@ class OrcaInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                newmol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
 
             else:
-                mol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                mol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -239,8 +239,8 @@ class OrcaInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                newmol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -248,8 +248,8 @@ class OrcaInput:
                 newmol.update_geometry(f"{mol.name}.xyz")
 
             else:
-                mol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                mol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -354,15 +354,15 @@ class OrcaInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                newmol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
 
             else:
-                mol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                mol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -461,15 +461,15 @@ class OrcaInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                newmol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
 
             else:
-                mol.energies[f"{self.method}"] = Energies(
-                    method=f"{self.method}",
+                mol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )

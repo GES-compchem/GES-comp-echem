@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from compechem.molecule import Energies, Molecule
 
@@ -37,7 +38,36 @@ class Ensemble:
             self.energies: dict = {}
 
         elif type(molecules_list) == str and ".xyz" in molecules_list:
-            print("I am a trajectory file!")
+
+            self.name = os.path.basename(molecules_list).strip(".xyz")
+            self.trajectory: str = molecules_list
+            self.energies: dict = {}
+
+            with open(self.trajectory, "r") as f:
+                self.atomcount = int(f.readline())
+
+    def read_energies(self, method):
+        """reads energies from trajectory file (parsed by tools.save_dftb_trajectory()) and
+        calculates the average energy for the given trajectory
+
+        Parameters
+        ----------
+        method : str
+            level of theory to assign to the self.energies dictionary key
+        """
+
+        energies = []
+
+        with open(self.trajectory, "r") as f:
+            for line in f:
+                if "Energy" in line:
+                    energies.append(float(line.split()[-2]))
+
+        average_energy = sum(energies) / len(energies)
+
+        self.energies[method] = Energies(
+            method=method, electronic=average_energy, vibronic=0
+        )
 
     def boltzmann_average(
         self, method_el: str, method_vib: str = None, temperature: float = 297.15
@@ -100,8 +130,8 @@ class Ensemble:
 
         boltzmann_entropy = -boltzmann_constant * np.sum(populations * np.log(populations))
 
-        self.energies[f"{method_el}"] = Energies(
-            method=f"{method_el}",
+        self.energies[method_el] = Energies(
+            method=method_el,
             electronic=np.sum([weighted_energies]) - temperature * boltzmann_entropy,
             vibronic=0,
         )
