@@ -397,3 +397,5 @@ class DFTBInput:
 
         trajectory = Ensemble(f"MD_trajectories/{mol.name}.xyz")
         trajectory.read_energies(self.parameters)
+
+        return trajectory
