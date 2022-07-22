@@ -285,8 +285,8 @@ class DFTBInput:
 
         Returns
         -------
-        newmol : Molecule object
-            Output molecule containing the new energies.
+        trajectory : Ensemble object
+            Ensemble containing the NVT MD trajectory data
         """
 
         if ncores is None:
