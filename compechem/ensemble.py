@@ -28,11 +28,11 @@ class Ensemble:
         """
         Parameters
         ----------
-        systems_list : any
+        systems_list : any iterable returning System objects
             generator for creating the Ensemble.
             Options:
                 - list of System objects
-                - .xyz trajectory file
+                - MDTrajectory iterator
         """
 
         self.name = systems_list[0].name
@@ -160,36 +160,40 @@ class Ensemble:
 
 
 class MDTrajectory:
-    def __init__(self, system, method):
+    def __init__(self, traj_filepath, method):
         """Iterator class for MD trajectories. Data is computed only when accessing the
         elements of the object (via __getitem__ or __iter__)
 
         Parameters
         ----------
-        system : str
-            name of the system outputted by an MD calculator
+        traj_path : str
+            path (prefix) of the trajectory files used for creating the MD run
         method : str
             level of theory at which the simulation was ran
         """
-        self.name = system
+        self.name = traj_filepath
         self.method = method
 
-        self.md_out = f"MD_data/{system}_md.out"
-        self.geo_end = f"MD_data/{system}_geo_end.xyz"
+        self.md_out = f"MD_data/{traj_filepath}_md.out"
+        self.geo_end = f"MD_data/{traj_filepath}_geo_end.xyz"
+
+        # rewrite with open()!!!!
         self.atomcount = int(getoutput(f"head -1 {self.geo_end}"))
 
         head = getoutput(f"head -50 {self.md_out}|grep step|head -2").split()
         mdrestartfreq = int(head[-1]) - int(head[-4])
 
+        # use for line in reversed(lines)!!
         nframes = int(getoutput(f"tail -50 {self.md_out}|grep step|tail -1").split()[-1])
 
         self.frames = list(range(0, nframes + 1, mdrestartfreq))
 
+    # fix this!!! (check MDanalysis)
     def __iter__(self):
         for index in self.frames:
-            yield self[index]
+            yield self.__getitem__(index, True)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index, call_from_iter: bool = False):
         """returns the System object corresponding to the requested index/MD step
 
         Parameters
@@ -202,6 +206,8 @@ class MDTrajectory:
         system
             System object corresponding to the requested frame in the MD simulation
         """
+        # (open issue) we need to find a way to have the self.geo_end open only once when
+        # called by __iter__ (I/O issues)
         with open(self.geo_end, "r") as f:
             with open(f"{self.name}_{index}.xyz", "w+") as o:
 
@@ -223,6 +229,7 @@ class MDTrajectory:
                     if start and i > start + self.atomcount + 1:
                         break
 
+        # implement bytestream input for System
         system = System(f"{self.name}_{index}.xyz")
         os.remove(f"{self.name}_{index}.xyz")
 
