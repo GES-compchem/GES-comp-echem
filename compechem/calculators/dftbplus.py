@@ -2,7 +2,7 @@ import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.molecule import Molecule, Energies
-from compechem.ensemble import Ensemble
+from compechem.ensemble import Ensemble, MDTrajectory
 from compechem import tools
 import logging
 
@@ -389,13 +389,17 @@ class DFTBInput:
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
                 os.system(f"dftb+ > output.out 2>> output.err")
 
-            tools.save_dftb_trajectory(f"{mol.name}.xyz")
+            import random, string
+
+            suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
+            tools.save_dftb_trajectory(f"{mol.name}_{suffix}")
 
             tools.process_output(mol, self.hamiltonian, "md_nvt", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
-        trajectory = Ensemble(f"MD_trajectories/{mol.name}.xyz")
-        trajectory.read_energies(self.parameters)
+        trajectory = MDTrajectory(f"{mol.name}_{suffix}", self.parameters)
+        for frame in trajectory:
+            print(frame.energies[self.parameters])
 
         return trajectory

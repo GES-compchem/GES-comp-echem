@@ -1,4 +1,7 @@
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Energies:
@@ -28,29 +31,30 @@ class Energies:
 
 
 class Properties:
-    """Class containing molecule properties (such as pKa)."""
+    """Class containing system properties (such as pKa)."""
 
     def __init__(self):
         self.pka: dict = {}
 
 
-class Molecule:
-    """Molecule object.
+# to be renamed as System
+class System:
+    """System object.
 
     Attributes
     ----------
     name : str
-        name of the molecule, taken from the .xyz file
+        name of the system, taken from the .xyz file
     charge : int
-        total charge of the molecule
+        total charge of the system
     spin : int
-        total spin of the molecule (2S+1)
+        total spin of the system (2S+1)
     atomcount : int
-        number of atoms contained in the molecule
+        number of atoms contained in the system
     geometry : list
-        list containing the atomic coordinates of the molecule
+        list containing the atomic coordinates of the system
     energies : dict
-        dictionary containing the electronic/vibronic energies of the molecule,
+        dictionary containing the electronic/vibronic energies of the system,
         calculated at various levels of theory
     flags : list
         list containing all "warning" flags which might be encountered during calculations.
@@ -68,13 +72,13 @@ class Molecule:
         Parameters
         ----------
         xyz_file : str
-            path with the .xyz file containing the molecule geometry
+            path with the .xyz file containing the system geometry
         charge : int, optional
-            total charge of the molecule. Defaults to 0 (neutral)
+            total charge of the system. Defaults to 0 (neutral)
         spin : int, optional
-            total spin of the molecule. Defaults to 1 (singlet)
+            total spin of the system. Defaults to 1 (singlet)
         geom_type : str, optional
-            type of geometry for the molecule. 
+            type of geometry for the system. 
                 Options: 
                 - C (default) = cluster (single molecule)
                 - S = Supercell (periodic system)
@@ -102,7 +106,9 @@ class Molecule:
                 if linenum == 0:
                     self.atomcount = int(line)
                 if linenum > 1 and linenum < self.atomcount + 2:
-                    self.geometry.append(line)
+                    self.geometry.append(
+                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
+                    )
 
     def write_xyz(self, xyz_file: str):
         """Writes the current geometry to a .xyz file.
@@ -169,4 +175,10 @@ class Molecule:
                 if linenum == 0:
                     self.atomcount = int(line)
                 if linenum > 1 and linenum < self.atomcount + 2:
-                    self.geometry.append(line)
+                    self.geometry.append(
+                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
+                    )
+
+
+class Molecule(System):
+    logger.warning("Molecule class is deprecated. Please use the System class instead!")

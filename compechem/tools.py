@@ -285,7 +285,23 @@ def split_multixyz(
     return molecules_list
 
 
-def save_dftb_trajectory(output_name):
+def save_dftb_trajectory(output_prefix):
+    """Saves the geo_end.xyz and md.out files to a temporary directory where an MDTrajectory
+    object can go read the data it needs.
+
+    Parameters
+    ----------
+    output_prefix : str
+        name of the output trajectory files prefix
+    """
+
+    os.makedirs("../MD_data", exist_ok=True)
+
+    shutil.move("md.out", f"../MD_data/{output_prefix}_md.out")
+    shutil.move("geo_end.xyz", f"../MD_data/{output_prefix}_geo_end.xyz")
+
+
+def parse_dftb_trajectory(output_name):
     """Parses a geo_end.xyz trajectory and an md.out file to export a single trajectory
     file also containing the energies for all frames
 
