@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Ensemble:
-    """Ensemble object, containing a series of Molecule objects.
+    """Ensemble object, containing a series of System objects.
 
     Attributes
     ----------

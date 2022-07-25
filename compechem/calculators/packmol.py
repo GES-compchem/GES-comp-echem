@@ -1,7 +1,7 @@
 import os, shutil, sh
 import logging
 from tempfile import mkdtemp
-from compechem.molecule import Molecule
+from compechem.molecule import System
 from compechem.tools import process_output
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def packmol_cube(
     
     Returns
     -------
-    Returns a Molecule object
+    Returns a System object
     """
 
     avogadro = 6.0221408e23
@@ -52,8 +52,8 @@ def packmol_cube(
         "I": 126.9045,
     }
 
-    solute_mol = Molecule(solute)
-    solvent_mol = Molecule(solvent)
+    solute_mol = System(solute)
+    solvent_mol = System(solvent)
 
     if nsolv and target_dens and cube_side:
         logger.error(
@@ -141,9 +141,7 @@ def packmol_cube(
 
         os.system("packmol < input.inp > output.out")
 
-        solvated_molecule = Molecule(
-            f"solvated_{solute}", geom_type="S", box_side=cube_side
-        )
+        solvated_molecule = System(f"solvated_{solute}", geom_type="S", box_side=cube_side)
 
         process_output(mol=solute_mol, method="packmol", calc="cube")
         shutil.rmtree(tdir)

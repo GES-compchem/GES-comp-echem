@@ -1,7 +1,7 @@
 import os, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.molecule import Molecule
+from compechem.molecule import System
 from compechem import tools
 import logging
 
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def tautomer_search(
-    mol: Molecule,
+    mol: System,
     ncores: int = None,
     maxcore=None,
     remove_tdir: bool = True,
@@ -19,7 +19,7 @@ def tautomer_search(
 
     Parameters
     ----------
-    mol : Molecule object
+    mol : System object
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
@@ -88,7 +88,7 @@ def tautomer_search(
 
 
 def conformer_search(
-    mol: Molecule,
+    mol: System,
     ncores: int = None,
     maxcore=None,
     remove_tdir: bool = True,
@@ -98,7 +98,7 @@ def conformer_search(
 
     Parameters
     ----------
-    mol : Molecule object
+    mol : System object
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
@@ -166,7 +166,7 @@ def conformer_search(
 
 
 def deprotonate(
-    mol: Molecule,
+    mol: System,
     ncores: int = None,
     maxcore=None,
     remove_tdir: bool = True,
@@ -176,7 +176,7 @@ def deprotonate(
 
     Parameters
     ----------
-    mol : Molecule object
+    mol : System object
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
@@ -247,7 +247,7 @@ def deprotonate(
 
 
 def protonate(
-    mol: Molecule,
+    mol: System,
     ncores: int = None,
     maxcore=None,
     remove_tdir: bool = True,
@@ -257,7 +257,7 @@ def protonate(
 
     Parameters
     ----------
-    mol : Molecule object
+    mol : System object
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
@@ -328,8 +328,8 @@ def protonate(
 
 
 def qcg_grow(
-    solute: Molecule,
-    solvent: Molecule,
+    solute: System,
+    solvent: System,
     charge: int = None,
     spin: int = None,
     method: str = "gfn2",
@@ -343,9 +343,9 @@ def qcg_grow(
 
     Parameters
     ----------
-    solute : Molecule object
+    solute : System object
         solute molecule to use in the calculation
-    solvent : Molecule object
+    solvent : System object
         solvent molecule to use in the calculation
     charge : int, optional
             total charge of the molecule. Default is taken from the solute molecule.
@@ -369,8 +369,8 @@ def qcg_grow(
 
     Returns
     -------
-    cluster : Molecule object
-        Molecule object containing the explicitly solvated input molecule
+    cluster : System object
+        System object containing the explicitly solvated input molecule
     """
 
     if ncores is None:
@@ -398,7 +398,7 @@ def qcg_grow(
         )
 
         solute.write_xyz(f"{solute.name}.xyz")
-        cluster = Molecule(f"{solute.name}.xyz", charge, spin)
+        cluster = System(f"{solute.name}.xyz", charge, spin)
 
         try:
             cluster.update_geometry("grow/cluster.xyz")
@@ -415,8 +415,8 @@ def qcg_grow(
 
 
 def qcg_ensemble(
-    solute: Molecule,
-    solvent: Molecule,
+    solute: System,
+    solvent: System,
     charge: int = None,
     spin: int = None,
     method: str = "gfn2",
@@ -432,9 +432,9 @@ def qcg_ensemble(
 
     Parameters
     ----------
-    solute : Molecule object
+    solute : System object
         solute molecule to use in the calculation
-    solvent : Molecule object
+    solvent : System object
         solvent molecule to use in the calculation
     charge : int, optional
             total charge of the molecule. Default is taken from the solute molecule.
@@ -467,8 +467,8 @@ def qcg_ensemble(
 
     Returns
     -------
-    cluster : Molecule object
-        Molecule object containing the explicitly solvated input molecule, with updated energy
+    cluster : System object
+        System object containing the explicitly solvated input molecule, with updated energy
         coming from enseble generation (electronic contribution only). The vibronic contribution
         is taken from the input solute molecule (if present), while the electronic contribution
         is taken as the weighted average of all generated ensembles.

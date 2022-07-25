@@ -1,7 +1,7 @@
 import os, copy, sh, shutil
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.molecule import Molecule, Energies
+from compechem.molecule import System, Energies
 from compechem import tools
 import logging
 
@@ -39,7 +39,7 @@ class XtbInput:
 
     def spe(
         self,
-        mol: Molecule,
+        mol: System,
         ncores: int = None,
         maxcore=None,
         charge: int = None,
@@ -51,7 +51,7 @@ class XtbInput:
 
         Parameters
         ----------
-        mol : Molecule object
+        mol : System object
             Input molecule to use in the calculation.
         ncores : int, optional
             number of cores, by default all available cores
@@ -69,7 +69,7 @@ class XtbInput:
 
         Returns
         -------
-        newmol : Molecule object
+        newmol : System object
             Output molecule containing the new energies.
         """
 
@@ -114,7 +114,7 @@ class XtbInput:
 
             if inplace is False:
 
-                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge, spin)
 
                 newmol.energies = copy.copy(mol.energies)
 
@@ -140,7 +140,7 @@ class XtbInput:
 
     def opt(
         self,
-        mol: Molecule,
+        mol: System,
         ncores: int = None,
         maxcore=None,
         charge: int = None,
@@ -152,7 +152,7 @@ class XtbInput:
 
         Parameters
         ----------
-        mol : Molecule object
+        mol : System object
             Input molecule to use in the calculation
         ncores : int, optional
             number of cores, by default all available cores
@@ -170,7 +170,7 @@ class XtbInput:
 
         Returns
         -------
-        newmol : Molecule object
+        newmol : System object
             Output molecule containing the new geometry and energies.
         
         If a dissociation or a cyclization is observed, ignore the calculation and return the 
@@ -230,7 +230,7 @@ class XtbInput:
 
                 if inplace is False:
 
-                    newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+                    newmol = System(f"{mol.name}.xyz", charge, spin)
 
                     newmol.energies = copy.copy(mol.energies)
 
@@ -260,7 +260,7 @@ class XtbInput:
 
     def freq(
         self,
-        mol: Molecule,
+        mol: System,
         ncores: int = None,
         maxcore=None,
         charge: int = None,
@@ -272,7 +272,7 @@ class XtbInput:
 
         Parameters
         ----------
-        mol : Molecule object
+        mol : System object
             input molecule to use in the calculation
         ncores : int, optional
             number of cores, by default all available cores
@@ -290,7 +290,7 @@ class XtbInput:
 
         Returns
         -------
-        newmol : Molecule object
+        newmol : System object
             Output molecule containing the new energies.
         """
 
@@ -334,7 +334,7 @@ class XtbInput:
 
             if inplace is False:
 
-                newmol = Molecule(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge, spin)
 
                 newmol.energies = copy.copy(mol.energies)
 

@@ -2,7 +2,7 @@ import os
 import shutil
 import pickle
 from rdkit import Chem
-from compechem.molecule import Molecule
+from compechem.molecule import System
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,13 +44,13 @@ def generate_inchi(molfile: str):
     return inchi
 
 
-def add_flag(mol: Molecule, flag: str):
-    """Adds a warning flag to a Molecule object.
+def add_flag(mol: System, flag: str):
+    """Adds a warning flag to a System object.
 
     Parameters
     ----------
-    mol : Molecule object
-        Molecule object to which the flag will be added
+    mol : System object
+        System object to which the flag will be added
     flag : str
         String representing the warning which needs to be added
     """
@@ -58,13 +58,13 @@ def add_flag(mol: Molecule, flag: str):
     return
 
 
-def info(mol: Molecule, print_geometry: bool = True):
+def info(mol: System, print_geometry: bool = True):
     """Prints information about the molecule
 
     Parameters
     ----------
-    mol : Molecule object
-        Molecule object
+    mol : System object
+        System object
     print_geometry : bool
         prints atom coordinates, by default True
 
@@ -72,7 +72,7 @@ def info(mol: Molecule, print_geometry: bool = True):
     -------
     Prints to screen a summary with all the informations about the molecule.
     """
-    print(f"\n === Molecule: {mol.name} === ")
+    print(f"\n === System: {mol.name} === ")
     print(f"\nNumber of atoms: {mol.atomcount}")
     print(f"Charge: {mol.charge}")
     print(f"Spin: {mol.spin}")
@@ -96,7 +96,7 @@ def dump(obj, filename: bool = None):
     Parameters
     ----------
     obj : anything
-        Object to dump to pickle file. Can be anything, including individual Molecule objects
+        Object to dump to pickle file. Can be anything, including individual System objects
     filename : str
         string containing the filename of the pickle file.
 
@@ -105,7 +105,7 @@ def dump(obj, filename: bool = None):
     Saves a pickle file containing the input object
     """
 
-    if filename is None and type(obj) == Molecule:
+    if filename is None and type(obj) == System:
         filename = f"{obj.name}.pickle"
 
     pickle.dump(obj, open(filename, "wb"))
@@ -134,15 +134,15 @@ def save_ext(ext: list, output_dir: str):
 
 
 def process_output(
-    mol: Molecule, method: str, calc: str, charge: int = None, spin: int = None,
+    mol: System, method: str, calc: str, charge: int = None, spin: int = None,
 ):
     """Processes the output of a calculation, copying the output files to a safe directory in the
     parent directory tree, and cleans the temporary directory if requested.
 
     Parameters
     ----------
-    mol : Molecule object
-        Molecules processed in the calculation
+    mol : System object
+        Systems processed in the calculation
     method : str
         level of theory for the calculation
     calc : str
@@ -238,13 +238,13 @@ def dissociation_check():
 
 
 def split_multixyz(
-    mol: Molecule, file: str, suffix: str, charge: int = None, spin: int = None
+    mol: System, file: str, suffix: str, charge: int = None, spin: int = None
 ):
     """Splits a .xyz file containing multiple structures into individual structures.
 
     Parameters
     ----------
-    mol : Molecule object
+    mol : System object
         Input molecule, giving the charge/spin (if not defined) and name of the output molecules
     file : str
         .xyz file containing the multiple structures
@@ -258,7 +258,7 @@ def split_multixyz(
     Returns
     -------
     molecules_list : list
-        List containing the individual Molecule object, whose structure is taken from the .xyz file
+        List containing the individual System object, whose structure is taken from the .xyz file
     """
 
     if charge is None:
@@ -279,7 +279,7 @@ def split_multixyz(
                 for _ in range(molsize + 2):
                     out.write(line)
                     line = f.readline()
-            molecules_list.append(Molecule(f"{mol.name}_{suffix}{num}.xyz", charge, spin))
+            molecules_list.append(System(f"{mol.name}_{suffix}{num}.xyz", charge, spin))
             num += 1
 
     return molecules_list

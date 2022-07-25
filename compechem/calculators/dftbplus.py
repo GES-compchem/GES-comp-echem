@@ -1,8 +1,8 @@
 import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.molecule import Molecule, Energies
-from compechem.ensemble import Ensemble, MDTrajectory
+from compechem.molecule import System, Energies
+from compechem.ensemble import MDTrajectory
 from compechem import tools
 import logging
 
@@ -75,7 +75,7 @@ class DFTBInput:
 
     def spe(
         self,
-        mol: Molecule,
+        mol: System,
         ncores: int = None,
         maxcore=None,
         charge: int = None,
@@ -87,7 +87,7 @@ class DFTBInput:
 
         Parameters
         ----------
-        mol : Molecule object
+        mol : System object
             Input molecule to use in the calculation.
         ncores : int, optional
             number of cores, by default all available cores
@@ -105,7 +105,7 @@ class DFTBInput:
 
         Returns
         -------
-        newmol : Molecule object
+        newmol : System object
             Output molecule containing the new energies.
         """
 
@@ -212,7 +212,7 @@ class DFTBInput:
 
                 mol.write_xyz(f"{mol.name}.xyz")
 
-                newmol = Molecule(
+                newmol = System(
                     f"{mol.name}.xyz", charge, spin, mol.geom_type, mol.box_side
                 )
 
@@ -240,7 +240,7 @@ class DFTBInput:
 
     def md_nvt(
         self,
-        mol: Molecule,
+        mol: System,
         steps: int,
         timestep: float = 1.0,
         temperature: int = 298,
@@ -257,7 +257,7 @@ class DFTBInput:
 
         Parameters
         ----------
-        mol : Molecule object
+        mol : System object
             Input molecule to use in the calculation.
         steps : int
             Total steps of the simulation
