@@ -399,7 +399,5 @@ class DFTBInput:
                 shutil.rmtree(tdir)
 
         trajectory = MDTrajectory(f"{mol.name}_{suffix}", self.parameters)
-        for frame in trajectory:
-            print(frame.energies[self.parameters])
 
         return trajectory

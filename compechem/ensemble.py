@@ -3,7 +3,7 @@ import numpy as np
 from compechem.molecule import Energies, System
 import logging
 from subprocess import getoutput
-from tempfile import TemporaryFile
+from itertools import chain
 
 logger = logging.getLogger(__name__)
 
@@ -14,37 +14,59 @@ class Ensemble:
     Attributes
     ----------
     name : str
-        name of the molecule represented in the ensemble, taken from the first element of 
+        name of the system represented in the ensemble, taken from the first element of 
         the ensemble
     atomcount : int
         number of atoms contained each ensemble, taken from the first element of the 
         ensemble
     energies : dict
-        dictionary containing the electronic/vibronic energies of the molecule,
+        dictionary containing the electronic/vibronic energies of the systems,
         calculated at various levels of theory
     """
 
-    def __init__(self, molecules_list) -> None:
+    def __init__(self, systems_list) -> None:
         """
         Parameters
         ----------
-        molecules_list : any
+        systems_list : any
             generator for creating the Ensemble.
             Options:
-                - list of Molecule objects
+                - list of System objects
                 - .xyz trajectory file
         """
 
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
-        # add code to accept "multiple" trajectory files #
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
+        self.name = systems_list[0].name
+        self.atomcount = systems_list[0].atomcount
 
-        self.name = molecules_list[0].name
-        self.atomcount = molecules_list[0].atomcount
-
-        self.molecules = molecules_list
+        self.container = systems_list
 
         self.energies: dict = {}
+
+    def __iter__(self):
+        chained = chain.from_iterable(self.container)
+        for item in chained:
+            yield item
+
+    def __getitem__(self, index):
+        space = 0
+        for iterator in self.container:
+            space += len(iterator)
+            if index < space:
+                local_index = index - (space - len(iterator))
+                return iterator[local_index]
+
+    def __len__(self):
+        return sum([len(iterator) for iterator in self.container])
+
+    def add(self, iterator):
+        """adds another file to the trajectory from an iterator object (e.g., MDTrajectory)
+
+        Parameters
+        ----------
+        iterator : iterable
+            iterator object (e.g., MDTrajectory object) 
+        """
+        self.container.append(iterator)
 
     def read_energies(self, method):
         """reads energies from trajectory file (parsed by tools.save_dftb_trajectory()) and
@@ -96,12 +118,12 @@ class Ensemble:
 
         energies = []
 
-        for mol in self.molecules:
+        for sys in self.container:
             if method_vib is None:
-                energies.append(mol.energies[method_el].electronic)
+                energies.append(sys.energies[method_el].electronic)
             else:
                 energies.append(
-                    mol.energies[method_el].electronic + mol.energies[method_vib].vibronic
+                    sys.energies[method_el].electronic + sys.energies[method_vib].vibronic
                 )
 
         # necessary for avoiding overflows with large energies
@@ -139,12 +161,22 @@ class Ensemble:
 
 class MDTrajectory:
     def __init__(self, system, method):
+        """Iterator class for MD trajectories. Data is computed only when accessing the
+        elements of the object (via __getitem__ or __iter__)
 
+        Parameters
+        ----------
+        system : str
+            name of the system outputted by an MD calculator
+        method : str
+            level of theory at which the simulation was ran
+        """
         self.name = system
         self.method = method
 
         self.md_out = f"MD_data/{system}_md.out"
         self.geo_end = f"MD_data/{system}_geo_end.xyz"
+        self.atomcount = int(getoutput(f"head -1 {self.geo_end}"))
 
         head = getoutput(f"head -50 {self.md_out}|grep step|head -2").split()
         mdrestartfreq = int(head[-1]) - int(head[-4])
@@ -158,11 +190,23 @@ class MDTrajectory:
             yield self[index]
 
     def __getitem__(self, index):
+        """returns the System object corresponding to the requested index/MD step
+
+        Parameters
+        ----------
+        index : int
+            MD step in the simulation
+
+        Returns
+        -------
+        system
+            System object corresponding to the requested frame in the MD simulation
+        """
         with open(self.geo_end, "r") as f:
             with open(f"{self.name}_{index}.xyz", "w+") as o:
 
-                n_atoms = int(f.readline())
-                o.write(f"{n_atoms}\n")
+                self.atomcount = int(f.readline())
+                o.write(f"{self.atomcount}\n")
                 start = None
 
                 for i, line in enumerate(f):
@@ -171,12 +215,12 @@ class MDTrajectory:
                         start = i
                         o.write(line)
 
-                    if start and i > start and i < start + n_atoms + 1:
+                    if start and i > start and i < start + self.atomcount + 1:
                         o.write(
                             f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                         )
 
-                    if start and i > start + n_atoms + 1:
+                    if start and i > start + self.atomcount + 1:
                         break
 
         system = System(f"{self.name}_{index}.xyz")
@@ -197,31 +241,4 @@ class MDTrajectory:
 
     def __len__(self):
         return len(self.frames)
-
-
-from itertools import chain
-
-# this would be ensemble
-class IteratorHandler:
-    def __init__(self):
-        self.container = []
-
-    def add(self, iterator):
-        self.container.append(iterator)
-
-    def __iter__(self):
-        chained = chain.from_iterable(self.container)  # this is executed only once
-        for item in chained:
-            yield item
-
-    def __getitem__(self, index):
-        space = 0
-        for iterator in self.container:
-            space += len(iterator)
-            if index < space:
-                local_index = index - (space - len(iterator))
-                return iterator[local_index]
-
-    def __len__(self):
-        return sum([len(iterator) for iterator in self.container])
 
