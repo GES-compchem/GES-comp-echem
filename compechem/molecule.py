@@ -37,7 +37,6 @@ class Properties:
         self.pka: dict = {}
 
 
-# to be renamed as System
 class System:
     """System object.
 

@@ -1,4 +1,5 @@
-import os, shutil
+from io import TextIOWrapper
+import os
 import numpy as np
 from compechem.molecule import Energies, System
 import logging
@@ -177,66 +178,83 @@ class MDTrajectory:
         self.md_out = f"MD_data/{traj_filepath}_md.out"
         self.geo_end = f"MD_data/{traj_filepath}_geo_end.xyz"
 
-        # rewrite with open()!!!!
-        self.atomcount = int(getoutput(f"head -1 {self.geo_end}"))
+        with open(self.geo_end, "r") as f:
 
-        head = getoutput(f"head -50 {self.md_out}|grep step|head -2").split()
-        mdrestartfreq = int(head[-1]) - int(head[-4])
+            self.atomcount = int(f.readline())
+            first_iter = int(f.readline().split()[-1])
 
-        # use for line in reversed(lines)!!
-        nframes = int(getoutput(f"tail -50 {self.md_out}|grep step|tail -1").split()[-1])
+            for line in f:
 
-        self.frames = list(range(0, nframes + 1, mdrestartfreq))
+                if "iter" in line:
+                    second_iter = int(line.split()[-1])
+                    self.mdrestartfreq = second_iter - first_iter
+                    break
 
-    # fix this!!! (check MDanalysis)
+            for line in reversed(list(f)):
+                if "iter" in line:
+                    nframes = int(line.split()[-1])
+                    break
+
+        self.frames = list(range(0, (nframes // self.mdrestartfreq) + 1))
+
     def __iter__(self):
         for index in self.frames:
-            yield self.__getitem__(index, True)
+            with open(self.geo_end, "r") as geo_end:
+                yield self.__getitem__(index, geo_end)
 
-    def __getitem__(self, index, call_from_iter: bool = False):
+    def __getitem__(self, index, geo_end: TextIOWrapper = None):
         """returns the System object corresponding to the requested index/MD step
 
         Parameters
         ----------
         index : int
-            MD step in the simulation
+            MD step in the simulation (as list index, not ACTUAL MD iter number)
+        geo_end : TextIOWrapper, optional
+            if __getitem__ is called from __iter__, allows passing the geo_end.xyz file so
+            it is open only once
 
         Returns
         -------
         system
             System object corresponding to the requested frame in the MD simulation
         """
-        # (open issue) we need to find a way to have the self.geo_end open only once when
-        # called by __iter__ (I/O issues)
-        with open(self.geo_end, "r") as f:
-            with open(f"{self.name}_{index}.xyz", "w+") as o:
 
-                self.atomcount = int(f.readline())
-                o.write(f"{self.atomcount}\n")
-                start = None
+        MDindex = self.frames[index] * self.mdrestartfreq
 
-                for i, line in enumerate(f):
+        if not geo_end:
+            geo_end = open(self.geo_end, "r")
 
-                    if line == f"MD iter: {index}\n":
-                        start = i
-                        o.write(line)
+        with open(f"{self.name}_{MDindex}.xyz", "w+") as out:
 
-                    if start and i > start and i < start + self.atomcount + 1:
-                        o.write(
-                            f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
-                        )
+            self.atomcount = int(geo_end.readline())
+            out.write(f"{self.atomcount}\n")
+            start = None
 
-                    if start and i > start + self.atomcount + 1:
-                        break
+            for i, line in enumerate(geo_end):
 
-        # implement bytestream input for System
-        system = System(f"{self.name}_{index}.xyz")
-        os.remove(f"{self.name}_{index}.xyz")
+                if line == f"MD iter: {MDindex}\n":
+                    start = i
+                    out.write(line)
 
-        with open(self.md_out, "r") as f:
+                if start and i > start and i < start + self.atomcount + 1:
+                    out.write(
+                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
+                    )
+
+                if start and i > start + self.atomcount + 1:
+                    break
+
+        if not geo_end:
+            geo_end.close()
+
+        # !!! implement bytestream input for System !!!
+        system = System(f"{self.name}_{MDindex}.xyz")
+        os.remove(f"{self.name}_{MDindex}.xyz")
+
+        with open(self.md_out, "r") as md_out:
             found = False
-            for line in f:
-                if line == f"MD step: {index}\n":
+            for line in md_out:
+                if line == f"MD step: {MDindex}\n":
                     found = True
                 if "Total MD Energy" in line and found:
                     system.energies[self.method] = Energies(
