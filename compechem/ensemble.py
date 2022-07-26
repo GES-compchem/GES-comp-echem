@@ -3,7 +3,6 @@ import os
 import numpy as np
 from compechem.molecule import Energies, System
 import logging
-from subprocess import getoutput
 from itertools import chain
 
 logger = logging.getLogger(__name__)
