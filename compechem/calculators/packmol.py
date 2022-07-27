@@ -109,12 +109,18 @@ def packmol_cube(
         )
         return None
 
-    logger.info(f"{solute_mol.name} - Generating solvation box with Packmol")
+    logger.info(
+        f"{solute_mol.name} - Generating solvation box with {nsolv} {solvent_mol.name}s"
+    )
     logger.debug(f"Packmol - cubic box with {nsolv} {solvent_mol.name} molecules.")
     logger.debug(f"Packmol - cubic box with side {cube_side} Å.")
     logger.debug(f"Packmol - cubic box with density {target_dens} g/L.")
 
-    tdir = mkdtemp(prefix=solute_mol.name + "_", suffix=f"_packmol", dir=os.getcwd(),)
+    tdir = mkdtemp(
+        prefix=f"{solute_mol.name}_{nsolv}{solvent_mol.name}s" + "_",
+        suffix=f"_packmol",
+        dir=os.getcwd(),
+    )
 
     with sh.pushd(tdir):
 
@@ -147,7 +153,9 @@ def packmol_cube(
             box_side=cube_side,
         )
 
-        process_output(mol=solute_mol, method="packmol", calc="cube")
+        process_output(
+            mol=solute_mol, method="packmol", calc=f"{nsolv}{solvent_mol.name}_cube"
+        )
         shutil.rmtree(tdir)
 
     return solvated_molecule
