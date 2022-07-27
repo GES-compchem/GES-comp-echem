@@ -125,7 +125,7 @@ def packmol_cube(
             f.write(
                 "tolerance 2.0\n"
                 f"filetype xyz\n\n"
-                f"output solvated_{solute}\n\n"
+                f"output {solute_mol.name}_{nsolv}{solvent_mol.name}s.xyz\n\n"
                 f"structure {solvent}\n"
                 f"  number {nsolv}\n"
                 "  resnumbers 3\n"
@@ -142,7 +142,9 @@ def packmol_cube(
         os.system("packmol < input.inp > output.out")
 
         solvated_molecule = System(
-            f"{solute}_{nsolv}{solvent}s", geom_type="S", box_side=cube_side
+            f"{solute_mol.name}_{nsolv}{solvent_mol.name}s.xyz",
+            geom_type="S",
+            box_side=cube_side,
         )
 
         process_output(mol=solute_mol, method="packmol", calc="cube")
