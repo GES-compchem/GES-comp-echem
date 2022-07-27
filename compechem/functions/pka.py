@@ -1,20 +1,20 @@
 from compechem.ensemble import Ensemble
-from compechem.molecule import Molecule
+from compechem.molecule import System
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 def calculate_pka(
-    protonated: Molecule, deprotonated: Molecule, method_el: str, method_vib: str = None
+    protonated: System, deprotonated: System, method_el: str, method_vib: str = None
 ):
     """Calculates the pKa of a molecule, given the protonated and deprotonated forms.
 
     Parameters
     ----------
-    protonated : Molecule object
+    protonated : System object
         molecule in the protonated form
-    deprotonated : Molecule object
+    deprotonated : System object
         molecule in the deprotonated form
     method_el : str
         level of theory for the electronic energy
@@ -29,7 +29,9 @@ def calculate_pka(
     """
 
     if type(protonated) == Ensemble or type(deprotonated) == Ensemble:
-        logger.error(f"Calculating pKa for Ensemble instead of Molecule. Currently not supported.")
+        logger.error(
+            f"Calculating pKa for Ensemble instead of System. Currently not supported."
+        )
         return None
 
     if protonated.atomcount - deprotonated.atomcount != 1:
@@ -38,15 +40,19 @@ def calculate_pka(
 
     if method_vib is None:
         protonated_energy = (protonated.energies[method_el].electronic) * 627.5  # kcal/mol
-        deprotonated_energy = (deprotonated.energies[method_el].electronic) * 627.5  # kcal/mol
+        deprotonated_energy = (
+            deprotonated.energies[method_el].electronic
+        ) * 627.5  # kcal/mol
 
     else:
         protonated_energy = (
-            protonated.energies[method_el].electronic + protonated.energies[method_vib].vibronic
+            protonated.energies[method_el].electronic
+            + protonated.energies[method_vib].vibronic
         ) * 627.5  # kcal/mol
 
         deprotonated_energy = (
-            deprotonated.energies[method_el].electronic + deprotonated.energies[method_vib].vibronic
+            deprotonated.energies[method_el].electronic
+            + deprotonated.energies[method_vib].vibronic
         ) * 627.5  # kcal/mol
 
     proton_self_energy = 0

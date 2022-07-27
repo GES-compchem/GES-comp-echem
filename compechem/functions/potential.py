@@ -1,16 +1,20 @@
-from compechem.molecule import Molecule
+from compechem.molecule import System
 
 
 def calculate_potential(
-    oxidised: Molecule, reduced: Molecule, method_el: str, method_vib: str = None, pH: float = 7.0
+    oxidised: System,
+    reduced: System,
+    method_el: str,
+    method_vib: str = None,
+    pH: float = 7.0,
 ):
     """Calculates the reduction potential of a molecule, given the oxidised and reduced forms.
 
     Parameters
     ----------
-    oxidised : Molecule object
+    oxidised : System object
         molecule in the oxidised state
-    reduced : Molecule object
+    reduced : System object
         molecule in the reduced state
     method_el : str
         level of theory for the electronic energy
