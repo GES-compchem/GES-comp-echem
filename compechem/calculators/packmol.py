@@ -141,7 +141,9 @@ def packmol_cube(
 
         os.system("packmol < input.inp > output.out")
 
-        solvated_molecule = System(f"solvated_{solute}", geom_type="S", box_side=cube_side)
+        solvated_molecule = System(
+            f"{solute}_{nsolv}{solvent}s", geom_type="S", box_side=cube_side
+        )
 
         process_output(mol=solute_mol, method="packmol", calc="cube")
         shutil.rmtree(tdir)
