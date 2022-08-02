@@ -226,8 +226,10 @@ class MDTrajectory:
         """
 
         MDindex = self.frames[index] * self.mdrestartfreq
+        close_flag = False
 
         if not geo_end:
+            close_flag = True
             geo_end = open(self.geo_end, "r")
 
         with open(f"{self.name}_{MDindex}.xyz", "w+") as out:
@@ -250,7 +252,7 @@ class MDTrajectory:
                 if start and i > start + self.atomcount + 1:
                     break
 
-        if not geo_end:
+        if close_flag:
             geo_end.close()
 
         # !!! implement bytestream input for System !!!
