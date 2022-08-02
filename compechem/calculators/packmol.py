@@ -112,9 +112,9 @@ def packmol_cube(
     logger.info(
         f"{solute_mol.name} - Generating solvation box with {nsolv} {solvent_mol.name}s"
     )
-    logger.debug(f"Packmol - cubic box with {nsolv} {solvent_mol.name} molecules.")
-    logger.debug(f"Packmol - cubic box with side {cube_side} Å.")
-    logger.debug(f"Packmol - cubic box with density {target_dens} g/L.")
+    logger.debug(
+        f"Packmol solvated {solute_mol.name} - cubic box with {nsolv} {solvent_mol.name} molecules, side {cube_side} Å, density {target_dens} g/L."
+    )
 
     tdir = mkdtemp(
         prefix=f"{solute_mol.name}_{nsolv}{solvent_mol.name}s" + "_",
