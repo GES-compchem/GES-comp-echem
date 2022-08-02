@@ -177,6 +177,13 @@ class MDTrajectory:
         self.md_out = f"MD_data/{traj_filepath}_md.out"
         self.geo_end = f"MD_data/{traj_filepath}_geo_end.xyz"
 
+        self.geom_type = "C"
+        self.box_side = None
+        if f"MD_data/{traj_filepath}.pbc":
+            self.geom_type = "S"
+            with open(f"MD_data/{traj_filepath}.pbc") as f:
+                self.box_side = float(f.read())
+
         with open(self.geo_end, "r") as f:
 
             self.atomcount = int(f.readline())
@@ -247,7 +254,9 @@ class MDTrajectory:
             geo_end.close()
 
         # !!! implement bytestream input for System !!!
-        system = System(f"{self.name}_{MDindex}.xyz")
+        system = System(
+            f"{self.name}_{MDindex}.xyz", geom_type=self.geom_type, box_side=self.box_side
+        )
         os.remove(f"{self.name}_{MDindex}.xyz")
 
         with open(self.md_out, "r") as md_out:

@@ -394,6 +394,10 @@ class DFTBInput:
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
             tools.save_dftb_trajectory(f"{mol.name}_{suffix}")
 
+            if mol.geom_type == "S":
+                with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
+                    f.write(f"{mol.box_side}")
+
             tools.process_output(mol, self.hamiltonian, "md_nvt", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
