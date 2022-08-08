@@ -160,7 +160,7 @@ class DFTBInput:
                     for atom in atom_types:
                         inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
                     inp.write("  }\n")
-                    if mol.geom_type == "S":
+                    if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
                     if "3ob" in self.parameters:
                         inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
@@ -186,7 +186,7 @@ class DFTBInput:
                 elif self.hamiltonian == "xTB":
                     self.parameters = "gfn2"
                     inp.write('  Method = "GFN2-xTB"\n')
-                    if mol.geom_type == "S":
+                    if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
                     inp.write("}\n")
 
@@ -212,9 +212,7 @@ class DFTBInput:
 
                 mol.write_xyz(f"{mol.name}.xyz")
 
-                newmol = System(
-                    f"{mol.name}.xyz", charge, spin, mol.geom_type, mol.box_side
-                )
+                newmol = System(f"{mol.name}.xyz", charge, spin, mol.periodic, mol.box_side)
 
                 newmol.energies = copy.copy(mol.energies)
 
@@ -350,7 +348,7 @@ class DFTBInput:
                     for atom in atom_types:
                         inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
                     inp.write("  }\n")
-                    if mol.geom_type == "S":
+                    if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
                     if "3ob" in self.parameters:
                         inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
@@ -376,7 +374,7 @@ class DFTBInput:
                 elif self.hamiltonian == "xTB":
                     self.parameters = "gfn2"
                     inp.write('  Method = "GFN2-xTB"\n')
-                    if mol.geom_type == "S":
+                    if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
                     inp.write("}\n")
 
@@ -394,7 +392,7 @@ class DFTBInput:
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
             tools.save_dftb_trajectory(f"{mol.name}_{suffix}")
 
-            if mol.geom_type == "S":
+            if mol.periodic:
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 

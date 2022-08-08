@@ -149,7 +149,7 @@ def packmol_cube(
 
         solvated_molecule = System(
             f"{solute_mol.name}_{nsolv}{solvent_mol.name}s.xyz",
-            geom_type="S",
+            periodic=True,
             box_side=cube_side,
         )
 

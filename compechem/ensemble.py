@@ -177,10 +177,10 @@ class MDTrajectory:
         self.md_out = f"MD_data/{traj_filepath}_md.out"
         self.geo_end = f"MD_data/{traj_filepath}_geo_end.xyz"
 
-        self.geom_type = "C"
+        self.periodic = False
         self.box_side = None
         if f"MD_data/{traj_filepath}.pbc":
-            self.geom_type = "S"
+            self.periodic = True
             with open(f"MD_data/{traj_filepath}.pbc") as f:
                 self.box_side = float(f.read())
 
@@ -257,7 +257,7 @@ class MDTrajectory:
 
         # !!! implement bytestream input for System !!!
         system = System(
-            f"{self.name}_{MDindex}.xyz", geom_type=self.geom_type, box_side=self.box_side
+            f"{self.name}_{MDindex}.xyz", periodic=self.periodic, box_side=self.box_side
         )
         os.remove(f"{self.name}_{MDindex}.xyz")
 

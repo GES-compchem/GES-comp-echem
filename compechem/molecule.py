@@ -64,7 +64,7 @@ class System:
         xyz_file: str,
         charge: int = 0,
         spin: int = 1,
-        geom_type: str = "C",
+        periodic: bool = False,
         box_side: float = None,
     ) -> None:
         """
@@ -76,11 +76,8 @@ class System:
             total charge of the system. Defaults to 0 (neutral)
         spin : int, optional
             total spin of the system. Defaults to 1 (singlet)
-        geom_type : str, optional
-            type of geometry for the system. 
-                Options: 
-                - C (default) = cluster (single molecule)
-                - S = Supercell (periodic system)
+        periodic : bool, optional
+            is the system periodic? False by default
         box_side : float, optional
             for periodic systems, defines the length (in Å) of the box side
         """
@@ -92,7 +89,7 @@ class System:
         self.atomcount: int = None
         self.geometry: list = []
 
-        self.geom_type = geom_type
+        self.periodic = periodic
         self.box_side = box_side
 
         self.flags: list = []
@@ -152,7 +149,7 @@ class System:
                     if line.split()[0] == atom:
                         file.write(f"{i} {line.replace(atom, str(index + 1))}")
                         i += 1
-            if self.geom_type == "S":
+            if self.periodic:
                 file.write(f" 0.000 0.000 0.000\n")
                 file.write(f" {box_side} 0.000 0.000\n")
                 file.write(f" 0.000 {box_side} 0.000\n")
