@@ -1,8 +1,8 @@
 API reference
 =============
 
-This is the documentation relative to the `mymodule.mylib` module when the `automodule` 
+This is the documentation relative to the `compechem.calculators` module when the `automodule` 
 extension is called.
 
-.. automodule:: mymodule.mylib
+.. automodule:: compechem.calculators
     :members:
