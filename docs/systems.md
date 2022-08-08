@@ -1,6 +1,4 @@
-# GES-comp-echem User Guide
-
-## `objects` submodule
+# `objects` submodule
 
 The `objects` submodule contains the following classes, used to collect and store information about the system of interest:
 
@@ -24,9 +22,9 @@ from compechem.objects import MDTrajectory
 
 ---
 
-### `System` objects
+## `System` objects
 
-A system object is initialized by providing a molecular geometry via a .xyz file:
+A `System` object is initialized by providing a molecular geometry via a .xyz file:
 
 ```python
 from compechem.objects import System
@@ -64,3 +62,72 @@ my_prop = my_mol.property
 * `flags`: list of all the warning/error flags raised for this specific system during the various calculations
 * `energies`: dictionary containing the calculated electronic/vibronic energies, indexed by level of theory
 * `properties`: dictionary containing the calculated properties, such as pKa
+
+Some internal functions are also available:
+
+* `write_xyz(path)`: writes a .xyz file with the current system geometry at the indicated `path`
+* `write_gen(path, box_side)`: writes a .gen file (for DFTB+) at the indicated `path`. Optionally, the box_side can be set explicitly, otherwise the internal `box_side` parameter will be used
+* `update_geomety(path)`: overwrites the current geometry with the one provided by the .xyz file in the provided `path`
+
+---
+
+## `Ensemble` objects
+
+An `Ensemble` object is not usually initialized by the user, but is instead provided by some other modules, such as some **CREST** routines. For more details, refer to the `CREST <link>` page. However, it is still possible to manually generate an `Ensemble` object by providing an `iterable` (such as a list) yielding `System` objects:
+
+```python
+from compechem.objects import System
+from compechem.objects import Ensemble
+
+my_mol1 = System("path/to/xyz/my_mol1.xyz")
+my_mol2 = System("path/to/xyz/my_mol2.xyz")
+my_mol3 = System("path/to/xyz/my_mol3.xyz")
+
+my_list = [my_mol1, my_mol2, my_mol3]
+
+my_ens = Ensemble(my_list)
+```
+
+Below is a list of all the available properties. These can be accessed via the following syntax:
+
+```python
+my_prop = my_ens.property
+```
+
+* `name`: system name (by default, taken by the name of the first System in the list)
+* `atomcount`: total number of atoms (taken from the first System in the list) 
+* `energies`: dictionary containing the calculated electronic/vibronic energies, indexed by level of theory
+
+Some internal functions are also available:
+
+* `add(iterator)`: adds more `System` objects to the `Ensemble` from the provided iterator (e.g., another list)
+* `boltzmann_average(method_el, method_vib, temperature)`: calculates the Boltzmann-weighted ensemble energy at the given `temperature`, using the provided electronic (`method_el`) and vibronic (`method_vib`) levels of theory. Results are added to the `energies` dictionary.
+
+## `MDTrajectory` objects
+
+An `MDTrajectory` object is not usually initialized by the user, but is instead provided by the **DFTB+** module. For more details, refer to the `DFTB+ <link>` page. However, it is still possible to manually generate an `MDTrajectory` object by providing the path `prefix` to the `<prefix>_md.out` and `<prefix>_geo_end.xyz` files, and the level of theory at which the DFTB+ simulation was ran:
+
+```python
+from compechem.objects import MDTrajectory
+
+# note, the following files must exist:
+# path/to/xyz/my_traj_md.out
+# path/to/xyz/my_traj_geo_end.xyz
+my_traj = MDTrajectory("path/to/xyz/my_traj", "gfn2")
+```
+
+This class does not have any useful property/method, but instead should be used as an on-the-fly generator of `System` objects corresponding to the requested frame of the MD simulation. 
+
+Examples:
+
+* Extract the last frame of the MD simulation as a System object:
+```python
+last_frame = my_traj[-1]
+```
+* Cycle over all frames and export the corresponding .xyz files:
+```python
+for frame in my_traj:
+    frame.write_xyz(frame.name)
+```
+
+Note: individual "frames" are named according to the corresponding step/index of the MD simulation

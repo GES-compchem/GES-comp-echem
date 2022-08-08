@@ -59,7 +59,7 @@ class Ensemble:
         return sum([len(iterator) for iterator in self.container])
 
     def add(self, iterator):
-        """adds another file to the trajectory from an iterator object (e.g., MDTrajectory)
+        """append more Systems to the ensemble from an iterator object (e.g., MDTrajectory)
 
         Parameters
         ----------
@@ -68,6 +68,7 @@ class Ensemble:
         """
         self.container.append(iterator)
 
+    # NOT WORKING - FIX IT!
     def read_energies(self, method):
         """reads energies from trajectory file (parsed by tools.save_dftb_trajectory()) and
         calculates the average energy for the given trajectory
