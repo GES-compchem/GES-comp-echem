@@ -153,7 +153,7 @@ class DFTBInput:
 
                 if self.hamiltonian == "DFTB":
                     if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}")
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
                     inp.write(
                         "  Scc = Yes\n"
                         "  SlaterKosterFiles = Type2FileNames {\n"
@@ -191,7 +191,7 @@ class DFTBInput:
 
                 elif self.hamiltonian == "xTB":
                     if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}")
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
                     self.parameters = "gfn2"
                     inp.write('  Method = "GFN2-xTB"\n')
                     if mol.periodic:
@@ -345,7 +345,7 @@ class DFTBInput:
 
                 if self.hamiltonian == "DFTB":
                     if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}")
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
                     inp.write(
                         "  Scc = Yes\n"
                         "  SlaterKosterFiles = Type2FileNames {\n"
@@ -383,7 +383,7 @@ class DFTBInput:
 
                 elif self.hamiltonian == "xTB":
                     if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}")
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
                     self.parameters = "gfn2"
                     inp.write('  Method = "GFN2-xTB"\n')
                     if mol.periodic:
