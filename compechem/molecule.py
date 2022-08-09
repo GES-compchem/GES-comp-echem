@@ -135,7 +135,10 @@ class System:
             box_side = self.box_side
 
         with open(gen_file, "w") as file:
-            file.write(f" {str(self.atomcount)} {self.geom_type}\n")
+            if self.periodic:
+                file.write(f" {str(self.atomcount)} S\n")
+            else:
+                file.write(f" {str(self.atomcount)} C\n")
             atom_types = []
             for line in self.geometry:
                 if line.split()[0] not in atom_types:
