@@ -19,6 +19,7 @@ class DFTBInput:
         solver: str = None,
         dispersion: bool = False,
         parallel: str = "mpi",
+        verbose: bool = False,
     ) -> None:
         """
         Parameters
@@ -33,6 +34,8 @@ class DFTBInput:
             activates D3 dispersion corrections (off by default)
         parallel : str, optional
             selects either openmpi-parallel version (mpi) or shared memory version (nompi)
+        verbose : bool, optional
+            if set to True, saves the full DFTB+ output, otherwise, only the smaller files
         """
 
         self.hamiltonian = hamiltonian
@@ -40,6 +43,11 @@ class DFTBInput:
         self.solver = solver
         self.dispersion = dispersion
         self.parallel = parallel
+        self.verbose = verbose  # add to docs
+        if self.verbose:
+            self.output_path = "output.out"
+        else:
+            self.output_path = "/dev/null"
 
         self.atom_dict = {
             "Br": "d",
@@ -202,9 +210,10 @@ class DFTBInput:
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
+                os.system(f"mpirun -np {ncores} dftb+ > {self.output_path} 2>> output.err")
+
             elif self.parallel == "nompi":
-                os.system(f"dftb+ > output.out 2>> output.err")
+                os.system(f"dftb+ > {self.output_path} 2>> output.err")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -394,10 +403,10 @@ class DFTBInput:
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
+                os.system(f"mpirun -np {ncores} dftb+ > {self.output_path} 2>> output.err")
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
-                os.system(f"dftb+ > output.out 2>> output.err")
+                os.system(f"dftb+ > {self.output_path} 2>> output.err")
 
             import random, string
 
