@@ -1,7 +1,7 @@
 import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.molecule import System, Energies
+from compechem.systems import System, Energies
 from compechem import tools
 import logging
 

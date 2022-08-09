@@ -1,8 +1,8 @@
 import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.molecule import System, Energies
-from compechem.ensemble import MDTrajectory
+from compechem.systems import System, Energies
+from compechem.systems import MDTrajectory
 from compechem import tools
 import logging
 
@@ -16,6 +16,7 @@ class DFTBInput:
         self,
         hamiltonian: str = "DFTB",
         parameters: str = "3ob/3ob-3-1/",
+        solver: str = None,
         dispersion: bool = False,
         parallel: str = "mpi",
     ) -> None:
@@ -26,6 +27,8 @@ class DFTBInput:
             level of theory, by default "DFTB". "xTB" also supported.
         parameters : str, optional
             parameters to be used for the DFTB Hamiltonian (by default 3ob)
+        solver : str, optional
+            LAPACK eigensolver method (check manual for available options)
         dispersion : bool, optional
             activates D3 dispersion corrections (off by default)
         parallel : str, optional
@@ -34,6 +37,7 @@ class DFTBInput:
 
         self.hamiltonian = hamiltonian
         self.parameters = parameters
+        self.solver = solver
         self.dispersion = dispersion
         self.parallel = parallel
 
@@ -148,6 +152,8 @@ class DFTBInput:
                 )
 
                 if self.hamiltonian == "DFTB":
+                    if self.solver:
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
                     inp.write(
                         "  Scc = Yes\n"
                         "  SlaterKosterFiles = Type2FileNames {\n"
@@ -160,7 +166,7 @@ class DFTBInput:
                     for atom in atom_types:
                         inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
                     inp.write("  }\n")
-                    if mol.geom_type == "S":
+                    if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
                     if "3ob" in self.parameters:
                         inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
@@ -184,9 +190,11 @@ class DFTBInput:
                     inp.write("}\n")
 
                 elif self.hamiltonian == "xTB":
+                    if self.solver:
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
                     self.parameters = "gfn2"
                     inp.write('  Method = "GFN2-xTB"\n')
-                    if mol.geom_type == "S":
+                    if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
                     inp.write("}\n")
 
@@ -212,9 +220,7 @@ class DFTBInput:
 
                 mol.write_xyz(f"{mol.name}.xyz")
 
-                newmol = System(
-                    f"{mol.name}.xyz", charge, spin, mol.geom_type, mol.box_side
-                )
+                newmol = System(f"{mol.name}.xyz", charge, spin, mol.periodic, mol.box_side)
 
                 newmol.energies = copy.copy(mol.energies)
 
@@ -338,6 +344,8 @@ class DFTBInput:
                 )
 
                 if self.hamiltonian == "DFTB":
+                    if self.solver:
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
                     inp.write(
                         "  Scc = Yes\n"
                         "  SlaterKosterFiles = Type2FileNames {\n"
@@ -350,7 +358,7 @@ class DFTBInput:
                     for atom in atom_types:
                         inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
                     inp.write("  }\n")
-                    if mol.geom_type == "S":
+                    if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
                     if "3ob" in self.parameters:
                         inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
@@ -374,9 +382,11 @@ class DFTBInput:
                     inp.write("}\n")
 
                 elif self.hamiltonian == "xTB":
+                    if self.solver:
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
                     self.parameters = "gfn2"
                     inp.write('  Method = "GFN2-xTB"\n')
-                    if mol.geom_type == "S":
+                    if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
                     inp.write("}\n")
 
@@ -394,7 +404,7 @@ class DFTBInput:
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
             tools.save_dftb_trajectory(f"{mol.name}_{suffix}")
 
-            if mol.geom_type == "S":
+            if mol.periodic:
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 

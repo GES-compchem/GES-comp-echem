@@ -1,7 +1,7 @@
 import os, shutil, sh
 import logging
 from tempfile import mkdtemp
-from compechem.molecule import System
+from compechem.systems import System
 from compechem.tools import process_output
 
 logger = logging.getLogger(__name__)
@@ -149,7 +149,7 @@ def packmol_cube(
 
         solvated_molecule = System(
             f"{solute_mol.name}_{nsolv}{solvent_mol.name}s.xyz",
-            geom_type="S",
+            periodic=True,
             box_side=cube_side,
         )
 

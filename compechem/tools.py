@@ -2,7 +2,7 @@ import os
 import shutil
 import pickle
 from rdkit import Chem
-from compechem.molecule import System
+from compechem.systems import System
 import logging
 
 logger = logging.getLogger(__name__)
