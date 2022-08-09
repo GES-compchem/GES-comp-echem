@@ -4,9 +4,10 @@ This is the user guide for the **GES-comp-echem** Python module. The philosophy 
 
 The package is constructed based on the following submodules:
 
-* `objects`: classes for storing informations about the system under study, such as geometry, number of atoms, calculated energies, charge, spin, etc.
+* `systems`: classes for storing informations about the system under study, such as geometry, number of atoms, calculated energies, charge, spin, etc.
 
 * `tools`: various useful functions called internally throughout the code. The user should generally not need to use this module during normal operation.
+
 * `wrappers`: wrappers for interfacing with external software, such as **Orca**, **DFTB+**, **CREST**, etc.
 
 * `functions`: mid-level algorithms for manually calculating specific physical observables, such as pKa or redox potentials. The user must provide all the necessary species for the calculation, for example the specific protonated and deprotonated species in a pKa calculation.

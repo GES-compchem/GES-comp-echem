@@ -1,4 +1,4 @@
-from compechem.molecule import System
+from compechem.systems import System
 
 
 def calculate_potential(

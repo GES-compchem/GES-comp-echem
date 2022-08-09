@@ -1,7 +1,7 @@
 import os, shutil, sh
 import logging
 from tempfile import mkdtemp
-from compechem.molecule import System
+from compechem.systems import System
 from compechem.tools import process_output
 
 logger = logging.getLogger(__name__)

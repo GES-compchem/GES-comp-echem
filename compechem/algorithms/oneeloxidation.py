@@ -2,9 +2,9 @@ import os, pickle
 import numpy as np
 
 from compechem.config import get_ncores
-from compechem.molecule import System
-from compechem.calculators.xtb import XtbInput
-from compechem.calculators import crest
+from compechem.systems import System
+from compechem.wrappers.xtb import XtbInput
+from compechem.wrappers import crest
 from compechem.functions.reorderenergies import reorder_energies
 from compechem.functions.pka import calculate_pka
 from compechem.functions.potential import calculate_potential
