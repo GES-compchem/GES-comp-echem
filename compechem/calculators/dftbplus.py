@@ -16,6 +16,7 @@ class DFTBInput:
         self,
         hamiltonian: str = "DFTB",
         parameters: str = "3ob/3ob-3-1/",
+        solver: str = None,
         dispersion: bool = False,
         parallel: str = "mpi",
     ) -> None:
@@ -26,6 +27,8 @@ class DFTBInput:
             level of theory, by default "DFTB". "xTB" also supported.
         parameters : str, optional
             parameters to be used for the DFTB Hamiltonian (by default 3ob)
+        solver : str, optional
+            LAPACK eigensolver method (check manual for available options)
         dispersion : bool, optional
             activates D3 dispersion corrections (off by default)
         parallel : str, optional
@@ -34,6 +37,7 @@ class DFTBInput:
 
         self.hamiltonian = hamiltonian
         self.parameters = parameters
+        self.solver = solver
         self.dispersion = dispersion
         self.parallel = parallel
 
@@ -148,6 +152,8 @@ class DFTBInput:
                 )
 
                 if self.hamiltonian == "DFTB":
+                    if self.solver:
+                        inp.write(f"  Solver = {self.solver} {{}}")
                     inp.write(
                         "  Scc = Yes\n"
                         "  SlaterKosterFiles = Type2FileNames {\n"
@@ -184,6 +190,8 @@ class DFTBInput:
                     inp.write("}\n")
 
                 elif self.hamiltonian == "xTB":
+                    if self.solver:
+                        inp.write(f"  Solver = {self.solver} {{}}")
                     self.parameters = "gfn2"
                     inp.write('  Method = "GFN2-xTB"\n')
                     if mol.periodic:
