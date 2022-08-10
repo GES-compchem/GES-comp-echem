@@ -94,6 +94,7 @@ class System:
 
         self.periodic = periodic
         self.box_side = box_side
+        self.velocities: list = []
 
         self.flags: list = []
 
@@ -108,6 +109,10 @@ class System:
                     self.geometry.append(
                         f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                     )
+                    if len(line) > 3:
+                        self.velocities.append(
+                            f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
+                        )
 
     def write_xyz(self, xyz_file: str):
         """Writes the current geometry to a .xyz file.
