@@ -101,11 +101,15 @@ class System:
         self.energies: dict = {}
         self.properties: Properties = Properties()
 
-        with open(xyz_file, "r") as file:
-            for linenum, line in enumerate(file):
+        with open(xyz_file, "r") as f:
+            numlines = sum(1 for _ in f)
+
+        with open(xyz_file, "r") as f:
+            for linenum, line in enumerate(f):
                 if linenum == 0:
                     self.atomcount = int(line)
-                if linenum > 1 and linenum < self.atomcount + 2:
+                last_geom_line = numlines - (self.atomcount + 2)
+                if linenum > last_geom_line + 1 and linenum < numlines:
                     self.geometry.append(
                         f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                     )
@@ -113,6 +117,8 @@ class System:
                         self.velocities.append(
                             f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
                         )
+            for i in self.geometry:
+                print(i)
 
     def write_xyz(self, xyz_file: str):
         """Writes the current geometry to a .xyz file.
