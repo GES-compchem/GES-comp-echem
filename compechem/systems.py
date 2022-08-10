@@ -113,12 +113,10 @@ class System:
                     self.geometry.append(
                         f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                     )
-                    if len(line) > 3:
+                    if len(line.split()) > 4:
                         self.velocities.append(
                             f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
                         )
-            for i in self.geometry:
-                print(i)
 
     def write_xyz(self, xyz_file: str):
         """Writes the current geometry to a .xyz file.
