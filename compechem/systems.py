@@ -101,22 +101,29 @@ class System:
         self.energies: dict = {}
         self.properties: Properties = Properties()
 
-        with open(xyz_file, "r") as f:
-            numlines = sum(1 for _ in f)
+        self.update_geometry(xyz_file)
 
-        with open(xyz_file, "r") as f:
-            for linenum, line in enumerate(f):
-                if linenum == 0:
-                    self.atomcount = int(line)
-                last_geom_line = numlines - (self.atomcount + 2)
-                if linenum > last_geom_line + 1 and linenum < numlines:
-                    self.geometry.append(
-                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
-                    )
-                    if len(line.split()) > 4:
-                        self.velocities.append(
-                            f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
-                        )
+    def __str__(self):
+        info = f"=== System: {self.name} === \n"
+        info += f"\nNumber of atoms: {self.atomcount}\n"
+        info += f"Charge: {self.charge}\n"
+        info += f"Spin: {self.spin}\n"
+        info += "\n--- Warnings ---\n"
+        for warning in self.flags:
+            info += f"{warning}\n"
+        info += "\n--- Energies (Eh) --- \n"
+        for method in self.energies:
+            info += f"* Method: {method}\n"
+            info += f"Electronic: {self.energies[method].electronic}\n"
+            info += f"Vibronic: {self.energies[method].vibronic}\n"
+        info += "\n--- Coordinates (Å) --- \n\n"
+        for line in self.geometry:
+            info += f"{line}"
+        info += "\n--- Velocities (Å/ps) --- \n\n"
+        for line in self.velocities:
+            info += f"{line}"
+
+        return info
 
     def write_xyz(self, xyz_file: str):
         """Writes the current geometry to a .xyz file.
@@ -181,14 +188,22 @@ class System:
         """
         self.geometry = []
 
-        with open(xyz_file, "r") as file:
-            for linenum, line in enumerate(file):
+        with open(xyz_file, "r") as f:
+            numlines = sum(1 for _ in f)
+
+        with open(xyz_file, "r") as f:
+            for linenum, line in enumerate(f):
                 if linenum == 0:
                     self.atomcount = int(line)
-                if linenum > 1 and linenum < self.atomcount + 2:
+                last_geom_line = numlines - (self.atomcount + 2)
+                if linenum > last_geom_line + 1 and linenum < numlines:
                     self.geometry.append(
                         f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                     )
+                    if len(line.split()) > 4:
+                        self.velocities.append(
+                            f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
+                        )
 
 
 class Ensemble:

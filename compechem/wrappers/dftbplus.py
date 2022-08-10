@@ -261,6 +261,7 @@ class DFTBInput:
         temperature: int = 298,
         mdrestartfreq: int = 100,
         box_side: float = None,
+        restart: bool = False,
         ncores: int = None,
         maxcore=None,
         charge: int = None,
@@ -276,12 +277,14 @@ class DFTBInput:
             Input molecule to use in the calculation.
         steps : int
             Total steps of the simulation
-        timestep : float
+        timestep : float, optional
             Time step (in fs) for the simulation.
-        temperature : int
+        temperature : int, optional
             Temperature (in Kelvin) of the simulation
-        mdrestartfreq : int
+        mdrestartfreq : int, optional
             MD information is printed to md.out every mdrestartfreq steps, by default 100
+        restart : bool, optional
+            if True, restarts MD run from velocities provided in .xyz file
         box_side : float, optional
             for periodic systems, defines the length (in Å) of the box side
         ncores : int, optional
@@ -409,6 +412,13 @@ class DFTBInput:
                 os.system(f"dftb+ > {self.output_path} 2>> output.err")
 
             import random, string
+
+            if inplace is False:
+                newmol = System("geo_end.xyz", charge, spin, mol.periodic, mol.box_side)
+                newmol.energies = copy.copy(mol.energies)
+
+            else:
+                mol.update_geometry("geo_end.xyz")
 
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
             tools.save_dftb_trajectory(f"{mol.name}_{suffix}")

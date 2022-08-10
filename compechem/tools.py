@@ -58,38 +58,6 @@ def add_flag(mol: System, flag: str):
     return
 
 
-def info(mol: System, print_geometry: bool = True):
-    """Prints information about the molecule
-
-    Parameters
-    ----------
-    mol : System object
-        System object
-    print_geometry : bool
-        prints atom coordinates, by default True
-
-    Returns
-    -------
-    Prints to screen a summary with all the informations about the molecule.
-    """
-    print(f"\n === System: {mol.name} === ")
-    print(f"\nNumber of atoms: {mol.atomcount}")
-    print(f"Charge: {mol.charge}")
-    print(f"Spin: {mol.spin}")
-    print("\n--- Warnings ---\n")
-    for warning in mol.flags:
-        print(warning)
-    print("\n --- Energies (Eh) --- \n")
-    for method in mol.energies:
-        print(f"* Method: {method}")
-        print(f"Electronic: {mol.energies[method].electronic}")
-        print(f"Vibronic: {mol.energies[method].vibronic}")
-    if print_geometry is True:
-        print("\n --- Coordinates (Angstrom) --- ")
-        for line in mol.geometry:
-            print(line, end="")
-
-
 def dump(obj, filename: bool = None):
     """Generates a pickle file containing an object 
 
@@ -159,9 +127,10 @@ def process_output(
         spin = mol.spin
 
     os.makedirs("../output_files", exist_ok=True)
-    shutil.copy(
-        "output.out", f"../output_files/{mol.name}_{charge}_{spin}_{method}_{calc}.out",
-    )
+    if os.path.exists("output.out"):
+        shutil.copy(
+            "output.out", f"../output_files/{mol.name}_{charge}_{spin}_{method}_{calc}.out",
+        )
 
     if os.path.exists("output.err"):
         os.makedirs("../error_files", exist_ok=True)
