@@ -261,7 +261,6 @@ class DFTBInput:
         temperature: int = 298,
         mdrestartfreq: int = 100,
         box_side: float = None,
-        restart: bool = False,
         ncores: int = None,
         maxcore=None,
         charge: int = None,
@@ -283,8 +282,6 @@ class DFTBInput:
             Temperature (in Kelvin) of the simulation
         mdrestartfreq : int, optional
             MD information is printed to md.out every mdrestartfreq steps, by default 100
-        restart : bool, optional
-            if True, restarts MD run from velocities provided in .xyz file
         box_side : float, optional
             for periodic systems, defines the length (in Å) of the box side
         ncores : int, optional
@@ -350,10 +347,11 @@ class DFTBInput:
                     f"  Steps = {steps}\n"
                     "  MovedAtoms = 1:-1\n"
                     f"  MDRestartFrequency = {mdrestartfreq}\n"
-                    "}\n"
-                    "\n"
-                    f"Hamiltonian = {self.hamiltonian} {{\n"
+                    "    Velocities [AA/ps] {\n"
                 )
+                for velocity in mol.velocities:
+                    inp.write(f"      {velocity[1:]}")
+                inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.hamiltonian} {{\n")
 
                 if self.hamiltonian == "DFTB":
                     if self.solver:
