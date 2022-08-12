@@ -270,36 +270,44 @@ def save_dftb_trajectory(output_prefix):
     shutil.move("geo_end.xyz", f"../MD_data/{output_prefix}_geo_end.xyz")
 
 
-def parse_dftb_trajectory(output_name):
-    """Parses a geo_end.xyz trajectory and an md.out file to export a single trajectory
-    file also containing the energies for all frames
+def compress_dftb_trajectory(output_file, md_out="md.out", geo_xyz="geo_end.xyz"):
+    """Parses a geo_end.xyz trajectory and an md.out file to export a single compressed
+    trajectory file also containing the energies for all frames
 
     Parameters
     ----------
-    output_name : str
+    output_file : str
         name of the output trajectory file
+    md_out : str, optional
+        path to the md.out file containing energy info (by default, ./md.out)
+    geo_xyz : str, optional
+        path to the geo_end.xyz file containing energy info (by default, ./geo_end.xyz)
     """
 
-    os.makedirs("../MD_trajectories", exist_ok=True)
+    logger.info(f"Parsing trajectory file: {geo_xyz}")
+    logger.info(f"Parsing energy file: {md_out}")
 
     energies = []
-    with open("md.out", "r") as f:
+    with open(md_out, "r") as f:
         for line in f:
             if "Total MD Energy" in line:
                 energies.append(float(line.split()[3]))
 
-    with open("geo_end.xyz", "r") as inp:
-        with open(f"../MD_trajectories/{output_name}", "w") as out:
+    with open(geo_xyz, "r") as inp:
+        with open("temp.xyz", "w") as out:
+            md_iter = 0
             for linenum, line in enumerate(inp):
                 if linenum == 0:
                     atomcount = int(line)
                 if linenum % (atomcount + 2) == 0:
                     out.write(line)
                 if linenum % (atomcount + 2) == 1:
-                    md_iter = line.rstrip("\n")
-                    out.write(f"  {md_iter}\tEnergy: {energies.pop(0)} Eh\n")
+                    md_iter = int(line.rstrip("\n").split()[2])
+                    out.write(f"Step: {md_iter} Energy: {energies.pop(0)} Eh\n")
                 if linenum % (atomcount + 2) > 1:
                     out.write(
-                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
+                        f"{line.split()[0]} {round(float(line.split()[1]),3)} {round(float(line.split()[2]),3)} {round(float(line.split()[3]),3)}\n"
                     )
+    logger.info(f"Compressing MD trajectory to {output_file}")
+    os.system(f"zip {output_file} temp.xyz")
 
