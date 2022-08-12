@@ -295,15 +295,13 @@ def compress_dftb_trajectory(output_file, md_out="md.out", geo_xyz="geo_end.xyz"
 
     with open(geo_xyz, "r") as inp:
         with open("temp.xyz", "w") as out:
-            md_iter = 0
             for linenum, line in enumerate(inp):
                 if linenum == 0:
                     atomcount = int(line)
                 if linenum % (atomcount + 2) == 0:
-                    out.write(line)
+                    out.write(f"{line.split()[0]}\n")
                 if linenum % (atomcount + 2) == 1:
-                    md_iter = int(line.rstrip("\n").split()[2])
-                    out.write(f"Step: {md_iter} Energy: {energies.pop(0)} Eh\n")
+                    out.write(f"Step: {line.split()[0]} Energy: {energies.pop(0)} Eh\n")
                 if linenum % (atomcount + 2) > 1:
                     out.write(
                         f"{line.split()[0]} {round(float(line.split()[1]),3)} {round(float(line.split()[2]),3)} {round(float(line.split()[3]),3)}\n"
