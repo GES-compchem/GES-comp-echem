@@ -8,11 +8,13 @@ logger = logging.getLogger(__name__)
 
 
 class Energies:
-    """Molecular energies in Hartree
-    """
+    """Molecular energies in Hartree"""
 
     def __init__(
-        self, method: str = None, electronic: float = None, vibronic: float = None,
+        self,
+        method: str = None,
+        electronic: float = None,
+        vibronic: float = None,
     ) -> None:
         """
         Parameters
@@ -183,7 +185,7 @@ class System:
         Parameters
         ----------
         xyz_file : str
-            path with the .xyz file of the geometry containing the 
+            path with the .xyz file of the geometry containing the
             new coordinates
         """
         self.geometry = []
@@ -212,10 +214,10 @@ class Ensemble:
     Attributes
     ----------
     name : str
-        name of the system represented in the ensemble, taken from the first element of 
+        name of the system represented in the ensemble, taken from the first element of
         the ensemble
     atomcount : int
-        number of atoms contained each ensemble, taken from the first element of the 
+        number of atoms contained each ensemble, taken from the first element of the
         ensemble
     energies : dict
         dictionary containing the electronic/vibronic energies of the systems,
@@ -262,7 +264,7 @@ class Ensemble:
         Parameters
         ----------
         iterator : iterable
-            iterator object (e.g., MDTrajectory object) 
+            iterator object (e.g., MDTrajectory object)
         """
         self.container.append(iterator)
 
@@ -293,7 +295,7 @@ class Ensemble:
     def boltzmann_average(
         self, method_el: str, method_vib: str = None, temperature: float = 297.15
     ):
-        """Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted 
+        """Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted
         for each molecule by its Boltzmann factor.
 
         Parameters
@@ -311,7 +313,7 @@ class Ensemble:
         Creates an Energies object with the total free Gibbs energy of the ensemble.
 
         NOTE: the vibronic contributions are included in the electronic component, which
-        actually contains the TOTAL energy of the system. Maybe in the future I'll think of 
+        actually contains the TOTAL energy of the system. Maybe in the future I'll think of
         how to separate the two contributions - LB
         """
 
@@ -467,7 +469,9 @@ class MDTrajectory:
                     found = True
                 if "Total MD Energy" in line and found:
                     system.energies[self.method] = Energies(
-                        method=self.method, electronic=line.split()[3], vibronic=None,
+                        method=self.method,
+                        electronic=line.split()[3],
+                        vibronic=None,
                     )
                     break
 
@@ -475,4 +479,3 @@ class MDTrajectory:
 
     def __len__(self):
         return len(self.frames)
-
