@@ -7,3 +7,5 @@ from compechem.tools.internaltools import save_dftb_trajectory
 
 from compechem.tools.externalutilities import split_multixyz
 from compechem.tools.externalutilities import compress_dftb_trajectory
+
+from compechem.tools.xyz2mol import maxdist
