@@ -103,6 +103,13 @@ def packmol_cube(
             / sum([mol_weights[atom[0]] for atom in solvent_mol.geometry])
         )  # n° of molecules
 
+        solvent_grams = (
+            sum([mol_weights[atom[0]] for atom in solvent_mol.geometry]) * nsolv / avogadro
+        )  # g
+
+        # recalculating density with actual number of solvent molecules
+        target_dens = (solvent_grams + solute_grams) / volume
+
     else:
         logger.error(
             "At least two of ( nsolv | target_dens | cube_side ) must be provided."
@@ -112,6 +119,7 @@ def packmol_cube(
     logger.info(
         f"{solute_mol.name} - Generating solvation box with {nsolv} {solvent_mol.name}s"
     )
+    # Also print EFFECTIVE DENSITY!
     logger.debug(
         f"Packmol solvated {solute_mol.name} - cubic box with {nsolv} {solvent_mol.name} molecules, side {cube_side} Å, density {target_dens} g/L."
     )
