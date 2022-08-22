@@ -31,7 +31,7 @@ def packmol_cube(
         target density for the solvated box, in g/L
     cube_side : float, optional
         length of the box side, in Å
-    
+
     Returns
     -------
     Returns a System object
@@ -83,13 +83,13 @@ def packmol_cube(
             sum([mol_weights[atom[0]] for atom in solute_mol.geometry]) / avogadro
         )  # g
 
-        volume = (cube_side ** 3) * 1e-27  # L
+        volume = (cube_side**3) * 1e-27  # L
 
         target_dens = (solvent_grams + solute_grams) / volume
 
     elif target_dens and cube_side:
 
-        volume = (cube_side ** 3) * 1e-27  # L
+        volume = (cube_side**3) * 1e-27  # L
 
         solute_grams = (
             sum([mol_weights[atom[0]] for atom in solute_mol.geometry]) / avogadro
@@ -132,20 +132,20 @@ def packmol_cube(
 
     with sh.pushd(tdir):
 
-        solute_mol.write_xyz(solute)
-        solvent_mol.write_xyz(solvent)
+        solute_mol.write_xyz(f"{solute_mol.name}.xyz")
+        solvent_mol.write_xyz(f"{solvent_mol.name}.xyz")
 
         with open("input.inp", "w") as f:
             f.write(
                 "tolerance 2.0\n"
                 f"filetype xyz\n\n"
                 f"output {solute_mol.name}_{nsolv}{solvent_mol.name}s.xyz\n\n"
-                f"structure {solvent}\n"
+                f"structure {solvent_mol.name}.xyz\n"
                 f"  number {nsolv}\n"
                 "  resnumbers 3\n"
                 f"  inside cube 0. 0. 0. {cube_side-2}\n"
                 "end structure\n\n"
-                f"structure {solute}\n"
+                f"structure {solute_mol.name}.xyz\n"
                 "  number 1\n"
                 "  resnumbers 3\n"
                 "  center\n"
@@ -167,4 +167,3 @@ def packmol_cube(
         shutil.rmtree(tdir)
 
     return solvated_molecule
-
