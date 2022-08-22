@@ -23,7 +23,7 @@ def add_flag(mol: System, flag: str):
 
 
 def dump(obj, filename: bool = None):
-    """Generates a pickle file containing an object 
+    """Generates a pickle file containing an object
 
     Parameters
     ----------
@@ -111,10 +111,14 @@ def dissociation_check():
 
 
 def process_output(
-    mol: System, method: str, calc: str, charge: int = None, spin: int = None,
+    mol: System,
+    method: str,
+    calc: str,
+    charge: int = None,
+    spin: int = None,
 ):
-    """Processes the output of a calculation, copying the output files to a safe directory in the
-    parent directory tree, and cleans the temporary directory if requested.
+    """Processes the output of a calculation, copying the output files to a safe directory
+    in the parent directory tree, and cleans the temporary directory if requested.
 
     Parameters
     ----------
@@ -138,13 +142,15 @@ def process_output(
     os.makedirs("../output_files", exist_ok=True)
     if os.path.exists("output.out"):
         shutil.copy(
-            "output.out", f"../output_files/{mol.name}_{charge}_{spin}_{method}_{calc}.out",
+            "output.out",
+            f"../output_files/{mol.name}_{charge}_{spin}_{method}_{calc}.out",
         )
 
     if os.path.exists("output.err"):
         os.makedirs("../error_files", exist_ok=True)
         shutil.copy(
-            "output.err", f"../error_files/{mol.name}_{charge}_{spin}_{method}_{calc}.err",
+            "output.err",
+            f"../error_files/{mol.name}_{charge}_{spin}_{method}_{calc}.err",
         )
 
 

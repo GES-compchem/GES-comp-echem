@@ -734,7 +734,14 @@ def xyz2mol(atoms, coordinates, charge=0, allow_charged_fragments=True,
     return new_mols
 
 
-def maxdist(structure, charge=None, output_format=None, no_charged_fragments=True, ignore_chiral=True, use_huckel=True):
+def maxdist(
+    structure, 
+    charge=None, 
+    output_format=None, 
+    no_charged_fragments=True, 
+    ignore_chiral=True, 
+    use_huckel=True,
+):
 
     # read xyz file
     filename = structure
@@ -761,7 +768,16 @@ def maxdist(structure, charge=None, output_format=None, no_charged_fragments=Tru
         embed_chiral=embed_chiral,
         use_huckel=use_huckel)
 
-    # Print output
+    # return maximum distance between any 2 atoms
     for mol in mols:
-        return np.max(rdmolops.Get3DDistanceMatrix(mol))
+        
+        maxdist = np.max(rdmolops.Get3DDistanceMatrix(mol))
+
+        # cleaning up temporary files
+        import os
+        os.remove("./nul")
+        os.remove("./run.out")
+
+        return maxdist
+    
         
