@@ -13,6 +13,13 @@ Implementation by Jan H. Jensen, based on the paper
 
 import copy
 import itertools
+import sh
+import os
+import shutil
+from tempfile import mkdtemp
+
+import logging
+logger = logging.getLogger(__name__)
 
 from rdkit.Chem import rdchem
 try:
@@ -735,7 +742,7 @@ def xyz2mol(atoms, coordinates, charge=0, allow_charged_fragments=True,
 
 
 def maxdist(
-    structure, 
+    inputmol, 
     charge=None, 
     output_format=None, 
     no_charged_fragments=True, 
@@ -743,41 +750,53 @@ def maxdist(
     use_huckel=True,
 ):
 
-    # read xyz file
-    filename = structure
+    tdir = mkdtemp(
+        prefix=inputmol.name + "_",
+        suffix=f"_maxdist",
+        dir=os.getcwd(),
+    )
 
-    # allow for charged fragments, alternatively radicals are made
-    charged_fragments = not no_charged_fragments
+    with sh.pushd(tdir):
 
-    # chiral comment
-    embed_chiral = not ignore_chiral
+        inputmol.write_xyz(f"{inputmol.name}.xyz")
 
-    # read atoms and coordinates. Try to find the charge
-    atoms, charge, xyz_coordinates = read_xyz_file(filename)
+        # read xyz file
+        filename = f"{inputmol.name}.xyz"
 
-    # huckel uses extended Huckel bond orders to locate bonds (requires RDKit 2019.9.1 or later)
-    # otherwise van der Waals radii are used
-    use_huckel = use_huckel
+        # allow for charged fragments, alternatively radicals are made
+        charged_fragments = not no_charged_fragments
 
-    # Get the molobjs
-    quick=False # otherwise networkx is needed
-    mols = xyz2mol(atoms, xyz_coordinates,
-        charge=charge,
-        use_graph=quick,
-        allow_charged_fragments=charged_fragments,
-        embed_chiral=embed_chiral,
-        use_huckel=use_huckel)
+        # chiral comment
+        embed_chiral = not ignore_chiral
 
-    # return maximum distance between any 2 atoms
-    for mol in mols:
+        # read atoms and coordinates. Try to find the charge
+        atoms, charge, xyz_coordinates = read_xyz_file(filename)
+
+        # huckel uses extended Huckel bond orders to locate bonds (requires RDKit 2019.9.1 or later)
+        # otherwise van der Waals radii are used
+        use_huckel = use_huckel
+
+        # Get the molobjs
+        quick=False # otherwise networkx is needed
+        mols = xyz2mol(atoms, xyz_coordinates,
+            charge=charge,
+            use_graph=quick,
+            allow_charged_fragments=charged_fragments,
+            embed_chiral=embed_chiral,
+            use_huckel=use_huckel)
+
+        # return maximum distance between any 2 atoms
+        for mol in mols:
+            
+            maxdist = np.max(rdmolops.Get3DDistanceMatrix(mol))
+            logger.debug(f"Maximum distance between any 2 atoms in {inputmol.name}: {maxdist} Å")
+
+            # cleaning up temporary files
+            os.remove("./nul")
+            os.remove("./run.out")
         
-        maxdist = np.max(rdmolops.Get3DDistanceMatrix(mol))
+        shutil.rmtree(tdir)
 
-        # cleaning up temporary files
-        import os
-        os.remove("./nul")
-        os.remove("./run.out")
-
-        return maxdist
+    return maxdist
     
         
