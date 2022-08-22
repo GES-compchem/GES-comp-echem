@@ -3,7 +3,8 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import System, Energies
 from compechem.systems import MDTrajectory
-from compechem import tools
+from compechem.tools import process_output
+from compechem.tools import save_dftb_trajectory
 import logging
 
 logger = logging.getLogger(__name__)
@@ -246,7 +247,7 @@ class DFTBInput:
                     vibronic=vibronic_energy,
                 )
 
-            tools.process_output(mol, self.hamiltonian, "spe", charge, spin)
+            process_output(mol, self.hamiltonian, "spe", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -419,13 +420,13 @@ class DFTBInput:
                 mol.update_geometry("geo_end.xyz")
 
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
-            tools.save_dftb_trajectory(f"{mol.name}_{suffix}")
+            save_dftb_trajectory(f"{mol.name}_{suffix}")
 
             if mol.periodic:
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            tools.process_output(mol, self.hamiltonian, "md_nvt", charge, spin)
+            process_output(mol, self.hamiltonian, "md_nvt", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 

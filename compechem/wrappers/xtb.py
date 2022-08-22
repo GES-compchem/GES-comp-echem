@@ -2,7 +2,10 @@ import os, copy, sh, shutil
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import System, Energies
-from compechem import tools
+from compechem.tools import process_output
+from compechem.tools import add_flag
+from compechem.tools import dissociation_check
+from compechem.tools import cyclization_check
 import logging
 
 logger = logging.getLogger(__name__)
@@ -131,7 +134,7 @@ class XtbInput:
                     vibronic=vibronic_energy,
                 )
 
-            tools.process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -206,16 +209,16 @@ class XtbInput:
                     f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
-            if tools.dissociation_check() is True:
+            if dissociation_check() is True:
                 logger.error(f"Dissociation spotted for {mol.name}.")
-                tools.add_flag(
+                add_flag(
                     mol,
                     f"Dissociation occurred during geometry optimization with {self.method}.",
                 )
                 return None
-            elif tools.cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
+            elif cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
                 logger.error(f"Cyclization change spotted for {mol.name}.")
-                tools.add_flag(
+                add_flag(
                     mol,
                     f"Cyclization change occurred during geometry optimization with {self.method}.",
                 )
@@ -251,7 +254,7 @@ class XtbInput:
 
                     mol.update_geometry("xtbopt.xyz")
 
-                tools.process_output(mol, self.method, "opt", charge, spin)
+                process_output(mol, self.method, "opt", charge, spin)
                 if remove_tdir:
                     shutil.rmtree(tdir)
 
@@ -351,7 +354,7 @@ class XtbInput:
                     vibronic=vibronic_energy,
                 )
 
-            tools.process_output(mol, self.method, "freq", charge, spin)
+            process_output(mol, self.method, "freq", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
