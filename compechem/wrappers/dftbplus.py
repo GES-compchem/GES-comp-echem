@@ -448,10 +448,10 @@ class DFTBInput:
     def simulated_annealing(
         self,
         mol: System,
-        start_temp: float = 100.0,
-        target_temp: float = 5500.0,
+        start_temp: float = 1.0,
+        target_temp: float = 2000.0,
         ramp_steps: int = 500,
-        hold_steps: int = 200,
+        hold_steps: int = 1000,
         timestep: float = 1.0,
         mdrestartfreq: int = 100,
         box_side: float = None,
@@ -470,13 +470,13 @@ class DFTBInput:
         mol : System object
             Input molecule to use in the calculation.
         start_temp: float, optional
-            Starting temperature (default, 100K)
+            Starting temperature (default, 1K)
         target_temp: float, optional
-            Maximum temperature reached during the simulation (default, 5500K)
+            Maximum temperature reached during the simulation (default, 2000K)
         ramp_steps: int, optional
             Number of MD steps for the heating/cooling ramps (default, 500 steps)
         hold_steps: int, optional
-            Number of MD steps held at target_temp (default, 200 steps)
+            Number of MD steps held at target_temp (default, 1000 steps)
         timestep : float, optional
             Time step (in fs) for the simulation.
         mdrestartfreq : int, optional
