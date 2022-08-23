@@ -5,6 +5,7 @@ from compechem.systems import System, Energies
 from compechem.systems import MDTrajectory
 from compechem.tools import process_output
 from compechem.tools import save_dftb_trajectory
+from compechem.tools import compress_dftb_trajectory
 import logging
 
 logger = logging.getLogger(__name__)
@@ -268,6 +269,7 @@ class DFTBInput:
         spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
+        compress_traj: bool = True,
     ):
         """Molecular Dynamics simulation in the Canonical Ensemble (NVT).
 
@@ -298,6 +300,8 @@ class DFTBInput:
             by default False
         remove_tdir : bool, optional
             Temporary work directory will be removed, by default True
+        compress_traj : bool, optional
+            if True, parses the geo.end and md.out files into a single, smaller file.
 
         Returns
         -------
@@ -420,6 +424,12 @@ class DFTBInput:
                 mol.update_geometry("geo_end.xyz")
 
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
+
+            if compress_traj:
+                compress_dftb_trajectory(mol.name)
+                os.makedirs("../MD_trajectories", exist_ok=True)
+                shutil.move(f"{mol.name}.zip", f"../MD_trajectories/{mol.name}.zip")
+
             save_dftb_trajectory(f"{mol.name}_{suffix}")
 
             if mol.periodic:

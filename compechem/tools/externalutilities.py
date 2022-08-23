@@ -4,6 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def split_multixyz(
     mol: System, file: str, suffix: str, charge: int = None, spin: int = None
 ):
@@ -51,14 +52,15 @@ def split_multixyz(
 
     return molecules_list
 
-def compress_dftb_trajectory(output_file, md_out="md.out", geo_xyz="geo_end.xyz"):
+
+def compress_dftb_trajectory(filename, md_out="md.out", geo_xyz="geo_end.xyz"):
     """Parses a geo_end.xyz trajectory and an md.out file to export a single compressed
     trajectory file also containing the energies for all frames
 
     Parameters
     ----------
-    output_file : str
-        name of the output trajectory file
+    filename : str
+        name of the output trajectory files
     md_out : str, optional
         path to the md.out file containing energy info (by default, ./md.out)
     geo_xyz : str, optional
@@ -75,7 +77,7 @@ def compress_dftb_trajectory(output_file, md_out="md.out", geo_xyz="geo_end.xyz"
                 energies.append(float(line.split()[3]))
 
     with open(geo_xyz, "r") as inp:
-        with open("temp.xyz", "w") as out:
+        with open(f"{filename}.xyz", "w") as out:
             for linenum, line in enumerate(inp):
                 if linenum == 0:
                     atomcount = int(line)
@@ -87,5 +89,5 @@ def compress_dftb_trajectory(output_file, md_out="md.out", geo_xyz="geo_end.xyz"
                     out.write(
                         f"{line.split()[0]} {round(float(line.split()[1]),3)} {round(float(line.split()[2]),3)} {round(float(line.split()[3]),3)}\n"
                     )
-    logger.info(f"Compressing MD trajectory to {output_file}")
-    os.system(f"zip {output_file} temp.xyz")
+    logger.info(f"Compressing MD trajectory to {filename}.zip")
+    os.system(f"zip {filename}.zip {filename}.xyz")
