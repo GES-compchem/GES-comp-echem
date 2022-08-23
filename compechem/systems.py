@@ -380,7 +380,7 @@ class MDTrajectory:
 
         self.periodic = False
         self.box_side = None
-        if f"MD_data/{traj_filepath}.pbc":
+        if os.path.exists(f"MD_data/{traj_filepath}.pbc"):
             self.periodic = True
             with open(f"MD_data/{traj_filepath}.pbc") as f:
                 self.box_side = float(f.read())
