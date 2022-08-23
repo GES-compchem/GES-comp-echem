@@ -519,6 +519,9 @@ class DFTBInput:
             f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} Simulated Annealing"
         )
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
+        logger.debug(
+            f"Heating/cooling between {start_temp}K and {target_temp}K for {ramp_steps} steps and holding max temp for {hold_steps} steps"
+        )
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
