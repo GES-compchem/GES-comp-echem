@@ -213,10 +213,10 @@ class DFTBInput:
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > {self.output_path} 2>> output.err")
+                os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
 
             elif self.parallel == "nompi":
-                os.system(f"dftb+ > {self.output_path} 2>> output.err")
+                os.system(f"dftb+ > output.out 2>> output.err")
 
             with open("output.out", "r") as out:
                 for line in out:

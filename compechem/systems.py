@@ -69,7 +69,6 @@ class System:
         xyz_file: str,
         charge: int = 0,
         spin: int = 1,
-        periodic: bool = False,
         box_side: float = None,
     ) -> None:
         """
@@ -81,8 +80,6 @@ class System:
             total charge of the system. Defaults to 0 (neutral)
         spin : int, optional
             total spin of the system. Defaults to 1 (singlet)
-        periodic : bool, optional
-            is the system periodic? False by default
         box_side : float, optional
             for periodic systems, defines the length (in Å) of the box side
         """
@@ -94,8 +91,13 @@ class System:
         self.atomcount: int = None
         self.geometry: list = []
 
-        self.periodic = periodic
         self.box_side = box_side
+
+        if self.box_side:
+            self.periodic = True
+        else:
+            self.periodic = False
+
         self.velocities: list = []
 
         self.flags: list = []
