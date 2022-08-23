@@ -638,7 +638,7 @@ class DFTBInput:
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.hamiltonian, "md_nvt", charge, spin)
+            process_output(mol, self.hamiltonian, "anneal", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
