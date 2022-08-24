@@ -7,8 +7,6 @@ chapters:
 - file: user-guide
   sections:
     - file: Guide/systems
-      sections:
-        - file: Guide/systems/System
 - file: api
   sections:
     - file: API/systems
