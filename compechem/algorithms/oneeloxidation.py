@@ -236,7 +236,7 @@ def generate_species(
 ):
     """Carries out all the calculations for the singlet and radical species to be used in the
     calculate_potential function, given a file path with a .xyz file
-    
+
     Parameters
     ----------
     base_mol : System
@@ -348,9 +348,12 @@ def generate_potential_data(
         pH step at which the potential is calculated (by default, 1.0 pH units)
 
 
-    Yields (generator)
-    -------
-    current_pH, potential
+    Yields
+    ------
+    current_pH : float
+        pH at which the potential is being evaluated
+    potential : float
+        potential in V vs. SHE
 
     """
 
