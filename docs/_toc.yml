@@ -4,5 +4,11 @@ format: jb-book
 root: intro
 chapters:
 - file: getting-started
-# - file: api
-# - file: systems
+- file: user-guide
+  sections:
+    - file: Guide/systems
+      sections:
+        - file: Guide/systems/System
+- file: api
+  sections:
+    - file: API/systems
