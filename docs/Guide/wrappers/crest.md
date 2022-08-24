@@ -15,7 +15,7 @@ All functions share some common optional arguments:
 
 ---
 
-### `crest.tautomer_search()`
+## `crest.tautomer_search()`
 
 the `tautomer_search` function carries out a tautomer search, taking a `System` object as input, and returning a `list` of `System` objects corresponding to the lowest energy tautomers, ordered by increasing energy:
 
@@ -31,7 +31,7 @@ best_tautomer = tautomers[0]
 
 ---
 
-### `crest.conformer_search()`
+## `crest.conformer_search()`
 
 the `conformer_search` function carries out a conformer search, taking a `System` object as input, and returning a `list` of `System` objects corresponding to the lowest energy conformers, ordered by increasing energy:
 
@@ -47,7 +47,7 @@ best_conformer = conformers[0]
 
 ---
 
-### `crest.deprotonate()`
+## `crest.deprotonate()`
 
 the `deprotonate` function carries out a deprotomer search, taking a `System` object as input, and returning a `list` of `System` objects corresponding to the lowest energy deprotomers, ordered by increasing energy:
 
@@ -63,7 +63,7 @@ best_deprotomer = deprotomers[0]
 
 ---
 
-### `crest.protonate()`
+## `crest.protonate()`
 
 the `protonate` function carries out a protomer search, taking a `System` object as input, and returning a `list` of `System` objects corresponding to the lowest energy protomers, ordered by increasing energy:
 
@@ -79,7 +79,7 @@ best_deprotomer = protomers[0]
 
 ---
 
-### `crest.qcg_grow()`
+## `crest.qcg_grow()`
 
 the `qcg_grow` function carries out a [Quantum Cluster Growth](https://xtb-docs.readthedocs.io/en/latest/crestqcg.html) calculation, taking two `System` objects as input, namely a **solute** and a **solvent**, and returning another `System` corresponding to the explicitly solvated "cluster" obtained by surrounding the **solute** with **solvent** molecules:
 
@@ -98,7 +98,7 @@ The `qcg_grow` also takes the following optional arguments:
 * `nsolv` (`int`): number of solvent molecules to put in the cluster. By default, the program keeps adding solvent molecules until energy is converged with respect to the number of solvent molecules
 ---
 
-### `crest.qcg_ensemble()`
+## `crest.qcg_ensemble()`
 
 the `qcg_ensemble` function carries out a [Quantum Cluster Growth](https://xtb-docs.readthedocs.io/en/latest/crestqcg.html) calculation + an ensemble search, taking two `System` objects as input, namely a **solute** and a **solvent**, and returning an `Ensemble` corresponding to the explicitly solvated "clusters" obtained by surrounding the **solute** with **solvent** molecules, in order of ascending energy:
 

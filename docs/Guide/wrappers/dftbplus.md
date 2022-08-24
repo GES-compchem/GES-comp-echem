@@ -5,7 +5,7 @@ The `dftbplus` submodule contains a series of classes and functions for interfac
 
 ---
 
-### `DFTBInput` class
+## `DFTBInput` class
 
 This submodule contains the `DFTBInput` class, which is the main interface for runnign DFTB+ calculations, specifying the Hamiltonian and its parameters.
 
@@ -33,7 +33,7 @@ Please consult the DFTB+ manual for all available options and settings.
 
 ---
 
-### Methods
+## Methods
 
 The `DFTBInput` class features a series of internal methods to carry out the calculations. The available options are:
 
@@ -52,7 +52,7 @@ mymol_opt = dftb.spe(mymol)
 
 ---
 
-### `DFTBInput.spe()` parameters
+## `DFTBInput.spe()` parameters
 
 The single point energy function accepts the following optional flags:
 
@@ -64,7 +64,7 @@ The single point energy function accepts the following optional flags:
 
 ---
 
-### `DFTBInput.md_nvt()` parameters
+## `DFTBInput.md_nvt()` parameters
 
 The NVT MD function **requires** the `steps` parameter, setting the number of MD simulation steps, as well as accepting the following optional flags:
 
@@ -81,7 +81,7 @@ The NVT MD function **requires** the `steps` parameter, setting the number of MD
 
 ---
 
-### `DFTBInput.simulated_annealing()` parameters
+## `DFTBInput.simulated_annealing()` parameters
 
 The Simulated Annealing accepts the following optional flags:
 

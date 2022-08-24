@@ -5,7 +5,7 @@ The `xtb` submodule contains a series of classes and functions for interfacing w
 
 ---
 
-### `XtbInput` class
+## `XtbInput` class
 
 This submodule contains the `XtbInput` class, which is the main interface for runnign xTB calculations, specifying the level of theory at which calculations will be carried out, if and which implicit solvent should be used, etc.
 
@@ -24,7 +24,7 @@ The following optional arguments are available:
 
 ---
 
-### Methods
+## Methods
 
 The `XtbInput` class features a series of internal methods to carry out the calculations. The available options are:
 

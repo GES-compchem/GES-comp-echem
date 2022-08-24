@@ -5,7 +5,7 @@ The `orca` submodule contains a series of classes and functions for interfacing 
 
 ---
 
-### `OrcaInput` class
+## `OrcaInput` class
 
 This submodule contains the `OrcaInput` class, which is the main interface for runnign Orca calculations, specifying the level of theory at which calculations will be carried out, the basis set to be used, if and which implicit solvent should be used, etc.
 
@@ -28,7 +28,7 @@ Please consult the Orca manual for all available options for methods and basis s
 
 ---
 
-### Methods
+## Methods
 
 The `OrcaInput` class features a series of internal methods to carry out the calculations. The available options are:
 
@@ -57,7 +57,7 @@ All the methods above accept a series of optional flags:
 
 ---
 
-### Pre-packaged methods
+## Pre-packaged methods
 
 For some common types of calculation, some "pre-packaged" options have been set up and made available:
 

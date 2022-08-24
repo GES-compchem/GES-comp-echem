@@ -9,7 +9,7 @@ from compechem import packmol
 
 ---
 
-### `packmol.packmol_cube()`
+## `packmol.packmol_cube()`
 
 the `packmol_cube` function generates a cubic solvation box of **solvent** molecules around a **solute** object. It returns a `System` object corresponding to the (periodic) solvated box.
 

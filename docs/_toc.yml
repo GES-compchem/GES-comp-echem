@@ -8,6 +8,12 @@ chapters:
   sections:
     - file: Guide/systems
     - file: Guide/wrappers
+      sections:
+        - file: Guide/wrappers/xtb
+        - file: Guide/wrappers/crest
+        - file: Guide/wrappers/orca
+        - file: Guide/wrappers/dftbplus
+        - file: Guide/wrappers/packmol
     - file: Guide/functions
     - file: Guide/algorithms
     - file: Guide/tools
