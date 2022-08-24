@@ -1,6 +1,6 @@
 from compechem.config import get_ncores
-from compechem import M06
-from compechem import XtbInput
+from compechem.wrappers.orca import M06
+from compechem.wrappers.xtb import XtbInput
 import logging
 
 logger = logging.getLogger(__name__)

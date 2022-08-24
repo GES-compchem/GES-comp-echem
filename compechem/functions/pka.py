@@ -1,5 +1,5 @@
-from compechem import Ensemble
-from compechem import System
+from compechem.systems import Ensemble
+from compechem.systems import System
 import logging
 
 logger = logging.getLogger(__name__)
