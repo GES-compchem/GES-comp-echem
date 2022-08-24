@@ -7,6 +7,21 @@ chapters:
 - file: user-guide
   sections:
     - file: Guide/systems
+    - file: Guide/wrappers
+    - file: Guide/functions
+    - file: Guide/algorithms
+    - file: Guide/tools
+
 - file: api
   sections:
     - file: API/systems
+    - file: API/wrappers
+      sections:
+        - file: API/wrappers/xtb
+        - file: API/wrappers/crest
+        - file: API/wrappers/orca
+        - file: API/wrappers/dftbplus
+        - file: API/wrappers/packmol
+    - file: API/functions
+    - file: API/algorithms
+    - file: API/tools
