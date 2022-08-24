@@ -7,6 +7,8 @@ setuptools.setup(
     description="",
     long_description="",
     packages=["compechem"],
-    package_data={"compechem": ["algorithms/*", "calculators/*", "functions/*"],},
+    package_data={
+        "compechem": ["algorithms/*", "wrappers/*", "functions/*", "tools/*"],
+    },
     install_requires=[],
 )

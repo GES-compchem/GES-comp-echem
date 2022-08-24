@@ -1,3 +1,5 @@
+# Getting Started
+
 The `GES-comp-echem` package can be installed in a Conda environment with the command:
 ```
 conda install -c greenenergystorage GES-comp-echem

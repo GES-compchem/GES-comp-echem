@@ -23,9 +23,13 @@ requirements:
     - python>=3.8
     - pip
     - setuptools
+    - rdkit
+    - sh
 
   run:
     - python>=3.8
+    - rdkit
+    - sh
 
 
 about:
