@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class XtbInput:
-    """Interface for running xTB calculations
-    """
+    """Interface for running xTB calculations"""
 
     def __init__(
         self,
@@ -55,17 +54,17 @@ class XtbInput:
         Parameters
         ----------
         mol : System object
-            Input molecule to use in the calculation.
+            Input system to use in the calculation.
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
         charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
+            total charge of the system. Default is taken from the input system.
         spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
+            total spin of the system. Default is taken from the input system.
         inplace : bool, optional
-            updates info for the input molecule instead of outputting a new molecule object,
+            updates info for the input system instead of outputting a new system object,
             by default False
         remove_tdir : bool, optional
             Temporary work directory will be removed, by default True
@@ -73,7 +72,7 @@ class XtbInput:
         Returns
         -------
         newmol : System object
-            Output molecule containing the new energies.
+            Output system containing the new energies.
         """
 
         if ncores is None:
@@ -88,7 +87,9 @@ class XtbInput:
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_spe", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_spe",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -156,17 +157,17 @@ class XtbInput:
         Parameters
         ----------
         mol : System object
-            Input molecule to use in the calculation
+            Input system to use in the calculation
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
         charge : int, optional
-            Total charge of the molecule. Default is taken from the input molecule.
+            Total charge of the system. Default is taken from the input system.
         spin : int, optional
-            Total spin of the molecule. Default is taken from the input molecule.
+            Total spin of the system. Default is taken from the input system.
         inplace : bool, optional
-            updates info for the input molecule instead of outputting a new molecule object,
+            updates info for the input system instead of outputting a new system object,
             by default False
         remove_tdir : bool, optional
             Temporary work directory will be removed, by default True
@@ -174,10 +175,10 @@ class XtbInput:
         Returns
         -------
         newmol : System object
-            Output molecule containing the new geometry and energies.
-        
-        If a dissociation or a cyclization is observed, ignore the calculation and return the 
-        original "mol" molecule.
+            Output system containing the new geometry and energies.
+
+        If a dissociation or a cyclization is observed, ignore the calculation and return the
+        original "mol" system.
         """
 
         if ncores is None:
@@ -192,7 +193,9 @@ class XtbInput:
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.method.split()[0]}_opt", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.method.split()[0]}_opt",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -276,17 +279,17 @@ class XtbInput:
         Parameters
         ----------
         mol : System object
-            input molecule to use in the calculation
+            input system to use in the calculation
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
         charge : int, optional
-            Total charge of the molecule. Default is taken from the input molecule.
+            Total charge of the system. Default is taken from the input system.
         spin : int, optional
-            Total spin of the molecule. Default is taken from the input molecule.
+            Total spin of the system. Default is taken from the input system.
         inplace : bool, optional
-            updates info for the input molecule instead of outputting a new molecule object,
+            updates info for the input system instead of outputting a new system object,
             by default False
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
@@ -294,7 +297,7 @@ class XtbInput:
         Returns
         -------
         newmol : System object
-            Output molecule containing the new energies.
+            Output system containing the new energies.
         """
 
         if ncores is None:

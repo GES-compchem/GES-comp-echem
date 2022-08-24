@@ -1,4 +1,4 @@
-from compechem.systems import System
+from compechem import System
 
 
 def calculate_potential(
@@ -19,7 +19,7 @@ def calculate_potential(
     method_el : str
         level of theory for the electronic energy
     method_vib : str, optional
-        level of theory for the vibronic contributions, if method_vib is None (default), 
+        level of theory for the vibronic contributions, if method_vib is None (default),
         the potential calculation will be carried out only considering the electronic component
     pH : float
         pH at which the redox potential is evaluated, by default pH=7

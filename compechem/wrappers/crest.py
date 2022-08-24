@@ -1,7 +1,7 @@
 import os, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.systems import System
+from compechem import System
 from compechem.tools import split_multixyz
 from compechem.tools import cyclization_check
 from compechem.tools import add_flag
@@ -351,9 +351,9 @@ def qcg_grow(
     solvent : System object
         solvent molecule to use in the calculation
     charge : int, optional
-            total charge of the molecule. Default is taken from the solute molecule.
+        total charge of the system. Default is taken from the solute molecule.
     spin : int, optional
-        total spin of the molecule. Default is taken from the solute molecule.
+        total spin of the system. Default is taken from the solute molecule.
     method : str
         method for the geometry optimizations, by default gfn2
         Alternative options: gfn1, gfnff
@@ -364,7 +364,7 @@ def qcg_grow(
     ncores : int, optional
         number of cores, by default all available cores
     maxcore : dummy variable
-            dummy variable used for compatibility with Orca calculations
+        dummy variable used for compatibility with Orca calculations
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
@@ -440,7 +440,7 @@ def qcg_ensemble(
     solvent : System object
         solvent molecule to use in the calculation
     charge : int, optional
-            total charge of the molecule. Default is taken from the solute molecule.
+        total charge of the molecule. Default is taken from the solute molecule.
     spin : int, optional
         total spin of the molecule. Default is taken from the solute molecule.
     method : str
@@ -462,7 +462,7 @@ def qcg_ensemble(
     ncores : int, optional
         number of cores, by default all available cores
     maxcore : dummy variable
-            dummy variable used for compatibility with Orca calculations
+        dummy variable used for compatibility with Orca calculations
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional

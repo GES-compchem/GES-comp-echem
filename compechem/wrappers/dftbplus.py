@@ -277,7 +277,7 @@ class DFTBInput:
         mol: System,
         steps: int,
         timestep: float = 1.0,
-        temperature: int = 298,
+        temperature: float = 298.0,
         mdrestartfreq: int = 100,
         box_side: float = None,
         ncores: int = None,
@@ -298,7 +298,7 @@ class DFTBInput:
             Total steps of the simulation
         timestep : float, optional
             Time step (in fs) for the simulation.
-        temperature : int, optional
+        temperature : float, optional
             Temperature (in Kelvin) of the simulation
         mdrestartfreq : int, optional
             MD information is printed to md.out every mdrestartfreq steps, by default 100
@@ -318,7 +318,8 @@ class DFTBInput:
         remove_tdir : bool, optional
             Temporary work directory will be removed, by default True
         compress_traj : bool, optional
-            if True, parses the geo.end and md.out files into a single, smaller file.
+            if True, parses the geo.end and md.out files into a single, smaller file, which
+            is then zipped in an archive.
 
         Returns
         -------

@@ -21,6 +21,14 @@ from compechem.systems import Ensemble
 from compechem.systems import MDTrajectory
 ```
 
+The `System`, `Ensemble`, and `MDTrajectory` classes can also be imported directly from the `compechem` main module, thanks to a symbolic link pointing to the correct location:
+
+```python
+from compechem import System
+from compechem import Ensemble
+from compechem import MDTrajectory
+```
+
 ---
 
 ## `System` objects
@@ -28,7 +36,7 @@ from compechem.systems import MDTrajectory
 A `System` object is initialized by providing a molecular geometry via a .xyz file:
 
 ```python
-from compechem.systems import System
+from compechem import System
 my_mol = System("path/to/xyz/my_mol.xyz")
 ```
 
@@ -40,7 +48,7 @@ Optionally, the following parameters can be provided (if not provided, some defa
 
 Example of a periodic system of side 18.27 Å containing a cation radical:
 ```python
-from compechem.systems import System
+from compechem import System
 my_mol = System(
     "path/to/xyz/my_mol.xyz", 
     charge=1, 
@@ -62,6 +70,36 @@ my_prop = my_mol.property
 * `energies`: dictionary containing the calculated electronic/vibronic energies, indexed by level of theory
 * `properties`: dictionary containing the calculated properties, such as pKa
 
+For a quick look at the main properties of a `System`, you can simply ask to print the corresponding variable:
+
+```python
+print(my_system)
+```
+
+```
+=== System: water === 
+
+Number of atoms: 3
+Charge: 0
+Spin: 1
+
+--- Warnings ---
+
+--- Energies (Eh) --- 
+
+* Method: gfn2
+Electronic: -5.0850212749 Eh
+Vibronic: 0.002042147786 Eh
+
+--- Coordinates (Å) --- 
+
+O	0.00002775604206	-0.38112213759546	0.00067921774157
+H	0.77442816294285	0.19054562664968	0.00015769815166
+H	-0.77445591549424	0.19057651269109	0.00016308410676
+
+--- Velocities (Å/ps) --- 
+```
+
 Some internal functions are also available:
 
 * `write_xyz(path)`: writes a .xyz file with the current system geometry at the indicated `path`
@@ -75,8 +113,8 @@ Some internal functions are also available:
 An `Ensemble` object is not usually initialized by the user, but is instead provided by some other modules, such as some **CREST** routines. For more details, refer to the `CREST <link>` page. However, it is still possible to manually generate an `Ensemble` object by providing an `iterable` (such as a list) yielding `System` objects:
 
 ```python
-from compechem.systems import System
-from compechem.systems import Ensemble
+from compechem import System
+from compechem import Ensemble
 
 my_mol1 = System("path/to/xyz/my_mol1.xyz")
 my_mol2 = System("path/to/xyz/my_mol2.xyz")
@@ -104,10 +142,10 @@ Some internal functions are also available:
 
 ## `MDTrajectory` objects
 
-An `MDTrajectory` object is not usually initialized by the user, but is instead provided by the **DFTB+** module. For more details, refer to the `DFTB+ <link>` page. However, it is still possible to manually generate an `MDTrajectory` object by providing the path `prefix` to the `<prefix>_md.out` and `<prefix>_geo_end.xyz` files, and the level of theory at which the DFTB+ simulation was ran:
+An `MDTrajectory` object is not usually initialized by the user, but is instead provided by the **DFTB+** module. For more details, refer to the [DFTB+](Guide-wrappers-dftbplus) page. However, it is still possible to manually generate an `MDTrajectory` object by providing the path `prefix` to the `<prefix>_md.out` and `<prefix>_geo_end.xyz` files, and the level of theory at which the DFTB+ simulation was ran:
 
 ```python
-from compechem.systems import MDTrajectory
+from compechem import MDTrajectory
 
 # note, the following files must exist:
 # path/to/xyz/my_traj_md.out
