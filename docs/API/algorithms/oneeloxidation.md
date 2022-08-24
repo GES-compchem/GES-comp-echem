@@ -4,7 +4,7 @@
 ## `find_highest_protonation_state` class
 
 ```{eval-rst}
-.. autofunction:: compechem.algorithms.oneeloxidation.Energies
+.. autofunction:: compechem.algorithms.oneeloxidation.find_highest_protonation_state
 ```
 
 ---
