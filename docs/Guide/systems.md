@@ -36,7 +36,6 @@ Optionally, the following parameters can be provided (if not provided, some defa
 
 * `charge`: total charge of the system. Default: 0
 * `spin`: total spin multiplicity of the system (2S+1, where S is the total spin angular momentum). Default: 1 (singlet)
-* `periodic`: if `True`, system is periodic. Default: `False`
 * `box_side`: (for periodic systems only), length of the simulation box (in Å)
 
 Example of a periodic system of side 18.27 Å containing a cation radical:
@@ -46,7 +45,6 @@ my_mol = System(
     "path/to/xyz/my_mol.xyz", 
     charge=1, 
     spin=2,
-    periodic=True, 
     box_side=18.27,
 )
 ```

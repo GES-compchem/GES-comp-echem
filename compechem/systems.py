@@ -57,9 +57,13 @@ class System:
         number of atoms contained in the system
     geometry : list
         list containing the atomic coordinates of the system
+    box_side : float, optional
+        for periodic systems, defines the length (in Å) of the box side
     energies : dict
         dictionary containing the electronic/vibronic energies of the system,
         calculated at various levels of theory
+    properties : dict
+        dictionary containing the properties of the system, such as pKa
     flags : list
         list containing all "warning" flags which might be encountered during calculations.
     """
@@ -118,8 +122,8 @@ class System:
         info += "\n--- Energies (Eh) --- \n"
         for method in self.energies:
             info += f"* Method: {method}\n"
-            info += f"Electronic: {self.energies[method].electronic}\n"
-            info += f"Vibronic: {self.energies[method].vibronic}\n"
+            info += f"Electronic: {self.energies[method].electronic} Eh\n"
+            info += f"Vibronic: {self.energies[method].vibronic} Eh\n"
         info += "\n--- Coordinates (Å) --- \n\n"
         for line in self.geometry:
             info += f"{line}"
@@ -224,6 +228,8 @@ class Ensemble:
     energies : dict
         dictionary containing the electronic/vibronic energies of the systems,
         calculated at various levels of theory
+    container : list
+        iterable returning System objects generator for creating the Ensemble.
     """
 
     def __init__(self, systems_list) -> None:
@@ -274,6 +280,8 @@ class Ensemble:
     def read_energies(self, method):
         """reads energies from trajectory file (parsed by tools.save_dftb_trajectory()) and
         calculates the average energy for the given trajectory
+
+        CURRENTLY NOT WORKING!!!
 
         Parameters
         ----------

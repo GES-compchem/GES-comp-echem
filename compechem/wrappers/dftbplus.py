@@ -13,7 +13,23 @@ logger = logging.getLogger(__name__)
 
 
 class DFTBInput:
-    """Interface for running DFTB+ calculations"""
+    """Interface for running DFTB+ calculations
+
+    Attributes
+    ----------
+    hamiltonian : str, optional
+        level of theory, by default "DFTB". "xTB" also supported.
+    parameters : str, optional
+        parameters to be used for the DFTB Hamiltonian (by default 3ob)
+    solver : str, optional
+        LAPACK eigensolver method (check manual for available options)
+    dispersion : bool, optional
+        activates D3 dispersion corrections (off by default)
+    parallel : str, optional
+        selects either openmpi-parallel version (mpi) or shared memory version (nompi)
+    verbose : bool, optional
+        if set to True, saves the full DFTB+ output, otherwise, only the smaller files
+    """
 
     def __init__(
         self,

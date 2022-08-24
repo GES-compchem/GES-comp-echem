@@ -2,7 +2,7 @@
 
 Version 0.1.38a
 
-This is the user guide for the `GES-comp-echem` Python module. The philosophy of this software package is to provide a simple interface for carrying out calculations with a number of computational chemistry programs and a number of higher level algorithms to obtain a series of experimental observables.
+This is the user guide for the `GES-comp-echem` Python module. The philosophy of this software package is to provide: i) a simple interface for carrying out calculations with a number of computational chemistry programs, and ii) a selection of higher level algorithms for calculating experimental observables.
 
 ::::{grid} 1 1 1 3
 :class-container: text-center
