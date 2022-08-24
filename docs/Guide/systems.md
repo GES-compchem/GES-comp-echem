@@ -1,4 +1,4 @@
-# `systems` submodule
+# `compechem.systems` submodule
 
 The `systems` submodule contains the following classes, used to collect and store information about the system of interest:
 

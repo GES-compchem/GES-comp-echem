@@ -1,11 +1,20 @@
+The `GES-comp-echem` package can be installed in a Conda environment with the command:
+```
+conda install -c greenenergystorage GES-comp-echem
+```
 
-
-The **GES-comp-echem** package can be imported in a Python script via the following syntax:
+The library can be imported in a Python script as a whole via the following syntax:
 
 ```python
 import compechem
 ```
 
-For a more detailed explanation of the available features in each submodule, please refer to their specific page in this manual.
+Alternatively, individual submodules/classes/functions can be imported separately:
 
-For some examples on how to use this library, please check out the `tutorials <link>` section!
+```python
+from compechem import systems
+from compechem.wrappers import dftbplus
+from compechem.wrappers.packmol import packmol_cube
+```
+
+For a more detailed explanation of the available features in each submodule, please refer to their specific page in this User Guide.
