@@ -44,5 +44,3 @@
 .. autoclass:: compechem.systems.MDTrajectory
     :members:
 ```
-
----

@@ -39,4 +39,3 @@
 .. autofunction:: compechem.algorithms.oneeloxidation.one_electron_oxidation_potentials
 ```
 
----

@@ -7,5 +7,3 @@
 .. autoclass:: compechem.wrappers.dftbplus.DFTBInput
     :members:
 ```
-
----

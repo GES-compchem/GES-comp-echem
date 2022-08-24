@@ -46,5 +46,3 @@
 ```{eval-rst}
 .. autofunction:: compechem.wrappers.crest.qcg_ensemble
 ```
-
----

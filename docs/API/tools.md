@@ -71,4 +71,3 @@
 .. autofunction:: compechem.tools.save_dftb_trajectory
 ```
 
----

@@ -23,4 +23,3 @@
 .. autofunction:: compechem.functions.reorder_energies
 ```
 
----

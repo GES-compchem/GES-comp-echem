@@ -7,5 +7,3 @@
 .. autoclass:: compechem.wrappers.orca.OrcaInput
     :members:
 ```
-
----

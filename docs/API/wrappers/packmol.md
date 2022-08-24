@@ -6,5 +6,3 @@
 ```{eval-rst}
 .. autofunction:: compechem.wrappers.packmol.packmol_cube
 ```
-
----
