@@ -452,9 +452,9 @@ def qcg_ensemble(
     ensemble_choice : str
         file containing the chosen ensemble after generation, by default "full_ensemble". Available
         options are:
-            - "full_ensemble"
-            - "final_ensemble"
-            - "crest_best"
+        - "full_ensemble"
+        - "final_ensemble"
+        - "crest_best"
     nsolv : int
         number of solvent molecules to add to the cluster, by default 0 (unconstrained).
         If a number is not specified, the program will keep adding solvent

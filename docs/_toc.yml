@@ -24,4 +24,6 @@ chapters:
         - file: API/wrappers/packmol
     - file: API/functions
     - file: API/algorithms
+      sections:
+        - file: API/algorithms/oneeloxidation
     - file: API/tools

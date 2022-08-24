@@ -89,7 +89,7 @@ def dissociation_check():
     geometry optimization)
 
     Requirements
-    ----------
+    ------------
     A .mol file in the current directory.
 
     Returns
