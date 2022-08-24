@@ -119,7 +119,7 @@ class System:
         info += "\n--- Warnings ---\n"
         for warning in self.flags:
             info += f"{warning}\n"
-        info += "\n--- Energies (Eh) --- \n"
+        info += "\n--- Energies (Eh) --- \n\n"
         for method in self.energies:
             info += f"* Method: {method}\n"
             info += f"Electronic: {self.energies[method].electronic} Eh\n"
