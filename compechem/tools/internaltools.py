@@ -85,12 +85,8 @@ def cyclization_check(start_file: str, end_file: str):
 
 
 def dissociation_check():
-    """Checks if a dissociation has occurred (e.g., during a
-    geometry optimization)
-
-    Requirements
-    ------------
-    A .mol file in the current directory.
+    """Checks if a dissociation has occurred (e.g., during a geometry optimization).
+    Requires the presence of a .mol file in the current directory.
 
     Returns
     -------
