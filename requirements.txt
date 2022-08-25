@@ -2,3 +2,6 @@ numpy
 pandas>=1.3.0
 sh
 rdkit
+xtb>=6.5.1
+crest
+dftbplus
