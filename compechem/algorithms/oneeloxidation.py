@@ -2,9 +2,9 @@ import os, pickle
 import numpy as np
 
 from compechem.config import get_ncores
-from compechem.molecule import Molecule
-from compechem.calculators.xtb import XtbInput
-from compechem.calculators import crest
+from compechem.systems import System
+from compechem.wrappers.xtb import XtbInput
+from compechem.wrappers import crest
 from compechem.functions.reorderenergies import reorder_energies
 from compechem.functions.pka import calculate_pka
 from compechem.functions.potential import calculate_potential
@@ -27,15 +27,19 @@ class Species:
 
 
 def find_highest_protonation_state(
-    mol: Molecule, method, ncores: int = None, maxcore: int = 350, conformer_search: bool = True
+    mol: System,
+    method,
+    ncores: int = None,
+    maxcore: int = 350,
+    conformer_search: bool = True,
 ):
     """Calculates the highest protonation state for a given molecule, as the first protomer
     with pKa < 0
 
     Parameters
     ----------
-    mol : Molecule object
-        Molecule object of the molecule under examination
+    mol : System object
+        System object of the molecule under examination
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the protomers.
@@ -48,8 +52,8 @@ def find_highest_protonation_state(
 
     Returns
     -------
-    currently_protonated : Molecule object
-        Molecule object representing the highest protonation state for the input molecule
+    currently_protonated : System object
+        System object representing the highest protonation state for the input molecule
     """
 
     if ncores is None:
@@ -83,10 +87,12 @@ def find_highest_protonation_state(
 
         # if protonation is unsuccessful (e.g., topology change), return the original molecule.
         else:
-            return currently_protonated
+            return currently_deprotonated
 
         if conformer_search:
-            currently_protonated = crest.conformer_search(currently_protonated, ncores=ncores)[0]
+            currently_protonated = crest.conformer_search(
+                currently_protonated, ncores=ncores
+            )[0]
 
         xtb.opt(currently_protonated, inplace=True)
         if type(method) != XtbInput:
@@ -116,14 +122,18 @@ def find_highest_protonation_state(
 
 
 def calculate_deprotomers(
-    mol: Molecule, method, ncores: int = None, maxcore: int = 350, conformer_search: bool = True
+    mol: System,
+    method,
+    ncores: int = None,
+    maxcore: int = 350,
+    conformer_search: bool = True,
 ):
-    """Calculates all the deprotomers with a pKa < 20 for a given Molecule object
+    """Calculates all the deprotomers with a pKa < 20 for a given System object
 
     Parameters
     ----------
-    mol : Molecule object
-        Molecule object of the molecule under examination
+    mol : System object
+        System object of the molecule under examination
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
@@ -180,9 +190,9 @@ def calculate_deprotomers(
             break
 
         if conformer_search:
-            currently_deprotonated = crest.conformer_search(currently_deprotonated, ncores=ncores)[
-                0
-            ]
+            currently_deprotonated = crest.conformer_search(
+                currently_deprotonated, ncores=ncores
+            )[0]
 
         xtb.opt(currently_deprotonated, inplace=True)
         if type(method) != XtbInput:
@@ -217,7 +227,7 @@ def calculate_deprotomers(
 
 
 def generate_species(
-    base_mol: Molecule,
+    base_mol: System,
     method,
     ncores: int = None,
     maxcore: int = 350,
@@ -229,8 +239,8 @@ def generate_species(
     
     Parameters
     ----------
-    base_mol : Molecule
-        Molecule object to be used in the calculation
+    base_mol : System
+        System object to be used in the calculation
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
@@ -258,9 +268,13 @@ def generate_species(
 
     try:
         if conformer_search:
-            base_mol = crest.conformer_search(base_mol, ncores=ncores, optionals="--noreftopo")[0]
+            base_mol = crest.conformer_search(
+                base_mol, ncores=ncores, optionals="--noreftopo"
+            )[0]
         if tautomer_search:
-            tautomer_list = crest.tautomer_search(base_mol, ncores=ncores, optionals="--noreftopo")
+            tautomer_list = crest.tautomer_search(
+                base_mol, ncores=ncores, optionals="--noreftopo"
+            )
             if type(method) != XtbInput:
                 tautomer_list = reorder_energies(
                     tautomer_list,
@@ -273,7 +287,9 @@ def generate_species(
             base_mol = tautomer_list[0]
 
         ### SINGLET SPECIES ###
-        singlet = xtb.spe(base_mol, ncores=ncores, charge=base_mol.charge, spin=base_mol.spin)
+        singlet = xtb.spe(
+            base_mol, ncores=ncores, charge=base_mol.charge, spin=base_mol.spin
+        )
         singlet = find_highest_protonation_state(
             mol=singlet,
             method=method,
@@ -316,7 +332,9 @@ def generate_species(
     return species
 
 
-def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> Iterator[Any]:
+def generate_potential_data(
+    species: Species, method, pH_step: float = 1.0
+) -> Iterator[Any]:
     """Calculates the 1-el oxidation potential for the given molecule in the pH range 0-14
 
     Parameters
@@ -336,16 +354,19 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 
     """
 
+    last_potential = None
+
+    try:
+        molname = species.singlets[0].name
+        singlets = species.singlets
+        radicals = species.radicals
+    except AttributeError as e:
+        logger.error(f"Missing suitable singlet/radical species in file {species}")
+        logger.exception(e)
+
     logger.info(
         f"Generating potentials data for {species.singlets[0].name}, method: {method.method}, pH step: {pH_step}"
     )
-
-    last_potential = None
-
-    molname = species.singlets[0].name
-
-    singlets = species.singlets
-    radicals = species.radicals
 
     for current_pH in np.around(np.arange(0, 14 + pH_step, pH_step), 1):
 
@@ -363,13 +384,19 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
                 current_radical = radical
                 break
 
-        potential = calculate_potential(
-            oxidised=current_radical,
-            reduced=current_singlet,
-            pH=current_pH,
-            method_el=method.method,
-            method_vib=xtb.method,
-        )
+        try:
+            potential = calculate_potential(
+                oxidised=current_radical,
+                reduced=current_singlet,
+                pH=current_pH,
+                method_el=method.method,
+                method_vib=xtb.method,
+            )
+        except KeyError as e:
+            logger.error(
+                f"Requested level of theory not available in provided data for {molname}"
+            )
+            logger.exception(e)
 
         if last_potential is not None and abs(potential - last_potential) > 0.3:
             logger.warning(
@@ -382,7 +409,7 @@ def generate_potential_data(species: Species, method, pH_step: float = 1.0) -> I
 
 
 def one_electron_oxidation_potentials(
-    molecule: Molecule,
+    molecule: System,
     method,
     ncores: int = None,
     maxcore: int = 350,
@@ -394,7 +421,9 @@ def one_electron_oxidation_potentials(
     if ncores is None:
         ncores = get_ncores()
 
-    logger.debug(f"Requested 1-el oxidation calculation on {ncores} cores with {maxcore} MB of RAM")
+    logger.debug(
+        f"Requested 1-el oxidation calculation on {ncores} cores with {maxcore} MB of RAM"
+    )
 
     os.makedirs("pickle_files", exist_ok=True)
 
@@ -411,6 +440,13 @@ def one_electron_oxidation_potentials(
 
     pickle.dump(species, open(f"pickle_files/{basename}.species", "wb"))
 
-    data_generator = generate_potential_data(species=species, method=method, pH_step=pH_step)
+    try:
+        data_generator = generate_potential_data(
+            species=species, method=method, pH_step=pH_step
+        )
+    except Exception as e:
+        logger.error(f"Could not calculate potential data for {basename}!")
+        logger.exception(e)
+        return []
 
     return data_generator
