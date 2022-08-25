@@ -1,0 +1,1030 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>compechem.systems sub-module &#8212; GES-compechem User Guide</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="compechem.wrappers sub-module" href="wrappers.html" />
+    <link rel="prev" title="API Documentation" href="../api.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">GES-compechem User Guide</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    GES-comp-echem User Guide
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../getting-started.html">
+   Getting Started
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../user-guide.html">
+   User guide
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../Guide/systems.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.systems
+      </span>
+     </code>
+     submodule
+    </a>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../Guide/wrappers.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.wrappers
+      </span>
+     </code>
+     submodule
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+    <label for="toctree-checkbox-2">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../Guide/wrappers/xtb.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.xtb
+        </span>
+       </code>
+       submodule
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../Guide/wrappers/crest.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.crest
+        </span>
+       </code>
+       submodule
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../Guide/wrappers/orca.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.orca
+        </span>
+       </code>
+       submodule
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../Guide/wrappers/dftbplus.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.dftbplus
+        </span>
+       </code>
+       submodule
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../Guide/wrappers/packmol.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.packmol
+        </span>
+       </code>
+       submodule
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../Guide/functions.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.functions
+      </span>
+     </code>
+     submodule
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../Guide/algorithms.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.algorithms
+      </span>
+     </code>
+     submodule
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../Guide/tools.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.tools
+      </span>
+     </code>
+     submodule
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../api.html">
+   API Documentation
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.systems
+      </span>
+     </code>
+     sub-module
+    </a>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="wrappers.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.wrappers
+      </span>
+     </code>
+     sub-module
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="wrappers/xtb.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.xtb
+        </span>
+       </code>
+       sub-module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="wrappers/crest.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.crest
+        </span>
+       </code>
+       sub-module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="wrappers/orca.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.orca
+        </span>
+       </code>
+       sub-module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="wrappers/dftbplus.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.dftbplus
+        </span>
+       </code>
+       sub-module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="wrappers/packmol.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.wrappers.packmol
+        </span>
+       </code>
+       sub-module
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="functions.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.functions
+      </span>
+     </code>
+     sub-module
+    </a>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="algorithms.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.algorithms
+      </span>
+     </code>
+     sub-module
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="algorithms/oneeloxidation.html">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         compechem.algorithms.oneeloxidation
+        </span>
+       </code>
+       sub-module
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="tools.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.tools
+      </span>
+     </code>
+     sub-module
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/GES-lbabetto/GES-comp-echem"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/GES-lbabetto/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2FAPI/systems.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../_sources/API/systems.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.md</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#energies-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Energies
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#properties-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Properties
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#system-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     System
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#ensemble-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Ensemble
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#mdtrajectory-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MDTrajectory
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>compechem.systems sub-module</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#energies-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Energies
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#properties-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Properties
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#system-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     System
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#ensemble-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Ensemble
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#mdtrajectory-class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MDTrajectory
+    </span>
+   </code>
+   class
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <section class="tex2jax_ignore mathjax_ignore" id="compechem-systems-sub-module">
+<span id="api-systems"></span><h1><code class="docutils literal notranslate"><span class="pre">compechem.systems</span></code> sub-module<a class="headerlink" href="#compechem-systems-sub-module" title="Permalink to this headline">#</a></h1>
+<section id="energies-class">
+<h2><code class="docutils literal notranslate"><span class="pre">Energies</span></code> class<a class="headerlink" href="#energies-class" title="Permalink to this headline">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="compechem.systems.Energies">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compechem.systems.</span></span><span class="sig-name descname"><span class="pre">Energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">electronic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vibronic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.Energies" title="Permalink to this definition">#</a></dt>
+<dd><p>Molecular energies in Hartree</p>
+</dd></dl>
+
+</section>
+<hr class="docutils" />
+<section id="properties-class">
+<h2><code class="docutils literal notranslate"><span class="pre">Properties</span></code> class<a class="headerlink" href="#properties-class" title="Permalink to this headline">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="compechem.systems.Properties">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compechem.systems.</span></span><span class="sig-name descname"><span class="pre">Properties</span></span><a class="headerlink" href="#compechem.systems.Properties" title="Permalink to this definition">#</a></dt>
+<dd><p>Class containing system properties (such as pKa).</p>
+</dd></dl>
+
+</section>
+<hr class="docutils" />
+<section id="system-class">
+<h2><code class="docutils literal notranslate"><span class="pre">System</span></code> class<a class="headerlink" href="#system-class" title="Permalink to this headline">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="compechem.systems.System">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compechem.systems.</span></span><span class="sig-name descname"><span class="pre">System</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_side</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.System" title="Permalink to this definition">#</a></dt>
+<dd><p>System object.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#compechem.systems.System.name" title="Permalink to this definition">#</a></dt>
+<dd><p>name of the system, taken from the .xyz file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.charge">
+<span class="sig-name descname"><span class="pre">charge</span></span><a class="headerlink" href="#compechem.systems.System.charge" title="Permalink to this definition">#</a></dt>
+<dd><p>total charge of the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.spin">
+<span class="sig-name descname"><span class="pre">spin</span></span><a class="headerlink" href="#compechem.systems.System.spin" title="Permalink to this definition">#</a></dt>
+<dd><p>total spin of the system (2S+1)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.atomcount">
+<span class="sig-name descname"><span class="pre">atomcount</span></span><a class="headerlink" href="#compechem.systems.System.atomcount" title="Permalink to this definition">#</a></dt>
+<dd><p>number of atoms contained in the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.geometry">
+<span class="sig-name descname"><span class="pre">geometry</span></span><a class="headerlink" href="#compechem.systems.System.geometry" title="Permalink to this definition">#</a></dt>
+<dd><p>list containing the atomic coordinates of the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.box_side">
+<span class="sig-name descname"><span class="pre">box_side</span></span><a class="headerlink" href="#compechem.systems.System.box_side" title="Permalink to this definition">#</a></dt>
+<dd><p>for periodic systems, defines the length (in Å) of the box side</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.energies">
+<span class="sig-name descname"><span class="pre">energies</span></span><a class="headerlink" href="#compechem.systems.System.energies" title="Permalink to this definition">#</a></dt>
+<dd><p>dictionary containing the electronic/vibronic energies of the system,
+calculated at various levels of theory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.properties">
+<span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#compechem.systems.System.properties" title="Permalink to this definition">#</a></dt>
+<dd><p>dictionary containing the properties of the system, such as pKa</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.System.flags">
+<span class="sig-name descname"><span class="pre">flags</span></span><a class="headerlink" href="#compechem.systems.System.flags" title="Permalink to this definition">#</a></dt>
+<dd><p>list containing all “warning” flags which might be encountered during calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="compechem.systems.System.update_geometry">
+<span class="sig-name descname"><span class="pre">update_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.System.update_geometry" title="Permalink to this definition">#</a></dt>
+<dd><p>Updates the current geometry from an external .xyz file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xyz_file</strong> (<em>str</em>) – path with the .xyz file of the geometry containing the
+new coordinates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="compechem.systems.System.write_gen">
+<span class="sig-name descname"><span class="pre">write_gen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gen_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_side</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.System.write_gen" title="Permalink to this definition">#</a></dt>
+<dd><p>Writes the current geometry to a .gen file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gen_file</strong> (<em>str</em>) – path to the output .gen file</p></li>
+<li><p><strong>box_side</strong> (<em>float</em><em>, </em><em>optional</em>) – for periodic systems, defines the length (in Å) of the box side</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="compechem.systems.System.write_xyz">
+<span class="sig-name descname"><span class="pre">write_xyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.System.write_xyz" title="Permalink to this definition">#</a></dt>
+<dd><p>Writes the current geometry to a .xyz file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xyz_file</strong> (<em>str</em>) – path to the output .xyz file</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<hr class="docutils" />
+<section id="ensemble-class">
+<h2><code class="docutils literal notranslate"><span class="pre">Ensemble</span></code> class<a class="headerlink" href="#ensemble-class" title="Permalink to this headline">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="compechem.systems.Ensemble">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compechem.systems.</span></span><span class="sig-name descname"><span class="pre">Ensemble</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">systems_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.Ensemble" title="Permalink to this definition">#</a></dt>
+<dd><p>Ensemble object, containing a series of System objects.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.Ensemble.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#compechem.systems.Ensemble.name" title="Permalink to this definition">#</a></dt>
+<dd><p>name of the system represented in the ensemble, taken from the first element of
+the ensemble</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.Ensemble.atomcount">
+<span class="sig-name descname"><span class="pre">atomcount</span></span><a class="headerlink" href="#compechem.systems.Ensemble.atomcount" title="Permalink to this definition">#</a></dt>
+<dd><p>number of atoms contained each ensemble, taken from the first element of the
+ensemble</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.Ensemble.energies">
+<span class="sig-name descname"><span class="pre">energies</span></span><a class="headerlink" href="#compechem.systems.Ensemble.energies" title="Permalink to this definition">#</a></dt>
+<dd><p>dictionary containing the electronic/vibronic energies of the systems,
+calculated at various levels of theory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="compechem.systems.Ensemble.container">
+<span class="sig-name descname"><span class="pre">container</span></span><a class="headerlink" href="#compechem.systems.Ensemble.container" title="Permalink to this definition">#</a></dt>
+<dd><p>iterable returning System objects generator for creating the Ensemble.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="compechem.systems.Ensemble.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.Ensemble.add" title="Permalink to this definition">#</a></dt>
+<dd><p>append more Systems to the ensemble from an iterator object (e.g., MDTrajectory)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>iterator</strong> (<em>iterable</em>) – iterator object (e.g., MDTrajectory object)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="compechem.systems.Ensemble.boltzmann_average">
+<span class="sig-name descname"><span class="pre">boltzmann_average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_el</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_vib</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">297.15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.Ensemble.boltzmann_average" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted
+for each molecule by its Boltzmann factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method_el</strong> (<em>str</em>) – level of theory for the electronic energies</p></li>
+<li><p><strong>method_vib</strong> (<em>str</em><em>, </em><em>optional</em>) – level of theory for the vibronic contributions, if method_vib is None (default),
+the ensemble energy will be evaluated only considering the electronic component</p></li>
+<li><p><strong>temperature</strong> (<em>float</em>) – temperature at which to calculate the Boltzmann average, by default 297.15 K</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>Creates an Energies object with the total free Gibbs energy of the ensemble.</em></p></li>
+<li><p><strong>NOTE</strong> (<em>the vibronic contributions are included in the electronic component, which</em>)</p></li>
+<li><p><em>actually contains the TOTAL energy of the system. Maybe in the future I’ll think of</em></p></li>
+<li><p><em>how to separate the two contributions - LB</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="compechem.systems.Ensemble.read_energies">
+<span class="sig-name descname"><span class="pre">read_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.Ensemble.read_energies" title="Permalink to this definition">#</a></dt>
+<dd><p>reads energies from trajectory file (parsed by tools.save_dftb_trajectory()) and
+calculates the average energy for the given trajectory</p>
+<p>CURRENTLY NOT WORKING!!!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>method</strong> (<em>str</em>) – level of theory to assign to the self.energies dictionary key</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<hr class="docutils" />
+<section id="mdtrajectory-class">
+<h2><code class="docutils literal notranslate"><span class="pre">MDTrajectory</span></code> class<a class="headerlink" href="#mdtrajectory-class" title="Permalink to this headline">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="compechem.systems.MDTrajectory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compechem.systems.</span></span><span class="sig-name descname"><span class="pre">MDTrajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traj_filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.systems.MDTrajectory" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./API"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../api.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">API Documentation</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="wrappers.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.wrappers</span></code> sub-module</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Luca Babetto<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>
