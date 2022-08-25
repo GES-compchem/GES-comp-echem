@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def split_multixyz(
-    mol: System, file: str, suffix: str, charge: int = None, spin: int = None
+    mol: System, file: str, suffix: str = "", charge: int = None, spin: int = None
 ):
     """Splits a .xyz file containing multiple structures into individual structures.
 
@@ -16,8 +16,8 @@ def split_multixyz(
         Input molecule, giving the charge/spin (if not defined) and name of the output molecules
     file : str
         .xyz file containing the multiple structures
-    suffix : str
-        suffix to add to the new molecule names
+    suffix : str, optional
+        suffix to add to the new molecule names. By default, empty.
     charge : int, optional
         Charge of the output molecules, by default the same as the input molecule
     spin : int, optional
