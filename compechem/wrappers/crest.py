@@ -2,7 +2,10 @@ import os, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import System
-from compechem import tools
+from compechem.tools import split_multixyz
+from compechem.tools import cyclization_check
+from compechem.tools import add_flag
+from compechem.tools import process_output
 import logging
 
 logger = logging.getLogger(__name__)
@@ -53,25 +56,25 @@ def tautomer_search(
         )
 
         if os.path.exists("tautomers.xyz"):
-            tautomers_to_check = tools.split_multixyz(mol, file="tautomers.xyz", suffix="t")
+            tautomers_to_check = split_multixyz(mol, file="tautomers.xyz", suffix="t")
 
             tautomers = []
 
             while tautomers_to_check:
                 tautomer = tautomers_to_check.pop(0)
                 tautomer.write_xyz(f"{tautomer.name}.xyz")
-                if tools.cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
+                if cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
                     logger.warning(
                         f"Cyclization change spotted for {tautomer.name}. Removing from list."
                     )
-                    tools.add_flag(
+                    add_flag(
                         mol,
                         f"Cyclization change occurred for {tautomer.name} during conformer search. Conformer was removed.",
                     )
                 else:
                     tautomers.append(tautomer)
 
-            tools.process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
+            process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
             return tautomers
@@ -80,8 +83,8 @@ def tautomer_search(
             logger.warning(
                 f"No tautomers possible for {mol.name}. Ignoring tautomer search."
             )
-            tools.add_flag(mol, "No possible tautomers. Tautomer search was ignored.")
-            tools.process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
+            add_flag(mol, "No possible tautomers. Tautomer search was ignored.")
+            process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
             return [mol]
@@ -132,7 +135,7 @@ def conformer_search(
         )
 
         if os.path.exists("crest_conformers.xyz"):
-            conformers_to_check = tools.split_multixyz(
+            conformers_to_check = split_multixyz(
                 mol, file="crest_conformers.xyz", suffix="c"
             )
 
@@ -141,18 +144,18 @@ def conformer_search(
             while conformers_to_check:
                 conformer = conformers_to_check.pop(0)
                 conformer.write_xyz(f"{conformer.name}.xyz")
-                if tools.cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
+                if cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
                     logger.warning(
                         f"Cyclization change spotted for {conformer.name}. Removing from list."
                     )
-                    tools.add_flag(
+                    add_flag(
                         mol,
                         f"Cyclization change occurred for {conformer.name} during conformer search. Conformer was removed.",
                     )
                 else:
                     conformers.append(conformer)
 
-            tools.process_output(mol, "CREST", "conformers", mol.charge, mol.spin)
+            process_output(mol, "CREST", "conformers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
             return conformers
@@ -161,7 +164,7 @@ def conformer_search(
             logger.error(
                 f"{mol.name}, conformer search failed. Reverting to original molecule."
             )
-            tools.add_flag(mol, "Conformer search failed.")
+            add_flag(mol, "Conformer search failed.")
             return [mol]
 
 
@@ -209,7 +212,7 @@ def deprotonate(
         )
 
         if os.path.exists("deprotonated.xyz"):
-            deprotomers_to_check = tools.split_multixyz(
+            deprotomers_to_check = split_multixyz(
                 mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1
             )
 
@@ -218,18 +221,18 @@ def deprotonate(
             while deprotomers_to_check:
                 deprotomer = deprotomers_to_check.pop(0)
                 deprotomer.write_xyz(f"{deprotomer.name}.xyz")
-                if tools.cyclization_check("geom.xyz", f"{deprotomer.name}.xyz") is True:
+                if cyclization_check("geom.xyz", f"{deprotomer.name}.xyz") is True:
                     logger.warning(
                         f"Cyclization change spotted for {deprotomer.name}. Removing from list."
                     )
-                    tools.add_flag(
+                    add_flag(
                         mol,
                         f"Cyclization change occurred for {deprotomer.name} during deprotomer search. Deprotomer was removed.",
                     )
                 else:
                     deprotomers.append(deprotomer)
 
-            tools.process_output(mol, "CREST", "deprotomers", mol.charge, mol.spin)
+            process_output(mol, "CREST", "deprotomers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -237,12 +240,12 @@ def deprotonate(
                 return deprotomers
             else:
                 logger.error(f"{mol.name}, no suitable deprotomers found.")
-                tools.add_flag(mol, "No suitable deprotomers.")
+                add_flag(mol, "No suitable deprotomers.")
                 return None
 
         else:
             logger.error(f"{mol.name}, deprotomer search failed.")
-            tools.add_flag(mol, "Deprotomer search failed.")
+            add_flag(mol, "Deprotomer search failed.")
             return None
 
 
@@ -291,7 +294,7 @@ def protonate(
         )
 
         if os.path.exists("protonated.xyz"):
-            protomers_to_check = tools.split_multixyz(
+            protomers_to_check = split_multixyz(
                 mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1
             )
 
@@ -300,18 +303,18 @@ def protonate(
             while protomers_to_check:
                 protomer = protomers_to_check.pop(0)
                 protomer.write_xyz(f"{protomer.name}.xyz")
-                if tools.cyclization_check("geom.xyz", f"{protomer.name}.xyz") is True:
+                if cyclization_check("geom.xyz", f"{protomer.name}.xyz") is True:
                     logger.warning(
                         f"Cyclization change spotted for {protomer.name}. Removing from list."
                     )
-                    tools.add_flag(
+                    add_flag(
                         mol,
                         f"Cyclization change occurred for {protomer.name} during deprotomer search. Protomer was removed.",
                     )
                 else:
                     protomers.append(protomer)
 
-            tools.process_output(mol, "CREST", "protomers", mol.charge, mol.spin)
+            process_output(mol, "CREST", "protomers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -319,11 +322,11 @@ def protonate(
                 return protomers
             else:
                 logger.error(f"{mol.name}, no suitable protomers found.")
-                tools.add_flag(mol, "No suitable protomers.")
+                add_flag(mol, "No suitable protomers.")
                 return None
         else:
             logger.error(f"{mol.name}, protomer search failed.")
-            tools.add_flag(mol, "Protomer search failed.")
+            add_flag(mol, "Protomer search failed.")
             return None
 
 
@@ -348,9 +351,9 @@ def qcg_grow(
     solvent : System object
         solvent molecule to use in the calculation
     charge : int, optional
-            total charge of the molecule. Default is taken from the solute molecule.
+        total charge of the system. Default is taken from the solute molecule.
     spin : int, optional
-        total spin of the molecule. Default is taken from the solute molecule.
+        total spin of the system. Default is taken from the solute molecule.
     method : str
         method for the geometry optimizations, by default gfn2
         Alternative options: gfn1, gfnff
@@ -361,7 +364,7 @@ def qcg_grow(
     ncores : int, optional
         number of cores, by default all available cores
     maxcore : dummy variable
-            dummy variable used for compatibility with Orca calculations
+        dummy variable used for compatibility with Orca calculations
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
@@ -404,10 +407,10 @@ def qcg_grow(
             cluster.update_geometry("grow/cluster.xyz")
         except:
             logger.error(f"{solute.name}, cluster growth failed.")
-            tools.add_flag(solute, "Cluster growth failed.")
+            add_flag(solute, "Cluster growth failed.")
             return None
 
-        tools.process_output(solute, "QCG", "grow", charge, spin)
+        process_output(solute, "QCG", "grow", charge, spin)
         if remove_tdir:
             shutil.rmtree(tdir)
 
@@ -437,7 +440,7 @@ def qcg_ensemble(
     solvent : System object
         solvent molecule to use in the calculation
     charge : int, optional
-            total charge of the molecule. Default is taken from the solute molecule.
+        total charge of the molecule. Default is taken from the solute molecule.
     spin : int, optional
         total spin of the molecule. Default is taken from the solute molecule.
     method : str
@@ -449,9 +452,9 @@ def qcg_ensemble(
     ensemble_choice : str
         file containing the chosen ensemble after generation, by default "full_ensemble". Available
         options are:
-            - "full_ensemble"
-            - "final_ensemble"
-            - "crest_best"
+        - "full_ensemble"
+        - "final_ensemble"
+        - "crest_best"
     nsolv : int
         number of solvent molecules to add to the cluster, by default 0 (unconstrained).
         If a number is not specified, the program will keep adding solvent
@@ -459,7 +462,7 @@ def qcg_ensemble(
     ncores : int, optional
         number of cores, by default all available cores
     maxcore : dummy variable
-            dummy variable used for compatibility with Orca calculations
+        dummy variable used for compatibility with Orca calculations
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
@@ -499,16 +502,16 @@ def qcg_ensemble(
         )
 
         try:
-            ensemble = tools.split_multixyz(
+            ensemble = split_multixyz(
                 solute, file=f"ensemble/{ensemble_choice}.xyz", suffix="e"
             )
 
         except:
             logger.error(f"{solute.name}, cluster growth failed.")
-            tools.add_flag(solute, "Cluster growth failed.")
+            add_flag(solute, "Cluster growth failed.")
             return None
 
-        tools.process_output(solute, "QCG", "ensemble", charge, spin)
+        process_output(solute, "QCG", "ensemble", charge, spin)
         if remove_tdir:
             shutil.rmtree(tdir)
 

@@ -2,7 +2,7 @@ import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import System, Energies
-from compechem import tools
+from compechem.tools import process_output
 import logging
 
 logger = logging.getLogger(__name__)
@@ -144,7 +144,7 @@ class OrcaInput:
                     vibronic=vibronic_energy,
                 )
 
-            tools.process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -256,7 +256,7 @@ class OrcaInput:
 
                 mol.update_geometry(f"{mol.name}.xyz")
 
-            tools.process_output(mol, self.method, "opt", charge, spin)
+            process_output(mol, self.method, "opt", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -367,7 +367,7 @@ class OrcaInput:
                     vibronic=vibronic_energy,
                 )
 
-            tools.process_output(mol, self.method, "freq", charge, spin)
+            process_output(mol, self.method, "freq", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -474,7 +474,7 @@ class OrcaInput:
                     vibronic=vibronic_energy,
                 )
 
-            tools.process_output(mol, self.method, "numfreq", charge, spin)
+            process_output(mol, self.method, "numfreq", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 

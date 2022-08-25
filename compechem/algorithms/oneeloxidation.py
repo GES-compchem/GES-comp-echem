@@ -5,9 +5,9 @@ from compechem.config import get_ncores
 from compechem.systems import System
 from compechem.wrappers.xtb import XtbInput
 from compechem.wrappers import crest
-from compechem.functions.reorderenergies import reorder_energies
-from compechem.functions.pka import calculate_pka
-from compechem.functions.potential import calculate_potential
+from compechem.functions import reorder_energies
+from compechem.functions import calculate_pka
+from compechem.functions import calculate_potential
 
 import logging
 
@@ -33,13 +33,13 @@ def find_highest_protonation_state(
     maxcore: int = 350,
     conformer_search: bool = True,
 ):
-    """Calculates the highest protonation state for a given molecule, as the first protomer
+    """Calculates the highest protonation state for a given system, as the first protomer
     with pKa < 0
 
     Parameters
     ----------
     mol : System object
-        System object of the molecule under examination
+        System object of the system under examination
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the protomers.
@@ -53,7 +53,7 @@ def find_highest_protonation_state(
     Returns
     -------
     currently_protonated : System object
-        System object representing the highest protonation state for the input molecule
+        System object representing the highest protonation state for the input system
     """
 
     if ncores is None:
@@ -85,7 +85,7 @@ def find_highest_protonation_state(
                 )
             currently_protonated = protomer_list[0]
 
-        # if protonation is unsuccessful (e.g., topology change), return the original molecule.
+        # if protonation is unsuccessful (e.g., topology change), return the original system.
         else:
             return currently_deprotonated
 
@@ -133,7 +133,7 @@ def calculate_deprotomers(
     Parameters
     ----------
     mol : System object
-        System object of the molecule under examination
+        System object of the system under examination
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
@@ -147,7 +147,7 @@ def calculate_deprotomers(
     Returns
     -------
     mol_list : list
-        List containing all the deprotomers with pKa < 20 for the given molecule
+        List containing all the deprotomers with pKa < 20 for the given system
     """
 
     if ncores is None:
@@ -182,7 +182,7 @@ def calculate_deprotomers(
                 )
             currently_deprotonated = deprotomer_list[0]
 
-        # if deprotonation is unsuccessful (e.g., topology change), save the molecule but with
+        # if deprotonation is unsuccessful (e.g., topology change), save the system but with
         # sentinel values for pKa (which cannot be calculated)
         else:
             currently_protonated.properties.pka[method.method] = None
@@ -236,7 +236,7 @@ def generate_species(
 ):
     """Carries out all the calculations for the singlet and radical species to be used in the
     calculate_potential function, given a file path with a .xyz file
-    
+
     Parameters
     ----------
     base_mol : System
@@ -256,7 +256,7 @@ def generate_species(
     Returns
     -------
     species : Species
-        Species object with the singlets and radicals for the given input molecule
+        Species object with the singlets and radicals for the given input system
     """
 
     if ncores is None:
@@ -325,7 +325,7 @@ def generate_species(
         )
 
     except Exception as e:
-        logger.error(f"Error occurred for {molname}! Skipping molecule")
+        logger.error(f"Error occurred for {molname}! Skipping system")
         logger.error(e)
         return
 
@@ -335,12 +335,12 @@ def generate_species(
 def generate_potential_data(
     species: Species, method, pH_step: float = 1.0
 ) -> Iterator[Any]:
-    """Calculates the 1-el oxidation potential for the given molecule in the pH range 0-14
+    """Calculates the 1-el oxidation potential for the given system in the pH range 0-14
 
     Parameters
     ----------
     species : Species
-        Container object with the singlet and radical deprotomers for the input molecule
+        Container object with the singlet and radical deprotomers for the input system
     method : calculator
         Calculator object (i.e., XtbInput/OrcaInput object) giving the level of theory at which
         to evaluate the pKa for the deprotomers.
@@ -348,9 +348,12 @@ def generate_potential_data(
         pH step at which the potential is calculated (by default, 1.0 pH units)
 
 
-    Yields (generator)
-    -------
-    current_pH, potential
+    Yields
+    ------
+    current_pH : float
+        pH at which the potential is being evaluated
+    potential : float
+        potential in V vs. SHE
 
     """
 
@@ -409,7 +412,7 @@ def generate_potential_data(
 
 
 def one_electron_oxidation_potentials(
-    molecule: System,
+    system: System,
     method,
     ncores: int = None,
     maxcore: int = 350,
@@ -427,10 +430,10 @@ def one_electron_oxidation_potentials(
 
     os.makedirs("pickle_files", exist_ok=True)
 
-    basename = molecule.name
+    basename = system.name
 
     species = generate_species(
-        base_mol=molecule,
+        base_mol=system,
         method=method,
         ncores=ncores,
         maxcore=maxcore,

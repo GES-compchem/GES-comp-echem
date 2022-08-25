@@ -1,25 +1,42 @@
 # GES-comp-echem User Guide
 
-This is the user guide for the **GES-comp-echem** Python module. The philosophy of this software package is to provide a simple interface for carrying out calculations with a number of computational chemistry programs and a number of higher level algorithms to obtain a series of experimental observables.
+Version 0.2.0
 
-The package is constructed based on the following submodules:
+This is the user guide for the `GES-comp-echem` Python module. The philosophy of this software package is to provide: i) a simple interface for carrying out calculations with a number of computational chemistry programs, and ii) a selection of higher level algorithms for calculating experimental observables.
 
-* `systems`: classes for storing informations about the system under study, such as geometry, number of atoms, calculated energies, charge, spin, etc.
+::::{grid} 1 1 1 3
+:class-container: text-center
+:gutter: 3
 
-* `tools`: various useful functions called internally throughout the code. The user should generally not need to use this module during normal operation.
+:::{grid-item-card}
+:link: getting-started
+:link-type: doc
+:class-header: bg-light
 
-* `wrappers`: wrappers for interfacing with external software, such as **Orca**, **DFTB+**, **CREST**, etc.
+Getting started 💡
+^^^
 
-* `functions`: mid-level algorithms for manually calculating specific physical observables, such as pKa or redox potentials. The user must provide all the necessary species for the calculation, for example the specific protonated and deprotonated species in a pKa calculation.
+A quick tour covering the library installation and some basic operation.
+:::
 
-* `algorithms`: high-level algorithms for automatically calculating specific physical observables, considering all the "non-trivial" complications of the case. For example, taking into account protonation states and PCET mechanisms in the calculation of the redox potential. The user only needs to provide a "generic" state of the system of interest, and the algorithm should find the exact species involved in the calculation (e.g., the correct tautomer/conformer at the correct protonation state at a given pH)
+:::{grid-item-card}
+:link: user-guide
+:link-type: doc
+:class-header: bg-light
 
-The **GES-comp-echem** package can be imported in a Python script via the following syntax:
+User guide 📑
+^^^
 
-```python
-import compechem
-```
+A general "hands-on" description of the features available in the library.
+:::
 
-For a more detailed explanation of the available features in each submodule, please refer to their specific page in this manual.
+:::{grid-item-card}
+:link: api
+:link-type: doc
+:class-header: bg-light
 
-For some examples on how to use this library, please check out the `tutorials <link>` section!
+API reference 🔎
+^^^
+
+A detailed collection of all the objects and features implemented in the library
+:::

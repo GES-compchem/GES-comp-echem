@@ -19,7 +19,7 @@ def calculate_pka(
     method_el : str
         level of theory for the electronic energy
     method_vib : str, optional
-        level of theory for the vibronic contributions, if method_vib is None (default), 
+        level of theory for the vibronic contributions, if method_vib is None (default),
         the pKa calculation will be carried out only considering the electronic component
 
     Returns

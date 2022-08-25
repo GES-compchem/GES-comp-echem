@@ -3,5 +3,33 @@
 format: jb-book
 root: intro
 chapters:
-- file: systems
+- file: getting-started
+- file: user-guide
+  sections:
+    - file: Guide/systems
+    - file: Guide/wrappers
+      sections:
+        - file: Guide/wrappers/xtb
+        - file: Guide/wrappers/crest
+        - file: Guide/wrappers/orca
+        - file: Guide/wrappers/dftbplus
+        - file: Guide/wrappers/packmol
+    - file: Guide/functions
+    - file: Guide/algorithms
+    - file: Guide/tools
+
 - file: api
+  sections:
+    - file: API/systems
+    - file: API/wrappers
+      sections:
+        - file: API/wrappers/xtb
+        - file: API/wrappers/crest
+        - file: API/wrappers/orca
+        - file: API/wrappers/dftbplus
+        - file: API/wrappers/packmol
+    - file: API/functions
+    - file: API/algorithms
+      sections:
+        - file: API/algorithms/oneeloxidation
+    - file: API/tools

@@ -1,4 +1,4 @@
-name: deploy
+name: documentation-deploy
 
 on:
   # Trigger the workflow on push to main branch
@@ -24,14 +24,14 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        pip install -r requirements.txt
         pip install .
         pip install -r docs/requirements-docs.txt
-
+        pip install myst-parser
     # Build the book
     - name: Build the book
       run: |
         jupyter-book build docs
-
     # Deploy the book's HTML to gh-pages branch
     - name: GitHub Pages action
       uses: peaceiris/actions-gh-pages@v3.6.1

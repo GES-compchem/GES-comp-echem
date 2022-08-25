@@ -8,11 +8,13 @@ logger = logging.getLogger(__name__)
 
 
 class Energies:
-    """Molecular energies in Hartree
-    """
+    """Molecular energies in Hartree"""
 
     def __init__(
-        self, method: str = None, electronic: float = None, vibronic: float = None,
+        self,
+        method: str = None,
+        electronic: float = None,
+        vibronic: float = None,
     ) -> None:
         """
         Parameters
@@ -55,9 +57,13 @@ class System:
         number of atoms contained in the system
     geometry : list
         list containing the atomic coordinates of the system
+    box_side : float, optional
+        for periodic systems, defines the length (in Å) of the box side
     energies : dict
         dictionary containing the electronic/vibronic energies of the system,
         calculated at various levels of theory
+    properties : dict
+        dictionary containing the properties of the system, such as pKa
     flags : list
         list containing all "warning" flags which might be encountered during calculations.
     """
@@ -67,7 +73,6 @@ class System:
         xyz_file: str,
         charge: int = 0,
         spin: int = 1,
-        periodic: bool = False,
         box_side: float = None,
     ) -> None:
         """
@@ -79,8 +84,6 @@ class System:
             total charge of the system. Defaults to 0 (neutral)
         spin : int, optional
             total spin of the system. Defaults to 1 (singlet)
-        periodic : bool, optional
-            is the system periodic? False by default
         box_side : float, optional
             for periodic systems, defines the length (in Å) of the box side
         """
@@ -92,22 +95,43 @@ class System:
         self.atomcount: int = None
         self.geometry: list = []
 
-        self.periodic = periodic
         self.box_side = box_side
+
+        if self.box_side:
+            self.periodic = True
+        else:
+            self.periodic = False
+
+        self.velocities: list = []
 
         self.flags: list = []
 
         self.energies: dict = {}
         self.properties: Properties = Properties()
 
-        with open(xyz_file, "r") as file:
-            for linenum, line in enumerate(file):
-                if linenum == 0:
-                    self.atomcount = int(line)
-                if linenum > 1 and linenum < self.atomcount + 2:
-                    self.geometry.append(
-                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
-                    )
+        self.update_geometry(xyz_file)
+
+    def __str__(self):
+        info = f"=== System: {self.name} === \n"
+        info += f"\nNumber of atoms: {self.atomcount}\n"
+        info += f"Charge: {self.charge}\n"
+        info += f"Spin: {self.spin}\n"
+        info += "\n--- Warnings ---\n"
+        for warning in self.flags:
+            info += f"{warning}\n"
+        info += "\n--- Energies (Eh) --- \n"
+        for method in self.energies:
+            info += f"\n* Method: {method}\n"
+            info += f"Electronic: {self.energies[method].electronic} Eh\n"
+            info += f"Vibronic: {self.energies[method].vibronic} Eh\n"
+        info += "\n--- Coordinates (Å) --- \n\n"
+        for line in self.geometry:
+            info += f"{line}"
+        info += "\n--- Velocities (Å/ps) --- \n\n"
+        for line in self.velocities:
+            info += f"{line}"
+
+        return info
 
     def write_xyz(self, xyz_file: str):
         """Writes the current geometry to a .xyz file.
@@ -167,19 +191,27 @@ class System:
         Parameters
         ----------
         xyz_file : str
-            path with the .xyz file of the geometry containing the 
+            path with the .xyz file of the geometry containing the
             new coordinates
         """
         self.geometry = []
 
-        with open(xyz_file, "r") as file:
-            for linenum, line in enumerate(file):
+        with open(xyz_file, "r") as f:
+            numlines = sum(1 for _ in f)
+
+        with open(xyz_file, "r") as f:
+            for linenum, line in enumerate(f):
                 if linenum == 0:
                     self.atomcount = int(line)
-                if linenum > 1 and linenum < self.atomcount + 2:
+                last_geom_line = numlines - (self.atomcount + 2)
+                if linenum > last_geom_line + 1 and linenum < numlines:
                     self.geometry.append(
                         f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                     )
+                    if len(line.split()) > 4:
+                        self.velocities.append(
+                            f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
+                        )
 
 
 class Ensemble:
@@ -188,14 +220,16 @@ class Ensemble:
     Attributes
     ----------
     name : str
-        name of the system represented in the ensemble, taken from the first element of 
+        name of the system represented in the ensemble, taken from the first element of
         the ensemble
     atomcount : int
-        number of atoms contained each ensemble, taken from the first element of the 
+        number of atoms contained each ensemble, taken from the first element of the
         ensemble
     energies : dict
         dictionary containing the electronic/vibronic energies of the systems,
         calculated at various levels of theory
+    container : list
+        iterable returning System objects generator for creating the Ensemble.
     """
 
     def __init__(self, systems_list) -> None:
@@ -238,7 +272,7 @@ class Ensemble:
         Parameters
         ----------
         iterator : iterable
-            iterator object (e.g., MDTrajectory object) 
+            iterator object (e.g., MDTrajectory object)
         """
         self.container.append(iterator)
 
@@ -246,6 +280,8 @@ class Ensemble:
     def read_energies(self, method):
         """reads energies from trajectory file (parsed by tools.save_dftb_trajectory()) and
         calculates the average energy for the given trajectory
+
+        CURRENTLY NOT WORKING!!!
 
         Parameters
         ----------
@@ -269,7 +305,7 @@ class Ensemble:
     def boltzmann_average(
         self, method_el: str, method_vib: str = None, temperature: float = 297.15
     ):
-        """Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted 
+        """Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted
         for each molecule by its Boltzmann factor.
 
         Parameters
@@ -287,7 +323,7 @@ class Ensemble:
         Creates an Energies object with the total free Gibbs energy of the ensemble.
 
         NOTE: the vibronic contributions are included in the electronic component, which
-        actually contains the TOTAL energy of the system. Maybe in the future I'll think of 
+        actually contains the TOTAL energy of the system. Maybe in the future I'll think of
         how to separate the two contributions - LB
         """
 
@@ -354,7 +390,7 @@ class MDTrajectory:
 
         self.periodic = False
         self.box_side = None
-        if f"MD_data/{traj_filepath}.pbc":
+        if os.path.exists(f"MD_data/{traj_filepath}.pbc"):
             self.periodic = True
             with open(f"MD_data/{traj_filepath}.pbc") as f:
                 self.box_side = float(f.read())
@@ -443,7 +479,9 @@ class MDTrajectory:
                     found = True
                 if "Total MD Energy" in line and found:
                     system.energies[self.method] = Energies(
-                        method=self.method, electronic=line.split()[3], vibronic=None,
+                        method=self.method,
+                        electronic=line.split()[3],
+                        vibronic=None,
                     )
                     break
 
@@ -451,4 +489,3 @@ class MDTrajectory:
 
     def __len__(self):
         return len(self.frames)
-
