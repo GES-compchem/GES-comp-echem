@@ -1,1 +1,2 @@
 from compechem.algorithms.oneeloxidation import one_electron_oxidation_potential
+from compechem.algorithms.oneeloxidation import generate_potential_data
