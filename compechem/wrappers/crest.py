@@ -65,7 +65,7 @@ def tautomer_search(
                 tautomer.write_xyz(f"{tautomer.name}.xyz")
                 if cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
                     logger.warning(
-                        f"Cyclization change spotted for {tautomer.name}. Removing from list."
+                        f"Cyclization change spotted for {tautomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
                     )
                     add_flag(
                         mol,
@@ -81,7 +81,7 @@ def tautomer_search(
 
         else:
             logger.warning(
-                f"No tautomers possible for {mol.name}. Ignoring tautomer search."
+                f"No tautomers possible for {mol.name}, charge {mol.charge} spin {mol.spin}. Ignoring tautomer search."
             )
             add_flag(mol, "No possible tautomers. Tautomer search was ignored.")
             process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
@@ -146,7 +146,7 @@ def conformer_search(
                 conformer.write_xyz(f"{conformer.name}.xyz")
                 if cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
                     logger.warning(
-                        f"Cyclization change spotted for {conformer.name}. Removing from list."
+                        f"Cyclization change spotted for {conformer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
                     )
                     add_flag(
                         mol,
@@ -162,7 +162,7 @@ def conformer_search(
 
         else:
             logger.error(
-                f"{mol.name}, conformer search failed. Reverting to original molecule."
+                f"{mol.name}, charge {mol.charge} spin {mol.spin}, conformer search failed. Reverting to original molecule."
             )
             add_flag(mol, "Conformer search failed.")
             return [mol]
@@ -223,7 +223,7 @@ def deprotonate(
                 deprotomer.write_xyz(f"{deprotomer.name}.xyz")
                 if cyclization_check("geom.xyz", f"{deprotomer.name}.xyz") is True:
                     logger.warning(
-                        f"Cyclization change spotted for {deprotomer.name}. Removing from list."
+                        f"Cyclization change spotted for {deprotomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
                     )
                     add_flag(
                         mol,
@@ -239,12 +239,16 @@ def deprotonate(
             if deprotomers:
                 return deprotomers
             else:
-                logger.error(f"{mol.name}, no suitable deprotomers found.")
+                logger.error(
+                    f"{mol.name}, charge {mol.charge} spin {mol.spin}, no suitable deprotomers found."
+                )
                 add_flag(mol, "No suitable deprotomers.")
                 return None
 
         else:
-            logger.error(f"{mol.name}, deprotomer search failed.")
+            logger.error(
+                f"{mol.name}, charge {mol.charge} spin {mol.spin}, deprotomer search failed."
+            )
             add_flag(mol, "Deprotomer search failed.")
             return None
 
@@ -305,7 +309,7 @@ def protonate(
                 protomer.write_xyz(f"{protomer.name}.xyz")
                 if cyclization_check("geom.xyz", f"{protomer.name}.xyz") is True:
                     logger.warning(
-                        f"Cyclization change spotted for {protomer.name}. Removing from list."
+                        f"Cyclization change spotted for {protomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
                     )
                     add_flag(
                         mol,
@@ -321,11 +325,15 @@ def protonate(
             if protomers:
                 return protomers
             else:
-                logger.error(f"{mol.name}, no suitable protomers found.")
+                logger.error(
+                    f"{mol.name}, charge {mol.charge} spin {mol.spin}, no suitable protomers found."
+                )
                 add_flag(mol, "No suitable protomers.")
                 return None
         else:
-            logger.error(f"{mol.name}, protomer search failed.")
+            logger.error(
+                f"{mol.name}, charge {mol.charge} spin {mol.spin}, protomer search failed."
+            )
             add_flag(mol, "Protomer search failed.")
             return None
 
@@ -406,7 +414,9 @@ def qcg_grow(
         try:
             cluster.update_geometry("grow/cluster.xyz")
         except:
-            logger.error(f"{solute.name}, cluster growth failed.")
+            logger.error(
+                f"{solute.name}, charge {solute.charge} spin {solute.spin}, cluster growth failed."
+            )
             add_flag(solute, "Cluster growth failed.")
             return None
 
@@ -507,7 +517,9 @@ def qcg_ensemble(
             )
 
         except:
-            logger.error(f"{solute.name}, cluster growth failed.")
+            logger.error(
+                f"{solute.name}, charge {solute.charge} spin {solute.spin}, cluster growth failed."
+            )
             add_flag(solute, "Cluster growth failed.")
             return None
 
