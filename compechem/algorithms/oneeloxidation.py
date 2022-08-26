@@ -1,5 +1,7 @@
 import os, pickle
+from unicodedata import name
 import numpy as np
+from collections import namedtuple
 
 from compechem.config import get_ncores
 from compechem.systems import System
@@ -408,7 +410,9 @@ def generate_potential_data(
 
         last_potential = potential
 
-        yield current_pH, potential
+        Point = namedtuple("Point", "pH V")
+
+        yield Point(current_pH, potential)
 
 
 def one_electron_oxidation_potential(
