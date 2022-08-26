@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 xtb = XtbInput()
 
+Point = namedtuple("Point", "pH V")
 
 class Species:
     """Class containing the singlets and radicals lists"""
@@ -409,8 +410,6 @@ def generate_potential_data(
             )
 
         last_potential = potential
-
-        Point = namedtuple("Point", "pH V")
 
         yield Point(current_pH, potential)
 
