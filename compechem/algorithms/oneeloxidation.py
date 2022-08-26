@@ -411,7 +411,7 @@ def generate_potential_data(
         yield current_pH, potential
 
 
-def one_electron_oxidation_potentials(
+def one_electron_oxidation_potential(
     system: System,
     method,
     ncores: int = None,

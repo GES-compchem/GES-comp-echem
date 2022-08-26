@@ -1,1 +1,1 @@
-from compechem.algorithms.oneeloxidation import one_electron_oxidation_potentials
+from compechem.algorithms.oneeloxidation import one_electron_oxidation_potential
