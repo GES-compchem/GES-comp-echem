@@ -1,5 +1,7 @@
 import os, pickle
+from unicodedata import name
 import numpy as np
+from collections import namedtuple
 
 from compechem.config import get_ncores
 from compechem.systems import System
@@ -17,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 xtb = XtbInput()
 
+Point = namedtuple("Point", "pH V")
 
 class Species:
     """Class containing the singlets and radicals lists"""
@@ -408,10 +411,10 @@ def generate_potential_data(
 
         last_potential = potential
 
-        yield current_pH, potential
+        yield Point(current_pH, potential)
 
 
-def one_electron_oxidation_potentials(
+def one_electron_oxidation_potential(
     system: System,
     method,
     ncores: int = None,
