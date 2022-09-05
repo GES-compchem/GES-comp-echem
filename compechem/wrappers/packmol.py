@@ -149,6 +149,9 @@ def packmol_cube(
             )
 
         os.system("packmol < input.inp > output.out")
+        os.system(
+            f"obabel {solute.name}_{nsolv}{solvent.name}s.xyz -omol2 > {solute.name}_{nsolv}{solvent.name}s.mol2"
+        )
 
         solvated_molecule = System(
             f"{solute.name}_{nsolv}{solvent.name}s.xyz",
@@ -156,6 +159,16 @@ def packmol_cube(
         )
 
         process_output(mol=solute, method="packmol", calc=f"{nsolv}{solvent.name}_cube")
+
+        # saving packmol files
+        os.makedirs("../packmol_files", exist_ok=True)
+        shutil.copy(
+            f"{solute.name}_{nsolv}{solvent.name}s.mol2",
+            f"../packmol_files/{solute.name}_{nsolv}{solvent.name}s.mol2",
+        )
+        with open(f"../packmol_files/{solute.name}_{nsolv}{solvent.name}s.pbc", "w") as f:
+            f.write(str(solvated_molecule.box_side))
+
         shutil.rmtree(tdir)
 
     return solvated_molecule
