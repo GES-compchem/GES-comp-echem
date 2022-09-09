@@ -36,6 +36,7 @@ class DFTBInput:
         hamiltonian: str = "DFTB",
         parameters: str = "3ob/3ob-3-1/",
         solver: str = None,
+        thirdorder: bool = True,
         dispersion: bool = False,
         parallel: str = "mpi",
         verbose: bool = False,
@@ -49,6 +50,8 @@ class DFTBInput:
             parameters to be used for the DFTB Hamiltonian (by default 3ob)
         solver : str, optional
             LAPACK eigensolver method (check manual for available options)
+        thirdorder : bool, optional
+            activates the 3rd order terms in the DFTB Hamiltonian
         dispersion : bool, optional
             activates D3 dispersion corrections (off by default)
         parallel : str, optional
@@ -60,6 +63,7 @@ class DFTBInput:
         self.hamiltonian = hamiltonian
         self.parameters = parameters
         self.solver = solver
+        self.thirdorder = thirdorder
         self.dispersion = dispersion
         self.parallel = parallel
         self.verbose = verbose  # add to docs
@@ -195,16 +199,16 @@ class DFTBInput:
                     inp.write("  }\n")
                     if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    if "3ob" in self.parameters:
+                    if self.thirdorder:
                         inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
-                    for atom in atom_types:
-                        inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
-                    inp.write(
-                        "  }\n"
-                        "  HCorrection = Damping {\n"
-                        "    Exponent = 4.00\n"
-                        "  }\n"
-                    )
+                        for atom in atom_types:
+                            inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
+                        inp.write(
+                            "  }\n"
+                            "  HCorrection = Damping {\n"
+                            "    Exponent = 4.00\n"
+                            "  }\n"
+                        )
                     if self.dispersion:
                         inp.write(
                             "  Dispersion = SimpleDftD3 {\n"
@@ -393,16 +397,16 @@ class DFTBInput:
                     inp.write("  }\n")
                     if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    if "3ob" in self.parameters:
+                    if self.thirdorder:
                         inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
-                    for atom in atom_types:
-                        inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
-                    inp.write(
-                        "  }\n"
-                        "  HCorrection = Damping {\n"
-                        "    Exponent = 4.00\n"
-                        "  }\n"
-                    )
+                        for atom in atom_types:
+                            inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
+                        inp.write(
+                            "  }\n"
+                            "  HCorrection = Damping {\n"
+                            "    Exponent = 4.00\n"
+                            "  }\n"
+                        )
                     if self.dispersion:
                         inp.write(
                             "  Dispersion = SimpleDftD3 {\n"
@@ -597,16 +601,16 @@ class DFTBInput:
                     inp.write("  }\n")
                     if mol.periodic:
                         inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    if "3ob" in self.parameters:
+                    if self.thirdorder:
                         inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
-                    for atom in atom_types:
-                        inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
-                    inp.write(
-                        "  }\n"
-                        "  HCorrection = Damping {\n"
-                        "    Exponent = 4.00\n"
-                        "  }\n"
-                    )
+                        for atom in atom_types:
+                            inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
+                        inp.write(
+                            "  }\n"
+                            "  HCorrection = Damping {\n"
+                            "    Exponent = 4.00\n"
+                            "  }\n"
+                        )
                     if self.dispersion:
                         inp.write(
                             "  Dispersion = SimpleDftD3 {\n"
