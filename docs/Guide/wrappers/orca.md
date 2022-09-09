@@ -36,6 +36,7 @@ The `OrcaInput` class features a series of internal methods to carry out the cal
 * `opt`: geometry optimisation + frequency analysis
 * `freq`: analytical frequency analysis
 * `nfreq`: numerical frequency analysis only
+* `scan`: relaxed surface scan (with optional constraints)
 
 These methods can be called directly from the `OrcaInput` instance, passing the `System` object on which you want to carry out the calculation:
 
@@ -57,12 +58,63 @@ All the methods above accept a series of optional flags:
 
 ---
 
+### Relaxed surface scan
+
+The `OrcaInput.scan()` function allows to carry out relaxed surface scan calculations, in which a selected "coordinate" (which can be an atom coordinate, a bond length, a bond angle, or a dihedral) is scanned from a starting point to an end point, fixing that coordinate at each step and relaxing the other coordinates to a minimum. Optionally, it is also possible to constrain other coordinates which will not be relaxed at each step.
+
+Besides the aforementioned "standard" flags, this function accepts two extra `string` parameters, `scan` and `constraints`, which define the particular calculation to be carried out. The format for these parameters is as follows:
+
+* `scan`: `"type [indices] = start, stop, npoints"`
+  * `type`: `C` (cartesian coordinate), `B` (bond length), `A` (bond angle), or `D` (dihedral)
+  * `[indices]` series of atomic indices identifying the atoms in question, as they appear in the .xyz file (starting from 0)
+  * `start`: starting value for the selected coordinate
+  * `stop`: final value for the selected coordinate
+  * `npoints`: number of points evaluated for the scan
+
+For example, if you want to scan the bond length between the first (n°0) and sixth (n°5) atoms for 20 points, between 0.8Å and 1.6Å, the flag will be set to: 
+
+```
+scan = "B 0 6 = 0.8, 1.6, 20"
+```
+
+* `constraints`: `"type [indices] value"`
+  * `type`: `C` (cartesian coordinates), `B` (bond length), `A` (bond angle), or `D` (dihedral)
+  * `[indices]` series of atomic indices identifying the atoms in question, as they appear in the .xyz file (starting from 0)
+  * `value` (optional): value at which the coordinate will be fixed. If you do not provide a value, the present value in the structure is used.
+
+For example, if you want to fix the bond length between the first (n°0) and sixth (n°5) atoms at 1.2Å, the flag will be set to: 
+
+```
+constraints = "B 0 6 1.5"
+```
+
+It is possible to use wildcards to constrain a whole set of coordinates. For example, if you want to freeze ALL bond angles:
+
+```
+constraints = "A * * *"
+```
+
+Or if you want to freeze all bonds to a particular atom (e.g., atom 5):
+
+```
+constraints = "B 5 *"
+```
+
+For cartesian coordinates, lists of atoms can be defined:
+
+```
+constraints = "C 2:5"
+```
+
+
+---
+
 ## Pre-packaged methods
 
 For some common types of calculation, some "pre-packaged" options have been set up and made available:
 
-* `M06`: M06-2X density functional with the def2-TZVP basis set and D3ZERO dispersion corrections, in implicit SMD water solvent
-* `r2SCAN`: r2SCAN-3c density functional with D3ZERO dispersion corrections, in implicit SMD water solvent
+* `M06`: M06-2X hybrid exchange-correlation functional with the def2-TZVP basis set and D3ZERO dispersion corrections, in implicit SMD water solvent
+* `r2SCAN`: r2SCAN-3c meta-GGA exchange-correlation functional, in implicit SMD water solvent
 * `CCSD`: DLPNO-CCSD calculation extrapolating to the ANO basis set limit (using double-zeta and triple-zeta points) in implicit SMD water solvent
 
 These can be called as a normal `OrcaInput` instance, directly assigning it to a variable:
