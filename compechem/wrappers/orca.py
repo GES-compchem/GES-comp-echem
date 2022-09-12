@@ -561,7 +561,7 @@ class OrcaInput:
                     )
                 inp.write("%geom\n" "  scan\n" f"    {scan}\n" "  end\n")
                 if constraints:
-                    inp.write("  constraints\n" f"    {{ {constraints} C}}\n" "  end\n")
+                    inp.write("  constraints\n" f"    {{ {constraints} C }}\n" "  end\n")
                 inp.write("end\n")
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 

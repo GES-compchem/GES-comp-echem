@@ -15,6 +15,7 @@ def tautomer_search(
     mol: System,
     ncores: int = None,
     maxcore=None,
+    solvation: bool = True,
     remove_tdir: bool = True,
     optionals: str = "",
 ):
@@ -27,7 +28,9 @@ def tautomer_search(
     ncores : int, optional
         number of cores, by default all available cores
     maxcore : dummy variable
-            dummy variable used for compatibility with Orca calculations
+        dummy variable used for compatibility with Orca calculations
+    solvation : bool, optional
+        if True, enables the ALPB implicit solvation model for water
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -51,9 +54,14 @@ def tautomer_search(
 
         mol.write_xyz("geom.xyz")
 
-        os.system(
-            f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
-        )
+        if solvation:
+            os.system(
+                f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
+            )
+        else:
+            os.system(
+                f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
+            )
 
         if os.path.exists("tautomers.xyz"):
             tautomers_to_check = split_multixyz(mol, file="tautomers.xyz", suffix="t")
@@ -94,6 +102,7 @@ def conformer_search(
     mol: System,
     ncores: int = None,
     maxcore=None,
+    solvation: bool = True,
     remove_tdir: bool = True,
     optionals: str = "",
 ):
@@ -105,8 +114,10 @@ def conformer_search(
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
-    maxcore : dummy variable
-            dummy variable used for compatibility with Orca calculations
+    maxcore : dummy
+        dummy variable used for compatibility with Orca calculations
+    solvation : bool, optional
+        if True, enables the ALPB implicit solvation model for water
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -130,9 +141,14 @@ def conformer_search(
 
         mol.write_xyz("geom.xyz")
 
-        os.system(
-            f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
-        )
+        if solvation:
+            os.system(
+                f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
+            )
+        else:
+            os.system(
+                f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
+            )
 
         if os.path.exists("crest_conformers.xyz"):
             conformers_to_check = split_multixyz(
@@ -172,6 +188,7 @@ def deprotonate(
     mol: System,
     ncores: int = None,
     maxcore=None,
+    solvation: bool = True,
     remove_tdir: bool = True,
     optionals: str = "",
 ):
@@ -183,8 +200,10 @@ def deprotonate(
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
-    maxcore : dummy variable
-            dummy variable used for compatibility with Orca calculations
+    maxcore : dummy
+        dummy variable used for compatibility with Orca calculations
+    solvation : bool, optional
+        if True, enables the ALPB implicit solvation model for water
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -207,9 +226,14 @@ def deprotonate(
     with sh.pushd(tdir):
         mol.write_xyz("geom.xyz")
 
-        os.system(
-            f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
-        )
+        if solvation:
+            os.system(
+                f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+            )
+        else:
+            os.system(
+                f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+            )
 
         if os.path.exists("deprotonated.xyz"):
             deprotomers_to_check = split_multixyz(
@@ -257,6 +281,7 @@ def protonate(
     mol: System,
     ncores: int = None,
     maxcore=None,
+    solvation: bool = True,
     remove_tdir: bool = True,
     optionals: str = "",
 ):
@@ -268,8 +293,10 @@ def protonate(
         input molecule to use in the calculation
     ncores : int, optional
         number of cores, by default all available cores
-    maxcore : dummy variable
-            dummy variable used for compatibility with Orca calculations
+    maxcore : dummy
+        dummy variable used for compatibility with Orca calculations
+    solvation : bool, optional
+        if True, enables the ALPB implicit solvation model for water
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
@@ -293,9 +320,14 @@ def protonate(
 
         mol.write_xyz("geom.xyz")
 
-        os.system(
-            f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
-        )
+        if solvation:
+            os.system(
+                f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+            )
+        else:
+            os.system(
+                f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+            )
 
         if os.path.exists("protonated.xyz"):
             protomers_to_check = split_multixyz(
@@ -347,6 +379,7 @@ def qcg_grow(
     nsolv: int = 0,
     ncores: int = None,
     maxcore=None,
+    solvation: bool = True,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -371,8 +404,10 @@ def qcg_grow(
         molecules until convergence is reached, or 150 molecules are added.
     ncores : int, optional
         number of cores, by default all available cores
-    maxcore : dummy variable
+    maxcore : dummy
         dummy variable used for compatibility with Orca calculations
+    solvation : bool, optional
+        if True, enables the ALPB implicit solvation model for water
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
@@ -404,9 +439,14 @@ def qcg_grow(
         solute.write_xyz("solute.xyz")
         solvent.write_xyz("solvent.xyz")
 
-        os.system(
-            f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
-        )
+        if solvation:
+            os.system(
+                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+            )
+        else:
+            os.system(
+                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+            )
 
         solute.write_xyz(f"{solute.name}.xyz")
         cluster = System(f"{solute.name}.xyz", charge, spin)
@@ -438,6 +478,7 @@ def qcg_ensemble(
     nsolv: int = 0,
     ncores: int = None,
     maxcore=None,
+    solvation: bool = True,
     optionals: str = "",
     remove_tdir: bool = True,
 ):
@@ -471,8 +512,10 @@ def qcg_ensemble(
         molecules until convergence is reached, or 150 molecules are added.
     ncores : int, optional
         number of cores, by default all available cores
-    maxcore : dummy variable
+    maxcore : dummy
         dummy variable used for compatibility with Orca calculations
+    solvation : bool, optional
+        if True, enables the ALPB implicit solvation model for water
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
@@ -507,9 +550,14 @@ def qcg_ensemble(
         solute.write_xyz("solute.xyz")
         solvent.write_xyz("solvent.xyz")
 
-        os.system(
-            f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
-        )
+        if solvation:
+            os.system(
+                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+            )
+        else:
+            os.system(
+                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+            )
 
         try:
             ensemble = split_multixyz(
