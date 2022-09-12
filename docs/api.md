@@ -7,4 +7,4 @@ This API reference is divided into the following submodules, matching the struct
 * [compechem.wrappers](API-wrappers)
 * [compechem.functions](API-functions)
 * [compechem.algorithms](API-algorithms)
-* `compechem.tools](API-tools)
+* [compechem.tools](API-tools)
