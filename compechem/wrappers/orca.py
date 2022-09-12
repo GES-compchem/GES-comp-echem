@@ -493,7 +493,6 @@ class OrcaInput:
         mol: System,
         scan: str = None,
         constraints: str = None,
-        coordsys: str = None,
         ncores: int = None,
         maxcore: int = 350,
         charge: int = None,
@@ -510,8 +509,6 @@ class OrcaInput:
             string for the scan section in the %geom block
         constraints : str
             string for the constraints section in the %geom block
-        coordsys: str, optional
-            select different coordinate type for optimization (redundant vs cartesian)
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : int, optional
@@ -565,8 +562,6 @@ class OrcaInput:
                 inp.write("%geom\n" "  scan\n" f"    {scan}\n" "  end\n")
                 if constraints:
                     inp.write("  constraints\n" f"    {{ {constraints} C }}\n" "  end\n")
-                if coordsys:
-                    inp.write(f"  coordsys {coordsys}\n")
                 inp.write("end\n")
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
