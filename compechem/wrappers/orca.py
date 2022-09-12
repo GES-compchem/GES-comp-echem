@@ -566,7 +566,7 @@ class OrcaInput:
                 if constraints:
                     inp.write("  constraints\n" f"    {{ {constraints} C }}\n" "  end\n")
                 if invertconstraints:
-                    inp.write("  invertConstraints true")
+                    inp.write("  invertConstraints true\n")
                 inp.write("end\n")
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
