@@ -130,18 +130,21 @@ def packmol_cube(
         solute.write_xyz(f"{solute.name}.xyz")
         solvent.write_xyz(f"{solvent.name}.xyz")
 
+        os.system(f"obabel {solute.name}.xyz -O {solute.name}.pdb")
+        os.system(f"obabel {solvent.name}.xyz -O {solvent.name}.pdb")
+
         with open("input.inp", "w") as f:
             f.write(
                 "tolerance 2.0\n"
-                f"filetype xyz\n\n"
-                f"output {solute.name}_{nsolv}{solvent.name}s.xyz\n\n"
-                f"structure {solute.name}.xyz\n"
+                f"filetype pdb\n\n"
+                f"output {solute.name}_{nsolv}{solvent.name}s.pdb\n\n"
+                f"structure {solute.name}.pdb\n"
                 "  number 1\n"
                 "  resnumbers 3\n"
                 "  center\n"
                 f"  fixed {(cube_side-2)/2} {(cube_side-2)/2} {(cube_side-2)/2} 0. 0. 0.\n"
                 "end structure\n"
-                f"structure {solvent.name}.xyz\n"
+                f"structure {solvent.name}.pdb\n"
                 f"  number {nsolv}\n"
                 "  resnumbers 3\n"
                 f"  inside cube 0. 0. 0. {cube_side-2}\n"
@@ -149,8 +152,9 @@ def packmol_cube(
             )
 
         os.system("packmol < input.inp > output.out")
+
         os.system(
-            f"obabel {solute.name}_{nsolv}{solvent.name}s.xyz -omol2 -O {solute.name}_{nsolv}{solvent.name}s.mol2"
+            f"obabel {solute.name}_{nsolv}{solvent.name}s.pdb -xyz -O {solute.name}_{nsolv}{solvent.name}s.xyz"
         )
 
         solvated_molecule = System(
@@ -163,8 +167,8 @@ def packmol_cube(
         # saving packmol files
         os.makedirs("../packmol_files", exist_ok=True)
         shutil.copy(
-            f"{solute.name}_{nsolv}{solvent.name}s.mol2",
-            f"../packmol_files/{solute.name}_{nsolv}{solvent.name}s.mol2",
+            f"{solute.name}_{nsolv}{solvent.name}s.pdb",
+            f"../packmol_files/{solute.name}_{nsolv}{solvent.name}s.pdb",
         )
         with open(f"../packmol_files/{solute.name}_{nsolv}{solvent.name}s.pbc", "w") as f:
             f.write(str(solvated_molecule.box_side))
