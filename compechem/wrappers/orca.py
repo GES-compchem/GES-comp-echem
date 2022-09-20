@@ -605,7 +605,7 @@ class M06(OrcaInput):
             aux_basis="def2/J",
             solvation=True,
             solvent="water",
-            optionals="D3ZERO",
+            optionals="",
         )
 
 

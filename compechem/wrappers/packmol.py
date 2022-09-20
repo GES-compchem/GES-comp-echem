@@ -135,22 +135,22 @@ def packmol_cube(
                 "tolerance 2.0\n"
                 f"filetype xyz\n\n"
                 f"output {solute.name}_{nsolv}{solvent.name}s.xyz\n\n"
-                f"structure {solvent.name}.xyz\n"
-                f"  number {nsolv}\n"
-                "  resnumbers 3\n"
-                f"  inside cube 0. 0. 0. {cube_side-2}\n"
-                "end structure\n\n"
                 f"structure {solute.name}.xyz\n"
                 "  number 1\n"
                 "  resnumbers 3\n"
                 "  center\n"
                 f"  fixed {(cube_side-2)/2} {(cube_side-2)/2} {(cube_side-2)/2} 0. 0. 0.\n"
                 "end structure\n"
+                f"structure {solvent.name}.xyz\n"
+                f"  number {nsolv}\n"
+                "  resnumbers 3\n"
+                f"  inside cube 0. 0. 0. {cube_side-2}\n"
+                "end structure\n\n"
             )
 
         os.system("packmol < input.inp > output.out")
         os.system(
-            f"obabel {solute.name}_{nsolv}{solvent.name}s.xyz -omol2 > {solute.name}_{nsolv}{solvent.name}s.mol2"
+            f"obabel {solute.name}_{nsolv}{solvent.name}s.xyz -omol2 -O {solute.name}_{nsolv}{solvent.name}s.mol2"
         )
 
         solvated_molecule = System(
