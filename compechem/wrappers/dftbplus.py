@@ -181,6 +181,7 @@ class DFTBInput:
                     "\n"
                     f"Hamiltonian = {self.hamiltonian} {{\n"
                 )
+                inp.write(f"  Charge = {charge}")
 
                 if self.hamiltonian == "DFTB":
                     if self.solver:
@@ -379,6 +380,7 @@ class DFTBInput:
                 for velocity in mol.velocities:
                     inp.write(f"      {velocity[1:]}")
                 inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.hamiltonian} {{\n")
+                inp.write(f"  Charge = {charge}")
 
                 if self.hamiltonian == "DFTB":
                     if self.solver:
@@ -583,6 +585,7 @@ class DFTBInput:
                 for velocity in mol.velocities:
                     inp.write(f"      {velocity[1:]}")
                 inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.hamiltonian} {{\n")
+                inp.write(f"  Charge = {charge}")
 
                 if self.hamiltonian == "DFTB":
                     if self.solver:
