@@ -450,14 +450,17 @@ class DFTBInput:
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
 
             if compress_traj:
-                compress_dftb_trajectory(mol.name)
+                compress_dftb_trajectory(f"{mol.name}_{charge}_{spin}")
                 os.makedirs("../MD_trajectories", exist_ok=True)
-                shutil.move(f"{mol.name}.zip", f"../MD_trajectories/{mol.name}.zip")
+                shutil.move(
+                    f"{mol.name}_{charge}_{spin}.zip",
+                    f"../MD_trajectories/{mol.name}_{charge}_{spin}.zip",
+                )
 
-            save_dftb_trajectory(f"{mol.name}_{suffix}")
+            save_dftb_trajectory(f"{mol.name}_{charge}_{spin}_{suffix}")
 
             if mol.periodic:
-                with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
+                with open(f"../MD_data/{mol.name}_{charge}_{spin}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
             process_output(mol, self.hamiltonian, "md_nvt", charge, spin)
