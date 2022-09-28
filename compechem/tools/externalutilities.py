@@ -78,8 +78,8 @@ def compress_dftb_trajectory(filename, md_out="md.out", geo_xyz="geo_end.xyz"):
 
     with open(geo_xyz, "r") as inp:
         with open(f"{filename}.xyz", "w") as out:
-            while energies:
-                for linenum, line in enumerate(inp):
+            for linenum, line in enumerate(inp):
+                if energies:
                     if linenum == 0:
                         atomcount = int(line)
                     if linenum % (atomcount + 2) == 0:
