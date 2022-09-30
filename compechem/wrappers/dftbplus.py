@@ -467,7 +467,7 @@ class DFTBInput:
             if remove_tdir:
                 shutil.rmtree(tdir)
 
-        trajectory = MDTrajectory(f"{mol.name}_{suffix}", self.parameters)
+        trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.parameters)
 
         return trajectory
 
