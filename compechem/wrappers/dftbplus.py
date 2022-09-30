@@ -1,5 +1,4 @@
 import os, copy, shutil, sh
-from tracemalloc import start
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import System, Energies
