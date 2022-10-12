@@ -147,7 +147,7 @@ def packmol_cube(
                 f"structure {solvent.name}.pdb\n"
                 f"  number {nsolv}\n"
                 "  resnumbers 3\n"
-                f"  inside cube 0. 0. 0. {cube_side-2}\n"
+                f"  inside cube 1. 1. 1. {cube_side-1}\n"
                 "end structure\n\n"
             )
 
