@@ -135,9 +135,8 @@ def packmol_cube(
 
         with open("input.inp", "w") as f:
             f.write(
-                "tolerance 2.0\n"
+                "tolerance 1.0\n"
                 f"filetype pdb\n\n"
-                f"sidemax {cube_side-2}"
                 f"output {solute.name}_{nsolv}{solvent.name}s.pdb\n\n"
                 f"structure {solute.name}.pdb\n"
                 "  number 1\n"
