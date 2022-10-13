@@ -279,6 +279,7 @@ class DFTBInput:
     def opt(
         self,
         mol: System,
+        latticeopt: bool = False,
         ncores: int = None,
         maxcore=None,
         charge: int = None,
@@ -292,6 +293,8 @@ class DFTBInput:
         ----------
         mol : System object
             Input molecule to use in the calculation.
+        latticeopt : bool, optional
+            If True, also optimize PBC conditions. By default, False
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : dummy variable
@@ -343,7 +346,9 @@ class DFTBInput:
                     f'  <<< "{mol.name}.gen"\n'
                     "}\n"
                     "\n"
-                    "Driver = GeometryOptimization{}\n"
+                    "Driver = GeometryOptimization{\n"
+                    f"  LatticeOpt = {'Yes' if latticeopt else 'No'}"
+                    "}\n"
                     "\n"
                     f"Hamiltonian = {self.hamiltonian} {{\n"
                 )
