@@ -423,7 +423,7 @@ class DFTBInput:
             if inplace is False:
 
                 mol.write_xyz(f"{mol.name}.xyz")
-                newmol = System(f"{mol.name}.xyz", charge, spin, mol.periodic, mol.box_side)
+                newmol = System(f"{mol.name}.xyz", charge, spin, mol.box_side)
 
                 newmol.energies = copy.copy(mol.energies)
 
