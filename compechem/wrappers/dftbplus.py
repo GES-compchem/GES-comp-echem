@@ -276,6 +276,176 @@ class DFTBInput:
             if inplace is False:
                 return newmol
 
+    def opt(
+        self,
+        mol: System,
+        ncores: int = None,
+        maxcore=None,
+        charge: int = None,
+        spin: int = None,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
+        """Geometry optimization.
+
+        Parameters
+        ----------
+        mol : System object
+            Input molecule to use in the calculation.
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : dummy variable
+            dummy variable used for compatibility with Orca calculations
+        charge : int, optional
+            total charge of the molecule. Default is taken from the input molecule.
+        spin : int, optional
+            total spin of the molecule. Default is taken from the input molecule.
+        inplace : bool, optional
+            updates info for the input molecule instead of outputting a new molecule object,
+            by default False
+        remove_tdir : bool, optional
+            Temporary work directory will be removed, by default True
+
+        Returns
+        -------
+        newmol : System object
+            Output molecule containing the new energies.
+        """
+
+        if ncores is None:
+            ncores = get_ncores()
+
+        if charge is None:
+            charge = mol.charge
+        if spin is None:
+            spin = mol.spin
+
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} OPT")
+        logger.debug(f"Running DFTB+ calculation on {ncores} cores")
+
+        tdir = mkdtemp(
+            prefix=mol.name + "_",
+            suffix=f"_{self.hamiltonian.split()[0]}_opt",
+            dir=os.getcwd(),
+        )
+
+        with sh.pushd(tdir):
+            mol.write_gen(f"{mol.name}.gen")
+
+            with open(f"{mol.name}.gen") as file:
+                lines = file.readlines()
+                atom_types = lines[1].split()
+
+            with open("dftb_in.hsd", "w") as inp:
+
+                inp.write(
+                    "Geometry = GenFormat {\n"
+                    f'  <<< "{mol.name}.gen"\n'
+                    "}\n"
+                    "\n"
+                    "Driver = GeometryOptimization{}\n"
+                    "\n"
+                    f"Hamiltonian = {self.hamiltonian} {{\n"
+                )
+                inp.write(f"  Charge = {charge}\n")
+
+                if self.hamiltonian == "DFTB":
+                    if self.solver:
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
+                    inp.write(
+                        "  Scc = Yes\n"
+                        "  SlaterKosterFiles = Type2FileNames {\n"
+                        f'    Prefix = "{self.parameters}"\n'
+                        '    Separator = "-"\n'
+                        '    Suffix = ".skf"\n'
+                        "  }\n"
+                        "  MaxAngularMomentum {\n"
+                    )
+                    for atom in atom_types:
+                        inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
+                    inp.write("  }\n")
+                    if mol.periodic:
+                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
+                    if self.thirdorder:
+                        inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
+                        for atom in atom_types:
+                            inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
+                        inp.write(
+                            "  }\n"
+                            "  HCorrection = Damping {\n"
+                            "    Exponent = 4.00\n"
+                            "  }\n"
+                        )
+                    if self.dispersion:
+                        inp.write(
+                            "  Dispersion = SimpleDftD3 {\n"
+                            "    a1 = 0.746\n"
+                            "    a2 = 4.191\n"
+                            "    s6 = 1.0\n"
+                            "    s8 = 3.209\n"
+                            "  }\n"
+                        )
+                    inp.write("}\n")
+
+                elif self.hamiltonian == "xTB":
+                    if self.solver:
+                        inp.write(f"  Solver = {self.solver} {{}}\n")
+                    self.parameters = "gfn2"
+                    inp.write('  Method = "GFN2-xTB"\n')
+                    if mol.periodic:
+                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
+                    inp.write("}\n")
+
+                inp.write("\n" "ParserOptions {\n" "  ParserVersion = 11\n" "}")
+
+            if self.parallel == "mpi":
+                os.environ["OMP_NUM_THREADS"] = "1"
+                os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
+
+            elif self.parallel == "nompi":
+                os.system(f"dftb+ > output.out 2>> output.err")
+
+            with open("output.out", "r") as out:
+                for line in out:
+                    if "Total Energy" in line:
+                        electronic_energy = float(line.split()[2])
+
+            vibronic_energy = None
+
+            if self.parameters in mol.energies:
+                vibronic_energy = mol.energies[self.parameters].vibronic
+
+            if inplace is False:
+
+                mol.write_xyz(f"{mol.name}.xyz")
+                newmol = System(f"{mol.name}.xyz", charge, spin, mol.periodic, mol.box_side)
+
+                newmol.energies = copy.copy(mol.energies)
+
+                newmol.energies[self.parameters] = Energies(
+                    method=self.parameters,
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
+
+                newmol.update_geometry("geo_end.xyz")
+
+            else:
+                mol.energies[self.parameters] = Energies(
+                    method=self.parameters,
+                    electronic=electronic_energy,
+                    vibronic=vibronic_energy,
+                )
+
+                mol.update_geometry("geo_end.xyz")
+
+            process_output(mol, self.hamiltonian, "spe", charge, spin)
+            if remove_tdir:
+                shutil.rmtree(tdir)
+
+            if inplace is False:
+                return newmol
+
     def md_nvt(
         self,
         mol: System,
