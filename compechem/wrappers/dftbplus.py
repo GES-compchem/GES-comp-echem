@@ -347,7 +347,7 @@ class DFTBInput:
                     "}\n"
                     "\n"
                     "Driver = GeometryOptimization{\n"
-                    f"  LatticeOpt = {'Yes' if latticeopt else 'No'}"
+                    f"  LatticeOpt = {'Yes' if latticeopt else 'No'}\n"
                     "}\n"
                     "\n"
                     f"Hamiltonian = {self.hamiltonian} {{\n"
