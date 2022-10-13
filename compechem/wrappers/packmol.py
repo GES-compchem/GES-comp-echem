@@ -142,7 +142,7 @@ def packmol_cube(
                 "  number 1\n"
                 "  resnumbers 3\n"
                 "  center\n"
-                f"  fixed {(cube_side-2)/2} {(cube_side-2)/2} {(cube_side-2)/2} 0. 0. 0.\n"
+                f"  fixed {(cube_side)/2} {(cube_side)/2} {(cube_side)/2} 0. 0. 0.\n"
                 "end structure\n"
                 f"structure {solvent.name}.pdb\n"
                 f"  number {nsolv}\n"
