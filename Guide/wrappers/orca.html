@@ -560,6 +560,13 @@ title="Print to PDF"
   <a class="reference internal nav-link" href="#methods">
    Methods
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#relaxed-surface-scan">
+     Relaxed surface scan
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#pre-packaged-methods">
@@ -599,6 +606,13 @@ title="Print to PDF"
   <a class="reference internal nav-link" href="#methods">
    Methods
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#relaxed-surface-scan">
+     Relaxed surface scan
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#pre-packaged-methods">
@@ -646,6 +660,7 @@ title="Print to PDF"
 <li><p><code class="docutils literal notranslate"><span class="pre">opt</span></code>: geometry optimisation + frequency analysis</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">freq</span></code>: analytical frequency analysis</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">nfreq</span></code>: numerical frequency analysis only</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scan</span></code>: relaxed surface scan (with optional constraints)</p></li>
 </ul>
 <p>These methods can be called directly from the <code class="docutils literal notranslate"><span class="pre">OrcaInput</span></code> instance, passing the <code class="docutils literal notranslate"><span class="pre">System</span></code> object on which you want to carry out the calculation:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mymol</span> <span class="o">=</span> <span class="n">System</span><span class="p">(</span><span class="s2">&quot;mymol.xyz&quot;</span><span class="p">)</span>
@@ -663,14 +678,60 @@ title="Print to PDF"
 <li><p><code class="docutils literal notranslate"><span class="pre">inplace</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, default: <code class="docutils literal notranslate"><span class="pre">False</span></code>): if <code class="docutils literal notranslate"><span class="pre">True</span></code>, updates the information (energies, geometry, etc.) of the original <code class="docutils literal notranslate"><span class="pre">System</span></code>. Otherwise, returns a new <code class="docutils literal notranslate"><span class="pre">System</span></code> which can be assigned to a new variable</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">remove_tdir</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, default: <code class="docutils literal notranslate"><span class="pre">True</span></code>): if <code class="docutils literal notranslate"><span class="pre">True</span></code>, deletes the temporary work directory after a successful calculation.</p></li>
 </ul>
+<hr class="docutils" />
+<section id="relaxed-surface-scan">
+<h3>Relaxed surface scan<a class="headerlink" href="#relaxed-surface-scan" title="Permalink to this headline">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">OrcaInput.scan()</span></code> function allows to carry out relaxed surface scan calculations, in which a selected “coordinate” (which can be an atom coordinate, a bond length, a bond angle, or a dihedral) is scanned from a starting point to an end point, fixing that coordinate at each step and relaxing the other coordinates to a minimum. Optionally, it is also possible to constrain other coordinates which will not be relaxed at each step.</p>
+<p>Besides the aforementioned “standard” flags, this function accepts two extra <code class="docutils literal notranslate"><span class="pre">string</span></code> parameters, <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">constraints</span></code>, which define the particular calculation to be carried out. The format for these parameters is as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">scan</span></code>: <code class="docutils literal notranslate"><span class="pre">&quot;type</span> <span class="pre">[indices]</span> <span class="pre">=</span> <span class="pre">start,</span> <span class="pre">stop,</span> <span class="pre">npoints&quot;</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: <code class="docutils literal notranslate"><span class="pre">C</span></code> (cartesian coordinate), <code class="docutils literal notranslate"><span class="pre">B</span></code> (bond length), <code class="docutils literal notranslate"><span class="pre">A</span></code> (bond angle), or <code class="docutils literal notranslate"><span class="pre">D</span></code> (dihedral)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[indices]</span></code> series of atomic indices identifying the atoms in question, as they appear in the .xyz file (starting from 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code>: starting value for the selected coordinate</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stop</span></code>: final value for the selected coordinate</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">npoints</span></code>: number of points evaluated for the scan</p></li>
+</ul>
+</li>
+</ul>
+<p>For example, if you want to scan the bond length between the first (n°0) and sixth (n°5) atoms for 20 points, between 0.8Å and 1.6Å, the flag will be set to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scan</span> <span class="o">=</span> <span class="s2">&quot;B 0 6 = 0.8, 1.6, 20&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">constraints</span></code>: <code class="docutils literal notranslate"><span class="pre">&quot;type</span> <span class="pre">[indices]</span> <span class="pre">value&quot;</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: <code class="docutils literal notranslate"><span class="pre">C</span></code> (cartesian coordinates), <code class="docutils literal notranslate"><span class="pre">B</span></code> (bond length), <code class="docutils literal notranslate"><span class="pre">A</span></code> (bond angle), or <code class="docutils literal notranslate"><span class="pre">D</span></code> (dihedral)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[indices]</span></code> series of atomic indices identifying the atoms in question, as they appear in the .xyz file (starting from 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">value</span></code> (optional): value at which the coordinate will be fixed. If you do not provide a value, the present value in the structure is used.</p></li>
+</ul>
+</li>
+</ul>
+<p>For example, if you want to fix the bond length between the first (n°0) and sixth (n°5) atoms at 1.2Å, the flag will be set to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">constraints</span> <span class="o">=</span> <span class="s2">&quot;B 0 6 1.5&quot;</span>
+</pre></div>
+</div>
+<p>It is possible to use wildcards to constrain a whole set of coordinates. For example, if you want to freeze ALL bond angles:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">constraints</span> <span class="o">=</span> <span class="s2">&quot;A * * *&quot;</span>
+</pre></div>
+</div>
+<p>Or if you want to freeze all bonds to a particular atom (e.g., atom 5):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">constraints</span> <span class="o">=</span> <span class="s2">&quot;B 5 *&quot;</span>
+</pre></div>
+</div>
+<p>For cartesian coordinates, lists of atoms can be defined:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">constraints</span> <span class="o">=</span> <span class="s2">&quot;C 2:5&quot;</span>
+</pre></div>
+</div>
+</section>
 </section>
 <hr class="docutils" />
 <section id="pre-packaged-methods">
 <h2>Pre-packaged methods<a class="headerlink" href="#pre-packaged-methods" title="Permalink to this headline">#</a></h2>
 <p>For some common types of calculation, some “pre-packaged” options have been set up and made available:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">M06</span></code>: M06-2X density functional with the def2-TZVP basis set and D3ZERO dispersion corrections, in implicit SMD water solvent</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">r2SCAN</span></code>: r2SCAN-3c density functional with D3ZERO dispersion corrections, in implicit SMD water solvent</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">M06</span></code>: M06-2X hybrid exchange-correlation functional with the def2-TZVP basis set and D3ZERO dispersion corrections, in implicit SMD water solvent</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">r2SCAN</span></code>: r2SCAN-3c meta-GGA exchange-correlation functional, in implicit SMD water solvent</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">CCSD</span></code>: DLPNO-CCSD calculation extrapolating to the ANO basis set limit (using double-zeta and triple-zeta points) in implicit SMD water solvent</p></li>
 </ul>
 <p>These can be called as a normal <code class="docutils literal notranslate"><span class="pre">OrcaInput</span></code> instance, directly assigning it to a variable:</p>
