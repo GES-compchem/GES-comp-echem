@@ -246,7 +246,7 @@ class Ensemble:
         self.name = systems_list[0].name
         self.atomcount = systems_list[0].atomcount
 
-        self.container = systems_list
+        self.container = [systems_list]
 
         self.energies: dict = {}
 

@@ -82,6 +82,8 @@ def compress_dftb_trajectory(filename, md_out="md.out", geo_xyz="geo_end.xyz"):
                 if linenum == 0:
                     atomcount = int(line)
                 if linenum % (atomcount + 2) == 0:
+                    if not energies:
+                        break
                     out.write(f"{line.split()[0]}\n")
                 if linenum % (atomcount + 2) == 1:
                     out.write(f"Step: {line.split()[2]} Energy: {energies.pop(0)} Eh\n")
