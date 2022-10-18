@@ -7,13 +7,13 @@ The `GES-comp-echem` package can be installed in a Conda environment with the co
 conda install -c greenenergystorage GES-comp-echem
 ```
 
-The library can be imported in a Python script as a whole via the following syntax:
+The library can be imported in a Python script via the following syntax:
 
 ```python
 import compechem
 ```
 
-Alternatively, individual submodules/classes/functions can be imported separately:
+Alternatively, individual submodules, classes, and functions can be imported separately:
 
 ```python
 from compechem import systems
@@ -21,13 +21,15 @@ from compechem.wrappers import dftbplus
 from compechem.wrappers.packmol import packmol_cube
 ```
 
-For a more detailed explanation of the available features in each submodule, please refer to their specific page in this User Guide.
+For a more detailed explanation of the available features in each submodule, please refer to their specific page in this [User Guide](user-guide).
 
 ---
 
 ## My first calculation
 
-Let us go through the very basics of using the library. At the very least, you will need the geometrical structure of the system you want to study, in the form of a .xyz file. You can obtain it from available databases, or you can draw the structures yourself in programs such as [Avogadro](https://avogadro.cc/).
+### Introduction
+
+Let us go through the very basics of using the library. We are going to carry out a geometry optimisation on a water molecule. At the very least, you will need the geometrical structure of the system you want to study, in the form of a .xyz file. You can obtain it from available databases, or you can draw the structures yourself in programs such as [Avogadro](https://avogadro.cc/).
 
 Below is the `water.xyz` file, containing the structure of the water molecule, which we will use in these examples:
 
@@ -39,11 +41,11 @@ H   1.442   0.368   0.000
 H  -1.442   0.368   0.000  
 ```
 
-If you open the file in a molecular visualization software, you will notice the structure is not quite right. We can then optimise the structure with a software of choice. We will use [xTB](https://github.com/grimme-lab/xtb) in this example, due to its balance between accuracy and speed. The library needs the program to already be installed (preferably via conda) and ready to go.
+If you open the file in a molecular visualization software, you will notice the structure is distorted from the typical equilibrium geometry. We can then optimise the structure by utilising one of the wrappers implemented in `GES-comp-echem`. We will use [xTB](https://github.com/grimme-lab/xtb) in this example, due to its balance between accuracy and speed. The library needs the program to already be installed ([preferably via conda](https://xtb-docs.readthedocs.io/en/latest/setup.html#setup-and-installation)) and ready to go.
 
 ### Importing the library
 
-Before starting, we need to create a Python script and import the necessary modules from the library. We need the `System` submodule to store the information about our water molecule, and the `XtbInput` submodule to carry out the actual calculation:
+Before starting, we need to create a Python script and import the necessary classes from the library. We need the `System` class to store the information about our water molecule, and the `XtbInput` class to define the simulation setup (Hamiltonian, parameters, solvation, etc.):
 
 ```python
 from compechem.systems import System
@@ -60,7 +62,7 @@ water = System("example_files/water.xyz")
 
 ### Creating a XtbInput object
 
-We can now setup a "calculator" object using the `XtbInput` wrapper. Most of these wrappers come with sensible default options for electrochemical calculations in solution. To see all the available options, please refer to the [wrappers](Guide-wrappers) section.
+We can now setup a wrapper object using an instance of `XtbInput`. Most of these wrappers come with sensible default options for electrochemical calculations in solution. To see all the available options, please refer to the [wrappers](Guide-wrappers) section.
 
 ```python
 xtb = XtbInput()

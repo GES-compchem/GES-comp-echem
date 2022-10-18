@@ -9,3 +9,5 @@ from compechem.tools.externalutilities import split_multixyz
 from compechem.tools.externalutilities import compress_dftb_trajectory
 
 from compechem.tools.xyz2mol import maxdist
+
+from compechem.tools.reorderenergies import reorder_energies

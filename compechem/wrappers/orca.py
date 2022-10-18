@@ -13,7 +13,7 @@ class OrcaInput:
 
     def __init__(
         self,
-        method: str,
+        method: str = "PBE",
         basis_set: str = "def2-TZVP",
         aux_basis: str = "def2/J",
         solvation: bool = False,
@@ -24,7 +24,7 @@ class OrcaInput:
         Parameters
         ----------
         method : str
-            level of theory
+            level of theory, by default "PBE"
         basis_set : str, optional
             basis set, by default "def2-TZVP"
         aux_basis : str, optional
@@ -500,7 +500,7 @@ class OrcaInput:
         spin: int = None,
         remove_tdir: bool = True,
     ):
-        """Geometry optimization + frequency analysis.
+        """Relaxed surface scan.
 
         Parameters
         ----------

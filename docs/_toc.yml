@@ -7,15 +7,9 @@ chapters:
 - file: user-guide
   sections:
     - file: Guide/systems
-    - file: Guide/wrappers
-      sections:
-        - file: Guide/wrappers/xtb
-        - file: Guide/wrappers/crest
-        - file: Guide/wrappers/orca
-        - file: Guide/wrappers/dftbplus
-        - file: Guide/wrappers/packmol
+    - file: Guide/setup
+    - file: Guide/run
     - file: Guide/functions
-    - file: Guide/algorithms
     - file: Guide/tools
 
 - file: api
@@ -29,7 +23,6 @@ chapters:
         - file: API/wrappers/dftbplus
         - file: API/wrappers/packmol
     - file: API/functions
-    - file: API/algorithms
-      sections:
-        - file: API/algorithms/oneeloxidation
     - file: API/tools
+
+- file: contributor-guide

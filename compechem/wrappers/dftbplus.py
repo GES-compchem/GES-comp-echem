@@ -16,7 +16,7 @@ class DFTBInput:
 
     Attributes
     ----------
-    hamiltonian : str, optional
+    method : str, optional
         level of theory, by default "DFTB". "xTB" also supported.
     parameters : str, optional
         parameters to be used for the DFTB Hamiltonian (by default 3ob)
@@ -32,7 +32,7 @@ class DFTBInput:
 
     def __init__(
         self,
-        hamiltonian: str = "DFTB",
+        method: str = "DFTB",
         parameters: str = "3ob/3ob-3-1/",
         solver: str = None,
         thirdorder: bool = True,
@@ -43,7 +43,7 @@ class DFTBInput:
         """
         Parameters
         ----------
-        hamiltonian : str, optional
+        method : str, optional
             level of theory, by default "DFTB". "xTB" also supported.
         parameters : str, optional
             parameters to be used for the DFTB Hamiltonian (by default 3ob)
@@ -59,7 +59,7 @@ class DFTBInput:
             if set to True, saves the full DFTB+ output, otherwise, only the smaller files
         """
 
-        self.hamiltonian = hamiltonian
+        self.method = method
         self.parameters = parameters
         self.solver = solver
         self.thirdorder = thirdorder
@@ -151,12 +151,12 @@ class DFTBInput:
         if spin is None:
             spin = mol.spin
 
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} SPE")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.hamiltonian.split()[0]}_spe",
+            suffix=f"_{self.method.split()[0]}_spe",
             dir=os.getcwd(),
         )
 
@@ -178,11 +178,11 @@ class DFTBInput:
                     "  MaxSteps = 0\n"
                     "}\n"
                     "\n"
-                    f"Hamiltonian = {self.hamiltonian} {{\n"
+                    f"Hamiltonian = {self.method} {{\n"
                 )
                 inp.write(f"  Charge = {charge}\n")
 
-                if self.hamiltonian == "DFTB":
+                if self.method == "DFTB":
                     if self.solver:
                         inp.write(f"  Solver = {self.solver} {{}}\n")
                     inp.write(
@@ -220,7 +220,7 @@ class DFTBInput:
                         )
                     inp.write("}\n")
 
-                elif self.hamiltonian == "xTB":
+                elif self.method == "xTB":
                     if self.solver:
                         inp.write(f"  Solver = {self.solver} {{}}\n")
                     self.parameters = "gfn2"
@@ -269,7 +269,7 @@ class DFTBInput:
                     vibronic=vibronic_energy,
                 )
 
-            process_output(mol, self.hamiltonian, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -323,12 +323,12 @@ class DFTBInput:
         if spin is None:
             spin = mol.spin
 
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} OPT")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.hamiltonian.split()[0]}_opt",
+            suffix=f"_{self.method.split()[0]}_opt",
             dir=os.getcwd(),
         )
 
@@ -350,11 +350,11 @@ class DFTBInput:
                     f"  LatticeOpt = {'Yes' if latticeopt else 'No'}\n"
                     "}\n"
                     "\n"
-                    f"Hamiltonian = {self.hamiltonian} {{\n"
+                    f"Hamiltonian = {self.method} {{\n"
                 )
                 inp.write(f"  Charge = {charge}\n")
 
-                if self.hamiltonian == "DFTB":
+                if self.method == "DFTB":
                     if self.solver:
                         inp.write(f"  Solver = {self.solver} {{}}\n")
                     inp.write(
@@ -392,7 +392,7 @@ class DFTBInput:
                         )
                     inp.write("}\n")
 
-                elif self.hamiltonian == "xTB":
+                elif self.method == "xTB":
                     if self.solver:
                         inp.write(f"  Solver = {self.solver} {{}}\n")
                     self.parameters = "gfn2"
@@ -444,7 +444,7 @@ class DFTBInput:
 
                 mol.update_geometry("geo_end.xyz")
 
-            process_output(mol, self.hamiltonian, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -516,12 +516,12 @@ class DFTBInput:
         if box_side is None:
             box_side = mol.box_side
 
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} NVT MD")
+        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} NVT MD")
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.hamiltonian.split()[0]}_md_nvt",
+            suffix=f"_{self.method.split()[0]}_md_nvt",
             dir=os.getcwd(),
         )
 
@@ -553,10 +553,10 @@ class DFTBInput:
                 )
                 for velocity in mol.velocities:
                     inp.write(f"      {velocity[1:]}")
-                inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.hamiltonian} {{\n")
+                inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.method} {{\n")
                 inp.write(f"  Charge = {charge}\n")
 
-                if self.hamiltonian == "DFTB":
+                if self.method == "DFTB":
                     if self.solver:
                         inp.write(f"  Solver = {self.solver} {{}}\n")
                     inp.write(
@@ -594,7 +594,7 @@ class DFTBInput:
                         )
                     inp.write("}\n")
 
-                elif self.hamiltonian == "xTB":
+                elif self.method == "xTB":
                     if self.solver:
                         inp.write(f"  Solver = {self.solver} {{}}\n")
                     self.parameters = "gfn2"
@@ -637,7 +637,7 @@ class DFTBInput:
                 with open(f"../MD_data/{mol.name}_{charge}_{spin}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.hamiltonian, "md_nvt", charge, spin)
+            process_output(mol, self.method, "md_nvt", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -716,7 +716,7 @@ class DFTBInput:
             box_side = mol.box_side
 
         logger.info(
-            f"{mol.name}, charge {charge} spin {spin} - {self.hamiltonian} Simulated Annealing"
+            f"{mol.name}, charge {charge} spin {spin} - {self.method} Simulated Annealing"
         )
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
         logger.debug(
@@ -725,7 +725,7 @@ class DFTBInput:
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.hamiltonian.split()[0]}_anneal",
+            suffix=f"_{self.method.split()[0]}_anneal",
             dir=os.getcwd(),
         )
 
@@ -761,10 +761,10 @@ class DFTBInput:
                 )
                 for velocity in mol.velocities:
                     inp.write(f"      {velocity[1:]}")
-                inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.hamiltonian} {{\n")
+                inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.method} {{\n")
                 inp.write(f"  Charge = {charge}\n")
 
-                if self.hamiltonian == "DFTB":
+                if self.method == "DFTB":
                     if self.solver:
                         inp.write(f"  Solver = {self.solver} {{}}\n")
                     inp.write(
@@ -802,7 +802,7 @@ class DFTBInput:
                         )
                     inp.write("}\n")
 
-                elif self.hamiltonian == "xTB":
+                elif self.method == "xTB":
                     if self.solver:
                         inp.write(f"  Solver = {self.solver} {{}}\n")
                     self.parameters = "gfn2"
@@ -842,7 +842,7 @@ class DFTBInput:
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.hamiltonian, "anneal", charge, spin)
+            process_output(mol, self.method, "anneal", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
