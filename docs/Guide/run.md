@@ -21,7 +21,7 @@ Generic calculations are implemented as class methods in the various `wrappers`.
 
 ---
 
-The only mandatory parameter to be passed is the `System` on which to run the calculation. To run the calculation, simply call the function:
+The only mandatory parameter to be passed is the `System` on which to run the calculation. To run the calculation, simply call the function. The output of a calculation is a `System` object which can be assigned to a new variable:
 
 ```python
 from compechem.systems import System
@@ -85,7 +85,7 @@ H       -0.77436561057077       0.19054464070025        0.00000237049333
 
 ```
 
-The output of a calculation can either be assigned to a new variable (as in the example above), or you can directly update the input `System` with the `inplace` flag:
+Alternatively, you can directly update the input `System` with the `inplace` flag:
 
 ```python
 from compechem.systems import System
@@ -162,8 +162,8 @@ Some calculations are instead implemented as functions within the corresponding 
 |  :---  |  :---  | 
 |  Tautomer search  |  `tautomer_search`  | 
 |  Conformer search  |  `conformer_search`  |
-|  Deprotonation  |  `deprotonate` |
-|  Protonation  |  `protonate` | 
+|  Deprotomer search  |  `deprotonate` |
+|  Protomer search  |  `protonate` | 
 |  Quantum Cluster Growth  |  `qcg_grow` |
 |  Quantum Cluster Growth + ensemble evaluation  |  `qcg_ensemble` |
 

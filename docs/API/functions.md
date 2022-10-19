@@ -15,11 +15,4 @@
 .. autofunction:: compechem.functions.calculate_potential
 ```
 
----
-
-## `reorder_energies` function
-
-```{eval-rst}
-.. autofunction:: compechem.functions.reorder_energies
-```
 

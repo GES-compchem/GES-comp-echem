@@ -62,7 +62,7 @@ water = System("example_files/water.xyz")
 
 ### Creating a XtbInput object
 
-We can now setup a wrapper object using an instance of `XtbInput`. Most of these wrappers come with sensible default options for electrochemical calculations in solution. To see all the available options, please refer to the [wrappers](Guide-wrappers) section.
+We can now setup a wrapper object using an instance of `XtbInput`. Most of these wrappers come with sensible default options for electrochemical calculations in solution. To see all the available options, please refer to the [wrappers](API-wrappers) section.
 
 ```python
 xtb = XtbInput()
