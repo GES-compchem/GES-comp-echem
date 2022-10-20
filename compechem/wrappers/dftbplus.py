@@ -245,8 +245,8 @@ class DFTBInput:
 
             vibronic_energy = None
 
-            if self.parameters in mol.energies:
-                vibronic_energy = mol.energies[self.parameters].vibronic
+            if self.method in mol.energies:
+                vibronic_energy = mol.energies[self.method].vibronic
 
             if inplace is False:
 
@@ -256,15 +256,15 @@ class DFTBInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[self.parameters] = Energies(
-                    method=self.parameters,
+                newmol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
 
             else:
-                mol.energies[self.parameters] = Energies(
-                    method=self.parameters,
+                mol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -417,8 +417,8 @@ class DFTBInput:
 
             vibronic_energy = None
 
-            if self.parameters in mol.energies:
-                vibronic_energy = mol.energies[self.parameters].vibronic
+            if self.method in mol.energies:
+                vibronic_energy = mol.energies[self.method].vibronic
 
             if inplace is False:
 
@@ -427,8 +427,8 @@ class DFTBInput:
 
                 newmol.energies = copy.copy(mol.energies)
 
-                newmol.energies[self.parameters] = Energies(
-                    method=self.parameters,
+                newmol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -436,8 +436,8 @@ class DFTBInput:
                 newmol.update_geometry("geo_end.xyz")
 
             else:
-                mol.energies[self.parameters] = Energies(
-                    method=self.parameters,
+                mol.energies[self.method] = Energies(
+                    method=self.method,
                     electronic=electronic_energy,
                     vibronic=vibronic_energy,
                 )
@@ -641,7 +641,7 @@ class DFTBInput:
             if remove_tdir:
                 shutil.rmtree(tdir)
 
-        trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.parameters)
+        trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
 
         return trajectory
 
@@ -846,6 +846,6 @@ class DFTBInput:
             if remove_tdir:
                 shutil.rmtree(tdir)
 
-        trajectory = MDTrajectory(f"{mol.name}_{suffix}", self.parameters)
+        trajectory = MDTrajectory(f"{mol.name}_{suffix}", self.method)
 
         return trajectory
