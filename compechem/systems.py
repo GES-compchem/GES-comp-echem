@@ -212,6 +212,8 @@ class System:
                         self.velocities.append(
                             f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
                         )
+                    if len(line.split()) == 0:
+                        continue
 
 
 class Ensemble:
