@@ -197,7 +197,7 @@ class System:
         self.geometry = []
 
         with open(xyz_file, "r") as f:
-            numlines = sum(1 for _ in f)
+            numlines = sum(1 for line in f if len(line.split()) != 0)
 
         with open(xyz_file, "r") as f:
             for linenum, line in enumerate(f):
@@ -212,8 +212,6 @@ class System:
                         self.velocities.append(
                             f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
                         )
-                    if len(line.split()) == 0:
-                        continue
 
 
 class Ensemble:
