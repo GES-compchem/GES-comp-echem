@@ -38,7 +38,7 @@ class DFTBInput:
         thirdorder: bool = True,
         dispersion: bool = False,
         parallel: str = "mpi",
-        verbose: bool = False,
+        verbose: bool = True,
     ) -> None:
         """
         Parameters
