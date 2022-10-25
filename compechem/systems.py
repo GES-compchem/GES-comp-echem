@@ -197,14 +197,14 @@ class System:
         self.geometry = []
 
         with open(xyz_file, "r") as f:
-            numlines = sum(1 for line in f if len(line.split()) != 0)
+            numlines = sum(1 for line in f)
 
         with open(xyz_file, "r") as f:
             for linenum, line in enumerate(f):
                 if linenum == 0:
                     self.atomcount = int(line)
                 last_geom_line = numlines - (self.atomcount + 2)
-                if linenum > last_geom_line + 1 and linenum < numlines:
+                if linenum > last_geom_line + 1 and linenum < numlines and len(line) != 0:
                     self.geometry.append(
                         f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                     )
