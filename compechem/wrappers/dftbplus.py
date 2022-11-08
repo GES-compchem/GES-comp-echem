@@ -200,6 +200,7 @@ class DFTBInput:
                             f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
                         )
                         inp.write("      }\n")
+                    inp.write("    }\n")
                     inp.write("  }\n")
 
                 if self.method == "DFTB":
@@ -384,6 +385,7 @@ class DFTBInput:
                             f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
                         )
                         inp.write("      }\n")
+                    inp.write("    }\n")
                     inp.write("  }\n")
 
                 if self.method == "DFTB":
@@ -598,6 +600,7 @@ class DFTBInput:
                             f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
                         )
                         inp.write("      }\n")
+                    inp.write("    }\n")
                     inp.write("  }\n")
 
                 if self.method == "DFTB":
@@ -818,6 +821,7 @@ class DFTBInput:
                             f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
                         )
                         inp.write("      }\n")
+                    inp.write("    }\n")
                     inp.write("  }\n")
 
                 if self.method == "DFTB":
