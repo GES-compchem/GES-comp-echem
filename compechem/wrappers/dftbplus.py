@@ -107,6 +107,14 @@ class DFTBInput:
             "Zn": -0.03,
         }
 
+        self.spin_constants = {
+            "H": [-0.072],
+            "C": [-0.031, -0.025, -0.025, -0.023],
+            "N": [-0.033, -0.027, -0.027, -0.026],
+            "O": [-0.035, -0.030, -0.030, -0.028],
+            "S": [-0.021, -0.017, 0.000, -0.017, -0.016, 0.000, 0.000, 0.000, -0.080],
+        }
+
     def spe(
         self,
         mol: System,
@@ -181,6 +189,18 @@ class DFTBInput:
                     f"Hamiltonian = {self.method} {{\n"
                 )
                 inp.write(f"  Charge = {charge}\n")
+
+                if spin != 1:
+                    inp.write("  SpinPolarisation = Colinear {\n")
+                    inp.write(f"    UnpairedElectrons = {spin-1}\n")
+                    inp.write("    SpinConstants = {\n")
+                    for atom in atom_types:
+                        inp.write(f"      {atom} = {{\n")
+                        inp.write(
+                            f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
+                        )
+                        inp.write("      }\n")
+                    inp.write("  }\n")
 
                 if self.method == "DFTB":
                     if self.solver:
@@ -353,6 +373,18 @@ class DFTBInput:
                     f"Hamiltonian = {self.method} {{\n"
                 )
                 inp.write(f"  Charge = {charge}\n")
+
+                if spin != 1:
+                    inp.write("  SpinPolarisation = Colinear {\n")
+                    inp.write(f"    UnpairedElectrons = {spin-1}\n")
+                    inp.write("    SpinConstants = {\n")
+                    for atom in atom_types:
+                        inp.write(f"      {atom} = {{\n")
+                        inp.write(
+                            f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
+                        )
+                        inp.write("      }\n")
+                    inp.write("  }\n")
 
                 if self.method == "DFTB":
                     if self.solver:
@@ -555,6 +587,18 @@ class DFTBInput:
                     inp.write(f"      {velocity[1:]}")
                 inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.method} {{\n")
                 inp.write(f"  Charge = {charge}\n")
+
+                if spin != 1:
+                    inp.write("  SpinPolarisation = Colinear {\n")
+                    inp.write(f"    UnpairedElectrons = {spin-1}\n")
+                    inp.write("    SpinConstants = {\n")
+                    for atom in atom_types:
+                        inp.write(f"      {atom} = {{\n")
+                        inp.write(
+                            f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
+                        )
+                        inp.write("      }\n")
+                    inp.write("  }\n")
 
                 if self.method == "DFTB":
                     if self.solver:
@@ -763,6 +807,18 @@ class DFTBInput:
                     inp.write(f"      {velocity[1:]}")
                 inp.write("  }\n" "}\n" "\n" f"Hamiltonian = {self.method} {{\n")
                 inp.write(f"  Charge = {charge}\n")
+
+                if spin != 1:
+                    inp.write("  SpinPolarisation = Colinear {\n")
+                    inp.write(f"    UnpairedElectrons = {spin-1}\n")
+                    inp.write("    SpinConstants = {\n")
+                    for atom in atom_types:
+                        inp.write(f"      {atom} = {{\n")
+                        inp.write(
+                            f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
+                        )
+                        inp.write("      }\n")
+                    inp.write("  }\n")
 
                 if self.method == "DFTB":
                     if self.solver:
