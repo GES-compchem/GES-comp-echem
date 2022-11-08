@@ -194,8 +194,8 @@ class DFTBInput:
                     inp.write("  SpinPolarisation = Colinear {\n")
                     inp.write(f"    UnpairedElectrons = {spin-1}\n")
                     inp.write("  }\n")
-                    inp.write("  ShellResolvedSpin = Yes {\n")
                     inp.write("  SpinConstants = {\n")
+                    inp.write("    ShellResolvedSpin = Yes\n")
                     for atom in atom_types:
                         inp.write(f"    {atom} = {{\n")
                         inp.write(
@@ -379,14 +379,15 @@ class DFTBInput:
                 if spin != 1:
                     inp.write("  SpinPolarisation = Colinear {\n")
                     inp.write(f"    UnpairedElectrons = {spin-1}\n")
-                    inp.write("    SpinConstants = {\n")
+                    inp.write("  }\n")
+                    inp.write("  SpinConstants = {\n")
+                    inp.write("    ShellResolvedSpin = Yes\n")
                     for atom in atom_types:
-                        inp.write(f"      {atom} = {{\n")
+                        inp.write(f"    {atom} = {{\n")
                         inp.write(
-                            f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
+                            f"      {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
                         )
-                        inp.write("      }\n")
-                    inp.write("    }\n")
+                        inp.write("    }\n")
                     inp.write("  }\n")
 
                 if self.method == "DFTB":
@@ -594,14 +595,15 @@ class DFTBInput:
                 if spin != 1:
                     inp.write("  SpinPolarisation = Colinear {\n")
                     inp.write(f"    UnpairedElectrons = {spin-1}\n")
-                    inp.write("    SpinConstants = {\n")
+                    inp.write("  }\n")
+                    inp.write("  SpinConstants = {\n")
+                    inp.write("    ShellResolvedSpin = Yes\n")
                     for atom in atom_types:
-                        inp.write(f"      {atom} = {{\n")
+                        inp.write(f"    {atom} = {{\n")
                         inp.write(
-                            f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
+                            f"      {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
                         )
-                        inp.write("      }\n")
-                    inp.write("    }\n")
+                        inp.write("    }\n")
                     inp.write("  }\n")
 
                 if self.method == "DFTB":
@@ -815,14 +817,15 @@ class DFTBInput:
                 if spin != 1:
                     inp.write("  SpinPolarisation = Colinear {\n")
                     inp.write(f"    UnpairedElectrons = {spin-1}\n")
-                    inp.write("    SpinConstants = {\n")
+                    inp.write("  }\n")
+                    inp.write("  SpinConstants = {\n")
+                    inp.write("    ShellResolvedSpin = Yes\n")
                     for atom in atom_types:
-                        inp.write(f"      {atom} = {{\n")
+                        inp.write(f"    {atom} = {{\n")
                         inp.write(
-                            f"        {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
+                            f"      {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
                         )
-                        inp.write("      }\n")
-                    inp.write("    }\n")
+                        inp.write("    }\n")
                     inp.write("  }\n")
 
                 if self.method == "DFTB":
