@@ -51,6 +51,7 @@ class OrcaInput:
         maxcore: int = 350,
         charge: int = None,
         spin: int = None,
+        elden_cube: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -68,6 +69,9 @@ class OrcaInput:
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
             total spin of the molecule. Default is taken from the input molecule.
+        elden_cube: bool, optional
+            if set to True, will save a cube file containing the electronic density (Grid 250),
+            by default False
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -113,6 +117,11 @@ class OrcaInput:
                     inp.write(
                         "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
                     )
+                if elden_cube:
+                    inp.write(
+                        """%plots\n  FormatGaussian_Cube\n  dim1 250\n  dim2 250\n  dim3 250\n  ElDens("eldens.cube");\nend"""
+                    )
+
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
             os.system("$ORCADIR/orca input.inp > output.out")
