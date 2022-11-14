@@ -274,7 +274,7 @@ class DFTBInput:
 
                 mol.write_xyz(f"{mol.name}.xyz")
 
-                newmol = System(f"{mol.name}.xyz", charge, spin, mol.periodic, mol.box_side)
+                newmol = System(f"{mol.name}.xyz", charge, spin, mol.box_side)
 
                 newmol.energies = copy.copy(mol.energies)
 
@@ -665,7 +665,7 @@ class DFTBInput:
             import random, string
 
             if inplace is False:
-                newmol = System("geo_end.xyz", charge, spin, mol.periodic, mol.box_side)
+                newmol = System("geo_end.xyz", charge, spin, mol.box_side)
                 newmol.energies = copy.copy(mol.energies)
 
             else:
@@ -887,7 +887,7 @@ class DFTBInput:
             import random, string
 
             if inplace is False:
-                newmol = System("geo_end.xyz", charge, spin, mol.periodic, mol.box_side)
+                newmol = System("geo_end.xyz", charge, spin, mol.box_side)
                 newmol.energies = copy.copy(mol.energies)
 
             else:
