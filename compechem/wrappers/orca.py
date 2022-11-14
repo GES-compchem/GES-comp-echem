@@ -2,7 +2,7 @@ import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System, Energies
-from compechem.tools import process_output
+from compechem.tools import process_output, process_density
 import logging
 
 logger = logging.getLogger(__name__)
@@ -119,7 +119,7 @@ class OrcaInput:
                     )
                 if elden_cube:
                     inp.write(
-                        """%plots\n  FormatGaussian_Cube\n  dim1 250\n  dim2 250\n  dim3 250\n  ElDens("eldens.cube");\nend"""
+                        """%plots\n  Format Gaussian_Cube\n  dim1 250\n  dim2 250\n  dim3 250\n  ElDens("eldens.cube");\nend"""
                     )
 
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
@@ -156,6 +156,10 @@ class OrcaInput:
                 )
 
             process_output(mol, self.method, "spe", charge, spin)
+
+            if elden_cube:
+                process_density(mol, self.method, "spe", charge, spin)
+
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -169,6 +173,7 @@ class OrcaInput:
         maxcore: int = 350,
         charge: int = None,
         spin: int = None,
+        elden_cube: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -226,6 +231,10 @@ class OrcaInput:
                 )
                 if self.aux_basis:
                     inp.write(f"! RIJCOSX {self.aux_basis}\n")
+                if elden_cube:
+                    inp.write(
+                        """%plots\n  Format Gaussian_Cube\n  dim1 250\n  dim2 250\n  dim3 250\n  ElDens("eldens.cube");\nend"""
+                    )
                 if self.solvation is True:
                     inp.write(
                         "! Opt NumFreq\n"
@@ -271,6 +280,10 @@ class OrcaInput:
                 mol.update_geometry(f"{mol.name}.xyz")
 
             process_output(mol, self.method, "opt", charge, spin)
+
+            if elden_cube:
+                process_density(mol, self.method, "opt", charge, spin)
+
             if remove_tdir:
                 shutil.rmtree(tdir)
 
