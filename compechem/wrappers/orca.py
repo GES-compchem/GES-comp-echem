@@ -1,4 +1,5 @@
 import os, copy, shutil, sh
+from typing import Dict
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System, Energies
@@ -124,7 +125,7 @@ class OrcaInput:
 
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out")
+            os.system("$ORCADIR/orca input.inp > output.out --use-hwthread-cpus")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -156,6 +157,14 @@ class OrcaInput:
                 )
 
             process_output(mol, self.method, "spe", charge, spin)
+
+            os.makedirs("../properties", exist_ok=True)
+            mulliken = parse_mulliken("output.out")
+            
+            filename = f"{mol.name}_{charge}_{spin}_{self.method}_spe.mulliken"
+            with open(os.path.join("../properties", filename), "w") as file:
+                for key, value in mulliken.items():
+                    file.write(f"{key}\t{value}\n")
 
             if elden_cube:
                 process_density(mol, self.method, "spe", charge, spin)
@@ -247,7 +256,7 @@ class OrcaInput:
                     inp.write("! Opt Freq\n")
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out")
+            os.system("$ORCADIR/orca input.inp > output.out --use-hwthread-cpus")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -280,6 +289,14 @@ class OrcaInput:
                 mol.update_geometry(f"{mol.name}.xyz")
 
             process_output(mol, self.method, "opt", charge, spin)
+
+            os.makedirs("../properties", exist_ok=True)
+            mulliken = parse_mulliken("output.out")
+            
+            filename = f"{mol.name}_{charge}_{spin}_{self.method}_opt.mulliken"
+            with open(os.path.join("../properties", filename), "w") as file:
+                for key, value in mulliken.items():
+                    file.write(f"{key}\t{value}\n")
 
             if elden_cube:
                 process_density(mol, self.method, "opt", charge, spin)
@@ -653,3 +670,71 @@ class CCSD(OrcaInput):
             solvent="water",
             optionals="",
         )
+
+
+def parse_mulliken(output: str) -> Dict[int, float]:
+    """
+    Given an ORCA output file the function will extract a dictionary containing the mulliken
+    charges associated to each atom.
+
+    Parameters
+    ----------
+    output: str
+        The path to the ORCA output file.
+
+    Raises
+    ------
+    ValueError
+        Exception raised if the given path to the output file is not valid.
+    
+    Returns
+    -------
+    Dict[int, float]
+        The dictionary containing the index of the atom as an integer key associated to the 
+        correspondent floating point Mulliken charge value.
+    """
+    
+    if os.path.exists(output):
+
+        counter = 0
+        mulliken = {}
+        with open(output, "r") as file:
+
+            # Count the number of "MULLIKEN ATOMIC CHARGES" sections in the file
+            sections = file.read().count("MULLIKEN ATOMIC CHARGES")
+
+            # Trace back to the beginning of the file
+            file.seek(0)
+
+            # Cycle over all the lines of the fuke
+            for line in file:
+
+                # If a "MULLIKEN ATOMIC CHARGES" section is found, increment the counter
+                if "MULLIKEN ATOMIC CHARGES" in line:
+                    counter += 1
+                
+                # If the index of the "MULLIKEN ATOMIC CHARGES" correspond with the last one
+                # proceed with the file parsing else continue
+                if counter == sections:
+                    _ = file.readline() # Skip the table line
+                    
+                    # Iterate over the whole section reading line by line
+                    while True:
+                        buffer = file.readline()
+                        if "Sum of atomic charges" in buffer:
+                            break
+                        else:
+                            data = buffer.replace(":", "").split()
+                            mulliken[int(data[0])] = float(data[2])
+                else:
+                    continue
+                
+                # If break has been called after mulliken has been modified the section end
+                # has been reached, as such, break also from the reading operation
+                if mulliken != {}:
+                    break
+    
+    else:
+        raise ValueError(f"File {output} not found!")
+    
+    return mulliken
