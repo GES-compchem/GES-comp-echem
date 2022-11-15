@@ -11,15 +11,16 @@ class Cube:
     """
     Simple Cube class allowing the loading, saving and manipulation of cube files.
     """
+
     def __init__(self) -> None:
-        self.__natoms: int = None                   # Number of atoms in the molecule
-        self.__origin: np.ndarray = None            # Position of the volumetric data
-        self.__nvoxels: List[int] = []              # Number of voxels for each dimension
-        self.__axis: List[np.ndarray] = []          # List of axis vectors
-        self.__atomic_numbers: List[int] = []       # List of atomic numbers of the atoms
-        self.__atomic_charges: List[float] = []     # List of atomic "charges" of the atoms 
-        self.__coordinates: List[np.ndarray] = []   # List of coordinate vectors of each atom
-        self.__cube: np.ndarray = None              # The volumetric data in cube format
+        self.__natoms: int = None  # Number of atoms in the molecule
+        self.__origin: np.ndarray = None  # Position of the volumetric data
+        self.__nvoxels: List[int] = []  # Number of voxels for each dimension
+        self.__axis: List[np.ndarray] = []  # List of axis vectors
+        self.__atomic_numbers: List[int] = []  # List of atomic numbers of the atoms
+        self.__atomic_charges: List[float] = []  # List of atomic "charges" of the atoms
+        self.__coordinates: List[np.ndarray] = []  # List of coordinate vectors of each atom
+        self.__cube: np.ndarray = None  # The volumetric data in cube format
 
     @classmethod
     def from_file(cls, path: str) -> Cube:
@@ -30,17 +31,17 @@ class Cube:
         ----------
         path: str
             A string containing a valid path to a Gaussian cube file.
-        
+
         Raises
         ------
         ValueError
             Exception raised when the path does not point to a valid file.
-        
+
         Returns
         -------
         Cube
             An instance of the `Cube` class containing all the data loaded form the indicated
-            path.            
+            path.
         """
         if not isfile(path):
             raise ValueError(f"The path '{path}' does not point to a valid file")
@@ -88,7 +89,7 @@ class Cube:
             obj.__cube = np.array(x)
 
         return obj
-    
+
     def save(self, path: str, comment: str = "") -> None:
         """
         Class method capable of saving a Cube object in a Gaussian formatted cube file
@@ -96,7 +97,7 @@ class Cube:
         Parameters
         ----------
         path: str
-            A string containing a valid path to the destination file.         
+            A string containing a valid path to the destination file.
         """
         with open(path, "w") as file:
 
@@ -130,10 +131,9 @@ class Cube:
                 for j in range(self.__nvoxels[1]):
                     for k in range(self.__nvoxels[2]):
                         file.write(f"\t{self.__cube[i][j][k]:.6e}")
-                        if k%6 == 5:
+                        if k % 6 == 5:
                             file.write("\n")
                     file.write("\n")
-                        
 
     def __validate(self, other: Cube, rtol: float = 1e-4) -> None:
         """
@@ -147,7 +147,7 @@ class Cube:
             The cube provided for the operation
         rtol: float
             The relative tollerance to consider two floating point number equivalents.
-        
+
         Raises
         ------
         ValueError
@@ -175,7 +175,7 @@ class Cube:
         ----------
         other: Cube
             the Cube to sum
-        
+
         Returns
         -------
         Cube
@@ -194,7 +194,7 @@ class Cube:
         ----------
         other: Cube
             the Cube to subtract
-        
+
         Returns
         -------
         Cube
@@ -204,7 +204,7 @@ class Cube:
         obj = deepcopy(self)
         obj.__cube -= other.__cube
         return obj
-    
+
     def __mul__(self, other: Cube) -> Cube:
         """
         Overload of the multiplication (*) operator to multiply two compatible Cube objects
@@ -213,7 +213,7 @@ class Cube:
         ----------
         other: Cube
             the Cube to multiply
-        
+
         Returns
         -------
         Cube
@@ -223,7 +223,7 @@ class Cube:
         self.__validate(other)
         obj.__cube *= other.__cube
         return obj
-    
+
     def __div__(self, other: Cube) -> Cube:
         """
         Overload of the division (/) operator to divide two compatible Cube objects
@@ -232,7 +232,7 @@ class Cube:
         ----------
         other: Cube
             the Cube to be used as a divider
-        
+
         Returns
         -------
         Cube
@@ -242,7 +242,7 @@ class Cube:
         self.__validate(other)
         obj.__cube /= other.__cube
         return obj
-    
+
     def scale(self, factor: float) -> Cube:
         """
         Returns a version of the cube multiplied by a scale factor
@@ -251,16 +251,16 @@ class Cube:
         ----------
         factor: float
             The scale factor to be applied to the cube
-        
+
         Returns
         -------
         Cube
-            
+
         """
         obj = deepcopy(self)
         obj.__cube *= factor
         return obj
-    
+
     @property
     def cube(self) -> np.ndarray:
         """
