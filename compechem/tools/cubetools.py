@@ -135,7 +135,7 @@ class Cube:
                             file.write("\n")
                     file.write("\n")
 
-    def __validate(self, other: Cube, rtol: float = 1e-4) -> None:
+    def __validate(self, other: Cube, rtol: float = 1e-2) -> None:
         """
         Simple validation function to compare the Cube objects before performing an operation.
         Given an input cube the functions compares the atom list and grid parameters to ensure
