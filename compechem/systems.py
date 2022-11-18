@@ -320,8 +320,12 @@ class System:
                     self.atomcount = int(line)
                 last_geom_line = numlines - (self.atomcount + 2)
                 if linenum > last_geom_line + 1 and linenum < numlines and len(line) != 0:
+                    try:
+                        atom = atoms_dict[int(line.split()[0])]
+                    except:
+                        atom = line.split()[0]
                     self.geometry.append(
-                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
+                        f"{atom}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
                     )
                     if len(line.split()) > 4:
                         self.velocities.append(
