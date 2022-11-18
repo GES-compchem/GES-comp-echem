@@ -10,9 +10,8 @@ from compechem.tools.cubetools import Cube
 
 def compute_fukui_densities(
     molecule: System,
+    orca: OrcaInput,
     spins_states: Union[None, List[int]] = None,
-    method: str = "B3LYP",
-    basis_set: str = "def2-TZVP",
     optimize: bool = False,
 ) -> None:
     """
@@ -24,6 +23,8 @@ def compute_fukui_densities(
     molecule: System
         The System object containing the geometry of the selected molecule (if the geometry
         has not been optimized, please enable the optimize option)
+    orca: OrcaInput
+        The orca input wrapper object that defines the protocol to be used in the calculation.
     spin_states: Union[None, List[int]]
         If set to None, when adding or subtracting electrons will automatically switch the
         spin state from singlet to doublet and vice versa (Maximum one unpaired electrons).
@@ -31,23 +32,16 @@ def compute_fukui_densities(
         user specified values. The order of the spin multiplicity values is: molecule with
         one electron added (-1), the molecule as it is (0) and the molecule  with one of its
         electrons removed (+1).
-    method: str
-        The level of theory at which the calculations should be performed
-    basis_set: str
-        The basis-set to be used in the computation
     optimize: bool
         If set to True, it will run the optimization of the origin system at the same level
         of theory specified by the method option.
     """
-    # Define an Orca interface using the given method inputs
-    orca = OrcaInput(method=method, basis_set=basis_set)
-
     # Make a copy of the oriCompute a single point for the original molecule
     origin = deepcopy(molecule)
     if optimize:
-        orca.opt(origin, elden_cube=True, inplace=True)
+        orca.opt(origin, save_cubes=True, inplace=True)
     else:
-        orca.spe(origin, elden_cube=True, inplace=True)
+        orca.spe(origin, save_cubes=True, inplace=True)
 
     # Compute a single point for the molecule with the addition of one electron.
     cation = deepcopy(origin)
@@ -58,7 +52,7 @@ def compute_fukui_densities(
     else:
         cation.spin = 1 if origin.spin == 2 else 2
 
-    orca.spe(cation, elden_cube=True, inplace=True)
+    orca.spe(cation, save_cubes=True, inplace=True)
 
     # Compute a single point for the molecule with the subtraction of one electron.
     anion = deepcopy(origin)
@@ -69,7 +63,7 @@ def compute_fukui_densities(
     else:
         anion.spin = 1 if origin.spin == 2 else 2
 
-    orca.spe(anion, elden_cube=True, inplace=True)
+    orca.spe(anion, save_cubes=True, inplace=True)
 
     # Load cubes from the output_densities folder
     cubes: Dict[int, Cube] = {}
