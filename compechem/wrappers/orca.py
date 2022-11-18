@@ -16,8 +16,7 @@ class OrcaInput:
         method: str = "PBE",
         basis_set: str = "def2-TZVP",
         aux_basis: str = "def2/J",
-        solvation: bool = False,
-        solvent: str = "water",
+        solvent: str = None,
         optionals: str = "",
     ) -> None:
         """
@@ -29,10 +28,8 @@ class OrcaInput:
             basis set, by default "def2-TZVP"
         aux_basis : str, optional
             auxiliary basis set for RIJCOSX, by default "def2/J"
-        solvation : bool, optional
-            CPCM(SMD) implicit solvation model, by default False
         solvent : str, optional
-            SMD solvent, by default "water"
+            SMD solvent, by default None
         optionals : str, optional
             optional keywords, by default ""
         """
@@ -40,7 +37,6 @@ class OrcaInput:
         self.method = method
         self.basis_set = basis_set
         self.aux_basis = aux_basis
-        self.solvation = solvation
         self.solvent = solvent
         self.optionals = optionals
 
@@ -109,7 +105,7 @@ class OrcaInput:
                 )
                 if self.aux_basis:
                     inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvation is True:
+                if self.solvent:
                     inp.write(
                         "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
                     )
@@ -217,7 +213,7 @@ class OrcaInput:
                 )
                 if self.aux_basis:
                     inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvation is True:
+                if self.solvent:
                     inp.write(
                         "! Opt NumFreq\n"
                         "%CPCM\n"
@@ -333,7 +329,7 @@ class OrcaInput:
                 )
                 if self.aux_basis:
                     inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvation is True:
+                if self.solvent:
                     inp.write(
                         "! NumFreq\n"
                         "%CPCM\n"
@@ -446,7 +442,7 @@ class OrcaInput:
                 )
                 if self.aux_basis:
                     inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvation is True:
+                if self.solvent:
                     inp.write(
                         "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
                     )
@@ -558,7 +554,7 @@ class OrcaInput:
                 if self.aux_basis:
                     inp.write(f"! RIJCOSX {self.aux_basis}\n")
                 inp.write("! Opt\n")
-                if self.solvation is True:
+                if self.solvent:
                     inp.write(
                         "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
                     )
@@ -603,7 +599,6 @@ class M06(OrcaInput):
             method="M062X",
             basis_set="def2-TZVP",
             aux_basis="def2/J",
-            solvation=True,
             solvent="water",
             optionals="",
         )
@@ -615,7 +610,6 @@ class r2SCAN(OrcaInput):
             method="r2SCAN-3c",
             basis_set="",
             aux_basis=None,
-            solvation=True,
             solvent="water",
             optionals="",
         )
@@ -627,7 +621,6 @@ class CCSD(OrcaInput):
             method="DLPNO-CCSD",
             basis_set="Extrapolate(2/3,ANO)",
             aux_basis="AutoAux",
-            solvation=True,
             solvent="water",
             optionals="",
         )
