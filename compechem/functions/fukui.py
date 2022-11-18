@@ -16,8 +16,8 @@ def compute_fukui_densities(
     optimize: bool = False,
 ) -> None:
     """
-    Computes the Fukui f+, f- and f0 functions starting from a given input molecule. The 
-    functions are saved in Gaussian cube format and stored in the `output_densities` folder.    
+    Computes the Fukui f+, f- and f0 functions starting from a given input molecule. The
+    functions are saved in Gaussian cube format and stored in the `output_densities` folder.
 
     Parameters
     ----------
@@ -25,9 +25,9 @@ def compute_fukui_densities(
         The System object containing the geometry of the selected molecule (if the geometry
         has not been optimized, please enable the optimize option)
     spin_states: Union[None, List[int]]
-        If set to None, when adding or subtracting electrons will automatically switch the 
+        If set to None, when adding or subtracting electrons will automatically switch the
         spin state from singlet to doublet and vice versa (Maximum one unpaired electrons).
-        If manually set to `List[int]` will force the spin multeplicities according to the 
+        If manually set to `List[int]` will force the spin multeplicities according to the
         user specified values. The order of the spin multiplicity values is: molecule with
         one electron added (-1), the molecule as it is (0) and the molecule  with one of its
         electrons removed (+1).
@@ -36,7 +36,7 @@ def compute_fukui_densities(
     basis_set: str
         The basis-set to be used in the computation
     optimize: bool
-        If set to True, it will run the optimization of the origin system at the same level 
+        If set to True, it will run the optimization of the origin system at the same level
         of theory specified by the method option.
     """
     # Define an Orca interface using the given method inputs
@@ -82,16 +82,21 @@ def compute_fukui_densities(
     # Check if all the densities have been loaded correctly
     if len(cubes) != 3:
         raise RuntimeError(f"Three cube files expected, {len(cubes)} found.")
-    
+
     # Compute the f+ Fukui function
-    f_plus = cubes[cation.charge] - cubes[origin.charge]
-    f_plus.save(join("./output_densities", "Fukui_plus.cube"), comment="Fukui f+")
+    f_plus = cubes[anion.charge] - cubes[origin.charge]
+    f_plus.save(
+        join("./output_densities", f"{molecule.name}_Fukui_plus.cube"), comment="Fukui f+"
+    )
 
     # Compute the f- Fukui function
-    f_minus = cubes[origin.charge] - cubes[anion.charge]
-    f_minus.save(join("./output_densities", "Fukui_minus.cube"), comment="Fukui f-")
+    f_minus = cubes[origin.charge] - cubes[cation.charge]
+    f_minus.save(
+        join("./output_densities", f"{molecule.name}_Fukui_minus.cube"), comment="Fukui f-"
+    )
 
     # Compute the f0 Fukui function
-    f_zero = cubes[cation.charge] - cubes[anion.charge]
-    f_zero = f_zero.scale(0.5)
-    f_zero.save(join("./output_densities", "Fukui_zero.cube"), comment="Fukui f0")
+    f_zero = (cubes[anion.charge] - cubes[cation.charge]).scale(0.5)
+    f_zero.save(
+        join("./output_densities", f"{molecule.name}_Fukui_zero.cube"), comment="Fukui f0"
+    )

@@ -1,5 +1,5 @@
 import os, copy, shutil, sh
-from typing import Dict
+from typing import Dict, Tuple
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System, Energies
@@ -52,7 +52,7 @@ class OrcaInput:
         maxcore: int = 350,
         charge: int = None,
         spin: int = None,
-        elden_cube: bool = False,
+        save_cubes: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -70,9 +70,9 @@ class OrcaInput:
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
             total spin of the molecule. Default is taken from the input molecule.
-        elden_cube: bool, optional
-            if set to True, will save a cube file containing the electronic density (Grid 250),
-            by default False
+        save_cubes: bool, optional
+            if set to True, will save a cube file containing the electronic density (Grid 250)
+            and the spin density (Grid 250), by default False.
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -118,19 +118,26 @@ class OrcaInput:
                     inp.write(
                         "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
                     )
-                if elden_cube:
-                    inp.write(
-                        """%plots\n  Format Gaussian_Cube\n  dim1 250\n  dim2 250\n  dim3 250\n  ElDens("eldens.cube");\nend"""
-                    )
+                if save_cubes:
+                    inp.write("%plots\n")
+                    inp.write("  Format Gaussian_Cube\n")
+                    inp.write("  dim1 250\n")
+                    inp.write("  dim2 250\n")
+                    inp.write("  dim3 250\n")
+                    inp.write('  ElDens("eldens.cube");\n')
+                    inp.write('  SpinDens("spindens.cube");\n')
+                    inp.write("end")
 
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out --use-hwthread-cpus")
+            os.system("$ORCADIR/orca input.inp > output.out")
 
             with open("output.out", "r") as out:
                 for line in out:
                     if "FINAL SINGLE POINT ENERGY" in line:
                         electronic_energy = float(line.split()[-1])
+
+            mulliken_atomic_charges, mulliken_spin_populations = parse_mulliken("output.out")
 
             vibronic_energy = None
 
@@ -149,6 +156,9 @@ class OrcaInput:
                     vibronic=vibronic_energy,
                 )
 
+                newmol.mulliken_atomic_charges = mulliken_atomic_charges
+                newmol.mulliken_spin_populations = mulliken_spin_populations
+
             else:
                 mol.energies[self.method] = Energies(
                     method=self.method,
@@ -156,17 +166,12 @@ class OrcaInput:
                     vibronic=vibronic_energy,
                 )
 
+                mol.mulliken_atomic_charges = mulliken_atomic_charges
+                mol.mulliken_spin_populations = mulliken_spin_populations
+
             process_output(mol, self.method, "spe", charge, spin)
 
-            os.makedirs("../properties", exist_ok=True)
-            mulliken = parse_mulliken("output.out")
-            
-            filename = f"{mol.name}_{charge}_{spin}_{self.method}_spe.mulliken"
-            with open(os.path.join("../properties", filename), "w") as file:
-                for key, value in mulliken.items():
-                    file.write(f"{key}\t{value}\n")
-
-            if elden_cube:
+            if save_cubes:
                 process_density(mol, self.method, "spe", charge, spin)
 
             if remove_tdir:
@@ -182,7 +187,7 @@ class OrcaInput:
         maxcore: int = 350,
         charge: int = None,
         spin: int = None,
-        elden_cube: bool = False,
+        save_cubes: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -200,6 +205,9 @@ class OrcaInput:
             total charge of the molecule. Default is taken from the input molecule.
         spin : int, optional
             total spin of the molecule. Default is taken from the input molecule.
+        save_cubes: bool, optional
+            if set to True, will save a cube file containing the electronic density (Grid 250)
+            and the spin density (Grid 250), by default False.
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -240,10 +248,15 @@ class OrcaInput:
                 )
                 if self.aux_basis:
                     inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if elden_cube:
-                    inp.write(
-                        """%plots\n  Format Gaussian_Cube\n  dim1 250\n  dim2 250\n  dim3 250\n  ElDens("eldens.cube");\nend"""
-                    )
+                if save_cubes:
+                    inp.write("%plots\n")
+                    inp.write("  Format Gaussian_Cube\n")
+                    inp.write("  dim1 250\n")
+                    inp.write("  dim2 250\n")
+                    inp.write("  dim3 250\n")
+                    inp.write('  ElDens("eldens.cube");\n')
+                    inp.write('  SpinDens("spindens.cube");\n')
+                    inp.write("end")
                 if self.solvation is True:
                     inp.write(
                         "! Opt NumFreq\n"
@@ -256,7 +269,7 @@ class OrcaInput:
                     inp.write("! Opt Freq\n")
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out --use-hwthread-cpus")
+            os.system("$ORCADIR/orca input.inp > output.out")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -264,6 +277,8 @@ class OrcaInput:
                         electronic_energy = float(line.split()[-1])
                     if "G-E(el)" in line:
                         vibronic_energy = float(line.split()[-4])
+
+            mulliken_atomic_charges, mulliken_spin_populations = parse_mulliken("output.out")
 
             if inplace is False:
 
@@ -278,6 +293,8 @@ class OrcaInput:
                 )
 
                 newmol.update_geometry(f"{mol.name}.xyz")
+                newmol.mulliken_atomic_charges = mulliken_atomic_charges
+                newmol.mulliken_spin_populations = mulliken_spin_populations
 
             else:
                 mol.energies[self.method] = Energies(
@@ -287,18 +304,12 @@ class OrcaInput:
                 )
 
                 mol.update_geometry(f"{mol.name}.xyz")
+                mol.mulliken_atomic_charges = mulliken_atomic_charges
+                mol.mulliken_spin_populations = mulliken_spin_populations
 
             process_output(mol, self.method, "opt", charge, spin)
 
-            os.makedirs("../properties", exist_ok=True)
-            mulliken = parse_mulliken("output.out")
-            
-            filename = f"{mol.name}_{charge}_{spin}_{self.method}_opt.mulliken"
-            with open(os.path.join("../properties", filename), "w") as file:
-                for key, value in mulliken.items():
-                    file.write(f"{key}\t{value}\n")
-
-            if elden_cube:
+            if save_cubes:
                 process_density(mol, self.method, "opt", charge, spin)
 
             if remove_tdir:
@@ -672,7 +683,7 @@ class CCSD(OrcaInput):
         )
 
 
-def parse_mulliken(output: str) -> Dict[int, float]:
+def parse_mulliken(output: str) -> Tuple[Dict[int, float], Dict[int, float]]:
     """
     Given an ORCA output file the function will extract a dictionary containing the mulliken
     charges associated to each atom.
@@ -686,18 +697,22 @@ def parse_mulliken(output: str) -> Dict[int, float]:
     ------
     ValueError
         Exception raised if the given path to the output file is not valid.
-    
+
     Returns
     -------
     Dict[int, float]
-        The dictionary containing the index of the atom as an integer key associated to the 
-        correspondent floating point Mulliken charge value.
+        The dictionary containing the index of the atom as an integer key associated to the
+        correspondent floating point Mulliken atomic charge value.
+    Dict[int, float]
+        The dictionary containing the index of the atom as an integer key associated to the
+        correspondent floating point Mulliken atomic spin population value.
     """
-    
+
     if os.path.exists(output):
 
         counter = 0
-        mulliken = {}
+        charges, spins = {}, {}
+        spin_available = False
         with open(output, "r") as file:
 
             # Count the number of "MULLIKEN ATOMIC CHARGES" sections in the file
@@ -712,12 +727,17 @@ def parse_mulliken(output: str) -> Dict[int, float]:
                 # If a "MULLIKEN ATOMIC CHARGES" section is found, increment the counter
                 if "MULLIKEN ATOMIC CHARGES" in line:
                     counter += 1
-                
+
                 # If the index of the "MULLIKEN ATOMIC CHARGES" correspond with the last one
                 # proceed with the file parsing else continue
                 if counter == sections:
-                    _ = file.readline() # Skip the table line
-                    
+
+                    # Check if the section contains also the "SPIN POPULATIONS" column
+                    if "SPIN POPULATIONS" in line:
+                        spin_available = True
+
+                    _ = file.readline()  # Skip the table line
+
                     # Iterate over the whole section reading line by line
                     while True:
                         buffer = file.readline()
@@ -725,16 +745,21 @@ def parse_mulliken(output: str) -> Dict[int, float]:
                             break
                         else:
                             data = buffer.replace(":", "").split()
-                            mulliken[int(data[0])] = float(data[2])
+                            charges[int(data[0])] = float(data[2])
+
+                            if spin_available:
+                                spins[int(data[0])] = float(data[3])
+                            else:
+                                spins[int(data[0])] = 0
                 else:
                     continue
-                
+
                 # If break has been called after mulliken has been modified the section end
                 # has been reached, as such, break also from the reading operation
-                if mulliken != {}:
+                if charges != {}:
                     break
-    
+
     else:
         raise ValueError(f"File {output} not found!")
-    
-    return mulliken
+
+    return charges, spins

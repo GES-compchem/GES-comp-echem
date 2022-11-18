@@ -103,6 +103,8 @@ class System:
             self.periodic = False
 
         self.velocities: list = []
+        self.mulliken_atomic_charges: dict = []
+        self.mulliken_spin_populations: dict = []
 
         self.flags: list = []
 
