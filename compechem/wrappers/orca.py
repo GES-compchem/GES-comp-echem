@@ -20,6 +20,8 @@ class OrcaInput:
         solvation: bool = False,
         solvent: str = "water",
         optionals: str = "",
+        MPI_FLAGS: str = "",
+        ORCADIR: str = "$ORCADIR"
     ) -> None:
         """
         Parameters
@@ -36,6 +38,12 @@ class OrcaInput:
             SMD solvent, by default "water"
         optionals : str, optional
             optional keywords, by default ""
+        MPI_FLAGS: str, optional
+            string containing optional flags to be passed to MPI when launching an ora job.
+            (e.g. `--bind-to-none` or `--use-hwthread-cpus`), by default ""
+        ORCADIR: str, optional
+            the path or environment variable containing the path to the ORCA folder, by 
+            default "$ORCADIR"
         """
 
         self.method = method
@@ -44,6 +52,8 @@ class OrcaInput:
         self.solvation = solvation
         self.solvent = solvent
         self.optionals = optionals
+        self.__MPI_FLAGS = MPI_FLAGS
+        self.__ORCADIR = ORCADIR
 
     def spe(
         self,
@@ -130,7 +140,7 @@ class OrcaInput:
 
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -269,7 +279,7 @@ class OrcaInput:
                     inp.write("! Opt Freq\n")
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -395,7 +405,7 @@ class OrcaInput:
                     inp.write("! Freq\n")
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -503,7 +513,7 @@ class OrcaInput:
 
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -620,7 +630,7 @@ class OrcaInput:
                 inp.write("end\n")
                 inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
 
-            os.system("$ORCADIR/orca input.inp > output.out")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
             xyz_list = [
                 xyz
