@@ -156,8 +156,8 @@ def process_density(
     charge: int = None,
     spin: int = None,
 ) -> None:
-    """Processes the output eldens.cube files derived form a calculation by copying them to 
-    a safe directory in the parent directory tree.
+    """Processes the output eldens.cube and spindens.cube files derived form a calculation 
+    by copying them to a safe directory in the parent directory tree.
 
     Parameters
     ----------
@@ -184,6 +184,13 @@ def process_density(
             "eldens.cube",
             f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.eldens.cube",
         )
+    
+    if os.path.exists("spindens.cube"):
+        shutil.copy(
+            "spindens.cube",
+            f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.spindens.cube",
+        )
+    
 
 
 def save_dftb_trajectory(output_prefix):
