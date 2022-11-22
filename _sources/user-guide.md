@@ -1,14 +1,14 @@
 # User guide
 
-The `GES-comp-echem` library is constructed based on the following submodules:
+This user guide is divided into the following sections:
 
-* [`compechem.systems`](Guide-systems): classes for storing informations about the system under study, such as geometry, number of atoms, calculated energies, charge, spin, etc.
+* [Defining molecular mystems](Guide-systems): how to define the molecular systems on which the calculations are performed, based on the available options provided by the `compechem.systems` submodule.
 
+* [Setting up calculations](Guide-setup): how to set up the available `compechem.wrappers` for running your calculations. This involves deciding the program you want to use, the level of theory, and the simulation parameters.
 
-* [`compechem.wrappers`](Guide-wrappers): wrappers for interfacing with external software, such as **Orca**, **DFTB+**, **CREST**, etc.
+* [Running calculations](Guide-run): how to run different types of calculations (single point energies, geometry optimisations, molecular dynamics, etc.) using the built-in methods available in the various `wrappers`.
 
-* [`compechem.functions`](Guide-functions): mid-level algorithms for manually calculating specific physical observables, such as pKa or redox potentials. The user must provide all the necessary species for the calculation, for example the specific protonated and deprotonated species in a pKa calculation.
+* [Analysing results](Guide-functions): how to use the output of your calculations to obtain physical observables such as pKa or redox potentials
 
-* [`compechem.algorithms`](Guide-algorithms): high-level algorithms for automatically calculating specific physical observables, considering all the "non-trivial" complications of the case. For example, taking into account protonation states and PCET mechanisms in the calculation of the redox potential. The user only needs to provide a "generic" state of the system of interest, and the algorithm should find the exact species involved in the calculation (e.g., the correct tautomer/conformer at the correct protonation state at a given pH)
+* [Useful tools](Guide-tools): a collection of useful tools for advanced users
 
-* [`compechem.tools`](Guide-tools): various useful functions called internally throughout the code. The user should generally not need to use this module during normal operation.

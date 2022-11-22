@@ -71,3 +71,10 @@
 .. autofunction:: compechem.tools.save_dftb_trajectory
 ```
 
+---
+
+## `reorder_energies` function
+
+```{eval-rst}
+.. autofunction:: compechem.tools.reorder_energies
+```

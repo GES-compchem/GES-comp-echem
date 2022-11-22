@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>compechem.wrappers submodule &#8212; GES-compechem User Guide</title>
+    <title>Setting up calculations &#8212; GES-compechem User Guide</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -52,8 +52,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="compechem.wrappers.xtb submodule" href="wrappers/xtb.html" />
-    <link rel="prev" title="compechem.systems submodule" href="systems.html" />
+    <link rel="next" title="Running calculations" href="run.html" />
+    <link rel="prev" title="Defining molecular systems" href="systems.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -126,109 +126,27 @@ const thebe_selector_output = ".output, .cell_output"
   <ul class="current">
    <li class="toctree-l2">
     <a class="reference internal" href="systems.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.systems
-      </span>
-     </code>
-     submodule
+     Defining molecular systems
     </a>
    </li>
-   <li class="toctree-l2 current active has-children">
+   <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.wrappers
-      </span>
-     </code>
-     submodule
+     Setting up calculations
     </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-    <label for="toctree-checkbox-2">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/xtb.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.xtb
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/crest.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.crest
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/orca.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.orca
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/dftbplus.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.dftbplus
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/packmol.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.packmol
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="run.html">
+     Running calculations
+    </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="functions.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.functions
-      </span>
-     </code>
-     submodule
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="algorithms.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.algorithms
-      </span>
-     </code>
-     submodule
+     Analysing results
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="tools.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.tools
-      </span>
-     </code>
-     submodule
+     Useful tools
     </a>
    </li>
   </ul>
@@ -237,8 +155,8 @@ const thebe_selector_output = ".output, .cell_output"
   <a class="reference internal" href="../api.html">
    API Documentation
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -262,8 +180,8 @@ const thebe_selector_output = ".output, .cell_output"
      </code>
      sub-module
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -330,33 +248,6 @@ const thebe_selector_output = ".output, .cell_output"
      sub-module
     </a>
    </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../API/algorithms.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.algorithms
-      </span>
-     </code>
-     sub-module
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../API/algorithms/oneeloxidation.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.algorithms.oneeloxidation
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-    </ul>
-   </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../API/tools.html">
      <code class="docutils literal notranslate">
@@ -368,6 +259,11 @@ const thebe_selector_output = ".output, .cell_output"
     </a>
    </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../contributor-guide.html">
+   Contributor’s guide
+  </a>
  </li>
 </ul>
 
@@ -459,7 +355,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2FGuide/wrappers.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/GES-lbabetto/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2FGuide/setup.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -487,7 +383,7 @@ title="Open an issue"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="../_sources/Guide/wrappers.md"
+        <a href="../_sources/Guide/setup.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -536,7 +432,7 @@ title="Print to PDF"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>compechem.wrappers submodule</h1>
+                <h1>Setting up calculations</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -548,21 +444,43 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="compechem-wrappers-submodule">
-<span id="guide-wrappers"></span><h1><code class="docutils literal notranslate"><span class="pre">compechem.wrappers</span></code> submodule<a class="headerlink" href="#compechem-wrappers-submodule" title="Permalink to this headline">#</a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">wrappers</span></code> submodule contains a series of classes and functions for interfacing with external code. The currently supported programs are:</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="setting-up-calculations">
+<span id="guide-setup"></span><h1>Setting up calculations<a class="headerlink" href="#setting-up-calculations" title="Permalink to this headline">#</a></h1>
+<p>After creating a <code class="docutils literal notranslate"><span class="pre">System</span></code>, you need to set up the calculation to which you wish to subject it. This is done with the <code class="docutils literal notranslate"><span class="pre">compechem.wrappers</span></code> submodule.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">compechem.wrappers</span></code> submodule contains a series of program-specific submodules for interfacing with external code. The currently supported programs are:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="wrappers/xtb.html#guide-wrappers-xtb"><span class="std std-ref">xTB</span></a></p></li>
-<li><p><a class="reference internal" href="wrappers/crest.html#guide-wrappers-crest"><span class="std std-ref">CREST</span></a></p></li>
-<li><p><a class="reference internal" href="wrappers/orca.html#guide-wrappers-orca"><span class="std std-ref">Orca</span></a></p></li>
-<li><p><a class="reference internal" href="wrappers/dftbplus.html#guide-wrappers-dftbplus"><span class="std std-ref">DFTB+</span></a></p></li>
-<li><p><a class="reference internal" href="wrappers/packmol.html#guide-wrappers-packmol"><span class="std std-ref">Packmol</span></a></p></li>
+<li><p><a class="reference external" href="https://github.com/grimme-lab/xtb">xTB</a></p></li>
+<li><p><a class="reference external" href="https://orcaforum.kofo.mpg.de/index.php?sid=3c6c78cae3dd0cfffa26a293953422e3">Orca</a></p></li>
+<li><p><a class="reference external" href="https://dftbplus.org/">DFTB+</a></p></li>
+<li><p><a class="reference external" href="http://www.ks.uiuc.edu/Research/namd/">NAMD</a> (coming soon!)</p></li>
 </ul>
 <div class="warning admonition">
 <p class="admonition-title">Note</p>
-<p>To function with the library, the external programs need to be already installed and available to the system from command line.</p>
+<p>To function with the library, the external programs need to be already installed and available to the system from command line!</p>
 </div>
-<div class="toctree-wrapper compound">
+<p>These general-purpose wrappers are implemented as <code class="docutils literal notranslate"><span class="pre">&lt;Program&gt;Input</span></code> classes in the corresponding submodules. To initialise a wrapper, you need to import it from its submodule and then create an instance of it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem.wrappers.xtb</span> <span class="kn">import</span> <span class="n">XtbInput</span>
+<span class="kn">from</span> <span class="nn">compechem.wrappers.dftbplus</span> <span class="kn">import</span> <span class="n">DFTBInput</span>
+<span class="kn">from</span> <span class="nn">compechem.wrappers.orca</span> <span class="kn">import</span> <span class="n">OrcaInput</span>
+
+<span class="n">xtb</span> <span class="o">=</span> <span class="n">XtbInput</span><span class="p">()</span>
+<span class="n">dftb</span> <span class="o">=</span> <span class="n">DFTBInput</span><span class="p">()</span>
+<span class="n">orca</span> <span class="o">=</span> <span class="n">OrcaInput</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If you do not specify anything, some default options are chosen automatically for level of theory, basis set, solvation, etc. Please refer to the <a class="reference internal" href="../API/wrappers.html#api-wrappers"><span class="std std-ref">API</span></a> section for a complete list of options and default values.</p>
+<p>As an example, let us set up a calculation with Orca, using the B3LYP functional, with the def2-TZVP basis set and def2/J auxiliary basis set, using the SMD implicit solvation model for water, and including Grimme’s D3BJ dispersion corrections:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem.wrappers.orca</span> <span class="kn">import</span> <span class="n">OrcaInput</span>
+
+<span class="n">b3lyp</span> <span class="o">=</span> <span class="n">OrcaInput</span><span class="p">(</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;B3LYP&quot;</span><span class="p">,</span>
+    <span class="n">basis_set</span> <span class="o">=</span> <span class="s2">&quot;def2-TZVP&quot;</span><span class="p">,</span>
+    <span class="n">aux_basis</span> <span class="o">=</span> <span class="s2">&quot;def2/J&quot;</span><span class="p">,</span>
+    <span class="n">solvation</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">solvent</span> <span class="o">=</span> <span class="s2">&quot;water&quot;</span><span class="p">,</span>
+    <span class="n">optionals</span> <span class="o">=</span> <span class="s2">&quot;D3BJ&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
 </div>
 </section>
 
@@ -597,13 +515,13 @@ title="Print to PDF"
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.systems</span></code> submodule</p>
+            <p class="prev-next-title">Defining molecular systems</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="wrappers/xtb.html" title="next page">
+    <a class='right-next' id="next-link" href="run.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.wrappers.xtb</span></code> submodule</p>
+        <p class="prev-next-title">Running calculations</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

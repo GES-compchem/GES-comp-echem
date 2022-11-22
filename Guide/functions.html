@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>compechem.functions submodule &#8212; GES-compechem User Guide</title>
+    <title>Analysing results &#8212; GES-compechem User Guide</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -50,10 +50,12 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="compechem.algorithms submodule" href="algorithms.html" />
-    <link rel="prev" title="compechem.wrappers.packmol submodule" href="wrappers/packmol.html" />
+    <link rel="next" title="Useful tools" href="tools.html" />
+    <link rel="prev" title="Running calculations" href="run.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -126,109 +128,27 @@ const thebe_selector_output = ".output, .cell_output"
   <ul class="current">
    <li class="toctree-l2">
     <a class="reference internal" href="systems.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.systems
-      </span>
-     </code>
-     submodule
-    </a>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="wrappers.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.wrappers
-      </span>
-     </code>
-     submodule
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-    <label for="toctree-checkbox-2">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/xtb.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.xtb
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/crest.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.crest
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/orca.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.orca
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/dftbplus.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.dftbplus
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="wrappers/packmol.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.packmol
-        </span>
-       </code>
-       submodule
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.functions
-      </span>
-     </code>
-     submodule
+     Defining molecular systems
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="algorithms.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.algorithms
-      </span>
-     </code>
-     submodule
+    <a class="reference internal" href="setup.html">
+     Setting up calculations
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="run.html">
+     Running calculations
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     Analysing results
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="tools.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.tools
-      </span>
-     </code>
-     submodule
+     Useful tools
     </a>
    </li>
   </ul>
@@ -237,8 +157,8 @@ const thebe_selector_output = ".output, .cell_output"
   <a class="reference internal" href="../api.html">
    API Documentation
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -262,8 +182,8 @@ const thebe_selector_output = ".output, .cell_output"
      </code>
      sub-module
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -330,33 +250,6 @@ const thebe_selector_output = ".output, .cell_output"
      sub-module
     </a>
    </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../API/algorithms.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       compechem.algorithms
-      </span>
-     </code>
-     sub-module
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../API/algorithms/oneeloxidation.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.algorithms.oneeloxidation
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-    </ul>
-   </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../API/tools.html">
      <code class="docutils literal notranslate">
@@ -368,6 +261,11 @@ const thebe_selector_output = ".output, .cell_output"
     </a>
    </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../contributor-guide.html">
+   Contributor’s guide
+  </a>
  </li>
 </ul>
 
@@ -547,30 +445,13 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#calculate-pka">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     calculate_pka()
-    </span>
-   </code>
+  <a class="reference internal nav-link" href="#pka">
+   pKa
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#calculate-potential">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     calculate_potential()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#reorder-energies">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     reorder_energies()
-    </span>
-   </code>
+  <a class="reference internal nav-link" href="#el-redox-potential">
+   1-el redox potential
   </a>
  </li>
 </ul>
@@ -582,7 +463,7 @@ title="Print to PDF"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>compechem.functions submodule</h1>
+                <h1>Analysing results</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -593,30 +474,13 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#calculate-pka">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     calculate_pka()
-    </span>
-   </code>
+  <a class="reference internal nav-link" href="#pka">
+   pKa
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#calculate-potential">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     calculate_potential()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#reorder-energies">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     reorder_energies()
-    </span>
-   </code>
+  <a class="reference internal nav-link" href="#el-redox-potential">
+   1-el redox potential
   </a>
  </li>
 </ul>
@@ -629,33 +493,44 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="compechem-functions-submodule">
-<span id="guide-functions"></span><h1><code class="docutils literal notranslate"><span class="pre">compechem.functions</span></code> submodule<a class="headerlink" href="#compechem-functions-submodule" title="Permalink to this headline">#</a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">functions</span></code> submodule contains a series of methods to “manually” calculate some physical properties of the system under study. The user is expected to provide the exact intended states for the system(s) under study, as the functions will simply take the inputs and generate the output without carrying out any checks. For example, if the user calculates the pKa of a molecule in an unoptimised geometry, the resulting pKa will be that of the unoptimised geometry.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">functions</span></code> module can be imported via the following syntax:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem</span> <span class="kn">import</span> <span class="n">functions</span>
-</pre></div>
-</div>
-<p>while individual methods can be imported as:</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="analysing-results">
+<span id="guide-functions"></span><h1>Analysing results<a class="headerlink" href="#analysing-results" title="Permalink to this headline">#</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">compechem.functions</span></code> submodule contains a series of methods to “manually” calculate some physical properties of the system under study. The user is expected to provide the exact intended states for the system(s) under study, as the functions will simply take the inputs and generate the output without carrying out any checks. For example, if the user calculates the pKa of a molecule in an unoptimised geometry, the resulting pKa will be that of the unoptimised geometry.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">compechem.functions</span></code> functions can be imported via the following syntax:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem.functions</span> <span class="kn">import</span> <span class="n">calculate_pka</span>
 </pre></div>
 </div>
 <hr class="docutils" />
-<section id="calculate-pka">
-<h2><code class="docutils literal notranslate"><span class="pre">calculate_pka()</span></code><a class="headerlink" href="#calculate-pka" title="Permalink to this headline">#</a></h2>
-<p>Calculates the pKa of a system, provided the following arguments:</p>
+<section id="pka">
+<h2>pKa<a class="headerlink" href="#pka" title="Permalink to this headline">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">compechem.functions.calculate_pka</span></code> function calculates the pKa of a molecule <span class="math notranslate nohighlight">\(HA\)</span> considering a reaction of the type:</p>
+<div class="math notranslate nohighlight">
+\[
+HA \rightarrow H^{+} + A^{-}
+\]</div>
+<p>provided the following arguments:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">protonated</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): molecule in its protonated form</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">deprotonated</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): molecule in its deprotonated form</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">method_el</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): level of theory for the electronic component of the total energy (must be present in the <code class="docutils literal notranslate"><span class="pre">System.energies</span></code> dictionary)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">method_vib</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): level of theory for the vibronic component of the total energy (must be present in the <code class="docutils literal notranslate"><span class="pre">System.energies</span></code> dictionary). If not specified, defaults to the same level of theory as the electronic energy</p></li>
 </ul>
-<p>and returns the pKa of the molecule considering the provided states.</p>
+<p>The function returns the pKa of the molecule considering the provided states, calculated as:</p>
+<div class="math notranslate nohighlight">
+\[
+pK_{a} = \frac{G_{A^{-}} + G_{H^{+}} - G_{HA}}{2.303 \cdot RT}
+\]</div>
+<p>Where <span class="math notranslate nohighlight">\(G_{A^{-}}\)</span> and <span class="math notranslate nohighlight">\(G_{HA}\)</span> are calculated summing the electronic + vibronic energies at the selected level of theory, <span class="math notranslate nohighlight">\(G_{H^{+}} = -270.29 kcal/mol\)</span>, <span class="math notranslate nohighlight">\(R = 1.987 \cdot 10^{-3} kcal/(mol \cdot K)\)</span> and <span class="math notranslate nohighlight">\(T = 298.15 K\)</span></p>
 </section>
 <hr class="docutils" />
-<section id="calculate-potential">
-<h2><code class="docutils literal notranslate"><span class="pre">calculate_potential()</span></code><a class="headerlink" href="#calculate-potential" title="Permalink to this headline">#</a></h2>
-<p>Calculates the reduction potential of a molecule, provided the following arguments</p>
+<section id="el-redox-potential">
+<h2>1-el redox potential<a class="headerlink" href="#el-redox-potential" title="Permalink to this headline">#</a></h2>
+<p>Calculates the one-electron reduction potential of a molecule <span class="math notranslate nohighlight">\(MH_{n}\)</span>, considering a generic reaction of the type:</p>
+<div class="math notranslate nohighlight">
+\[
+MH_{n} \rightarrow M^{\cdot (n-1)-} + n\cdot H^{+} + e^{-}
+\]</div>
+<p>provided the following arguments:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">oxidised</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): molecule in its oxidised state</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reduced</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): molecule in its reduced state</p></li>
@@ -663,21 +538,12 @@ title="Print to PDF"
 <li><p><code class="docutils literal notranslate"><span class="pre">method_vib</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): level of theory for the vibronic component of the total energy (must be present in the <code class="docutils literal notranslate"><span class="pre">System.energies</span></code> dictionary). If not specified, defaults to the same level of theory as the electronic energy</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pH</span></code> (<code class="docutils literal notranslate"><span class="pre">float</span></code>, default: <code class="docutils literal notranslate"><span class="pre">7.0</span></code>): pH at which the reduction potential is calculated</p></li>
 </ul>
-<p>and returns the reduction potential of the molecule considering the provided states at the provided pH, including eventual PCET mechanisms</p>
-</section>
-<hr class="docutils" />
-<section id="reorder-energies">
-<h2><code class="docutils literal notranslate"><span class="pre">reorder_energies()</span></code><a class="headerlink" href="#reorder-energies" title="Permalink to this headline">#</a></h2>
-<p>Reorders a <code class="docutils literal notranslate"><span class="pre">System</span></code> list at a specific level of theory, provided the following arguments:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">molecule_list</span></code> (<code class="docutils literal notranslate"><span class="pre">list(System)</span></code>): list containing the System objects to be reordered (e.g., generated by a CREST routine)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ncores</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): number of cores used in the calculations, by default all available cores</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">maxcore</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, default: <code class="docutils literal notranslate"><span class="pre">350</span></code>): memory per core, in MB</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">method_opt</span></code> (any Input type from a <code class="docutils literal notranslate"><span class="pre">wrapper</span></code>): level of theory for the geometry optimization. By default GFN2-xTB</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">method_el</span></code> (any Input type from a <code class="docutils literal notranslate"><span class="pre">wrapper</span></code>): level of theory for the electronic component of the total energy. By default M06-2X/D3ZERO</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">method_vib</span></code> (any Input type from a <code class="docutils literal notranslate"><span class="pre">wrapper</span></code>): level of theory for the vibronic component of the total energy. By default GFN2-xTB</p></li>
-</ul>
-<p>and returns the same list, but with a new ordering, given by the total energies recalculated at the new level of theory.</p>
+<p>and returns the reduction potential of the molecule considering the provided states at the provided pH, including eventual PCET mechanisms, calculated as:</p>
+<div class="math notranslate nohighlight">
+\[
+E°_{MH_{n}/M^{\cdot(n-1)-}} = - \frac{G_{M^{\cdot(n-1)-}} - (G_{MH_{n}} + n \cdot G_{H^{+}}) }{F} - E°_{SHE} - n \cdot 0.059 \cdot pH 
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(G_{M^{\cdot(n-1)-}}\)</span> and <span class="math notranslate nohighlight">\(G_{MH_{n}}\)</span> are calculated summing the electronic + vibronic energies at the selected level of theory, <span class="math notranslate nohighlight">\(G_{H^{+}} = -270.29 kcal/mol\)</span>, <span class="math notranslate nohighlight">\(F = 23.061 kcal/volt–gram-equivalent\)</span>, and <span class="math notranslate nohighlight">\(E_{SHE} = 4.28 V\)</span>.</p>
 </section>
 </section>
 
@@ -708,17 +574,17 @@ title="Print to PDF"
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="wrappers/packmol.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="run.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.wrappers.packmol</span></code> submodule</p>
+            <p class="prev-next-title">Running calculations</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="algorithms.html" title="next page">
+    <a class='right-next' id="next-link" href="tools.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.algorithms</span></code> submodule</p>
+        <p class="prev-next-title">Useful tools</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
