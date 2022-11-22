@@ -174,7 +174,7 @@ class DFTBInput:
                 "  Thermostat = NoseHoover {\n"
                 "    Temperature [Kelvin] = TemperatureProfile{\n"
                 f"      constant 1 {job_info['start_temp']}\n"
-                f"      linear {job_info['ramp_steps-1']} {job_info['target_temp']}\n"
+                f"      linear {job_info['ramp_steps']-1} {job_info['target_temp']}\n"
                 f"      constant {job_info['hold_steps']} {job_info['target_temp']}\n"
                 f"      linear {job_info['ramp_steps']} {job_info['start_temp']}\n"
                 "    }\n"

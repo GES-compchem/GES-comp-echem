@@ -3,6 +3,7 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System, Energies
 from compechem.tools import process_output
+from typing import Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,61 @@ class OrcaInput:
         self.aux_basis = aux_basis
         self.solvent = solvent
         self.optionals = optionals
+
+    def write_input(
+        self,
+        mol: System,
+        job_info: Dict,
+    ) -> None:
+
+        mol.write_xyz(f"{mol.name}.xyz")
+
+        input = (
+            f"%pal nprocs {job_info['ncores']} end\n"
+            f"%maxcore {job_info['maxcore']}\n"
+            f"! {self.method} {self.basis_set} {self.optionals}\n"
+        )
+        if self.aux_basis:
+            input += f"! RIJCOSX {self.aux_basis}\n"
+
+        if job_info["type"] == "spe":
+            pass
+
+        elif job_info["type"] == "opt":
+            if self.solvent:
+                input += "! Opt NumFreq\n"
+            else:
+                input += "! Opt Freq\n"
+
+        elif job_info["type"] == "freq":
+            if self.solvent:
+                input += "! NumFreq\n"
+            else:
+                input += "! Freq\n"
+
+        elif job_info["type"] == "nfreq":
+            input += "! NumFreq\n"
+
+        elif job_info["type"] == "scan":
+            input += "! Opt\n"
+            input += "%geom\n" "  scan\n" f"    {job_info['scan']}\n" "  end\n"
+            if job_info["constraints"]:
+                input += (
+                    "  constraints\n" f"    {{ {job_info['constraints']} C }}\n" "  end\n"
+                )
+            if job_info["invertconstraints"]:
+                input += "  invertConstraints true\n"
+            input += "end\n"
+
+        if self.solvent:
+            input += "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+
+        input += f"* xyzfile {job_info['charge']} {job_info['spin']} {mol.name}.xyz\n"
+
+        with open("input.inp", "w") as inp:
+            inp.writelines(input)
+
+        return
 
     def spe(
         self,
@@ -95,21 +151,16 @@ class OrcaInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
-
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvent:
-                    inp.write(
-                        "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
-                    )
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "spe",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                },
+            )
 
             os.system("$ORCADIR/orca input.inp > output.out")
 
@@ -203,27 +254,17 @@ class OrcaInput:
         )
 
         with sh.pushd(tdir):
-            mol.write_xyz(f"{mol.name}.xyz")
 
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvent:
-                    inp.write(
-                        "! Opt NumFreq\n"
-                        "%CPCM\n"
-                        "  SMD True\n"
-                        f'  SMDsolvent "{self.solvent}"\n'
-                        "end\n"
-                    )
-                else:
-                    inp.write("! Opt Freq\n")
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "opt",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                },
+            )
 
             os.system("$ORCADIR/orca input.inp > output.out")
 
@@ -319,27 +360,16 @@ class OrcaInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
-
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvent:
-                    inp.write(
-                        "! NumFreq\n"
-                        "%CPCM\n"
-                        "  SMD True\n"
-                        f'  SMDsolvent "{self.solvent}"\n'
-                        "end\n"
-                    )
-                else:
-                    inp.write("! Freq\n")
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "freq",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                },
+            )
 
             os.system("$ORCADIR/orca input.inp > output.out")
 
@@ -431,23 +461,16 @@ class OrcaInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
-
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                    "! NumFreq\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvent:
-                    inp.write(
-                        "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
-                    )
-
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "nfreq",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                },
+            )
 
             os.system("$ORCADIR/orca input.inp > output.out")
 
@@ -543,28 +566,20 @@ class OrcaInput:
         )
 
         with sh.pushd(tdir):
-            mol.write_xyz(f"{mol.name}.xyz")
 
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                inp.write("! Opt\n")
-                if self.solvent:
-                    inp.write(
-                        "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
-                    )
-                inp.write("%geom\n" "  scan\n" f"    {scan}\n" "  end\n")
-                if constraints:
-                    inp.write("  constraints\n" f"    {{ {constraints} C }}\n" "  end\n")
-                if invertconstraints:
-                    inp.write("  invertConstraints true\n")
-                inp.write("end\n")
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "scan",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                    "scan": scan,
+                    "constraints": constraints,
+                    "invertconstraints": invertconstraints,
+                },
+            )
 
             os.system("$ORCADIR/orca input.inp > output.out")
 
