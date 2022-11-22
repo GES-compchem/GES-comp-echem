@@ -141,7 +141,7 @@ class DFTBInput:
         input = "Geometry = GenFormat {\n" f'  <<< "{mol.name}.gen"\n' "}\n\n"
 
         if job_info["type"] == "spe":
-            input += "Driver = GeometryOptimization{\n" "  MaxSteps = 0\n" "}\n\n"
+            input += "Driver = GeometryOptimization{}\n\n"
 
         elif job_info["type"] == "opt":
             input += (
