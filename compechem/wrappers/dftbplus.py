@@ -37,6 +37,8 @@ class DFTBInput:
         solver: str = None,
         thirdorder: bool = True,
         dispersion: bool = False,
+        fermi: bool = False,
+        fermi_temp: float = 300.0,
         parallel: str = "mpi",
         verbose: bool = True,
     ) -> None:
@@ -53,6 +55,12 @@ class DFTBInput:
             activates the 3rd order terms in the DFTB Hamiltonian
         dispersion : bool, optional
             activates D3 dispersion corrections (off by default)
+        fermi: bool, optional
+            Fills the single particle levels according to a Fermi distribution (off by
+            default).
+        fermi_temp: float, optional
+            Electronic temperature in Kelvin units. Note, this is ignored for thermostated
+            simulations. By default, 300 K.
         parallel : str, optional
             selects either openmpi-parallel version (mpi) or shared memory version (nompi)
         verbose : bool, optional
@@ -64,6 +72,8 @@ class DFTBInput:
         self.solver = solver
         self.thirdorder = thirdorder
         self.dispersion = dispersion
+        self.fermi = fermi
+        self.fermi_temp = fermi_temp
         self.parallel = parallel
         self.verbose = verbose  # add to docs
         if self.verbose:
@@ -190,6 +200,11 @@ class DFTBInput:
                     "  MaxSCCIterations = 500\n"
                 )
                 inp.write(f"  Charge = {charge}\n")
+
+                if self.fermi:
+                    inp.write("  Filling = Fermi {\n")
+                    inp.write(f"    Temperature [K] = {self.fermi_temp}\n")
+                    inp.write("  }\n")
 
                 if spin != 1:
                     inp.write("  SpinPolarisation = Colinear {\n")
@@ -378,6 +393,11 @@ class DFTBInput:
                     "  MaxSCCIterations = 500\n"
                 )
                 inp.write(f"  Charge = {charge}\n")
+
+                if self.fermi:
+                    inp.write("  Filling = Fermi {\n")
+                    inp.write(f"    Temperature [K] = {self.fermi_temp}\n")
+                    inp.write("  }\n")
 
                 if spin != 1:
                     inp.write("  SpinPolarisation = Colinear {\n")
@@ -601,6 +621,11 @@ class DFTBInput:
                     "  MaxSCCIterations = 500\n"
                 )
                 inp.write(f"  Charge = {charge}\n")
+
+                if self.fermi:
+                    inp.write("  Filling = Fermi {\n")
+                    inp.write(f"    Temperature [K] = {self.fermi_temp}\n")
+                    inp.write("  }\n")
 
                 if spin != 1:
                     inp.write("  SpinPolarisation = Colinear {\n")
@@ -830,6 +855,11 @@ class DFTBInput:
                     "  MaxSCCIterations = 500\n"
                 )
                 inp.write(f"  Charge = {charge}\n")
+
+                if self.fermi:
+                    inp.write("  Filling = Fermi {\n")
+                    inp.write(f"    Temperature [K] = {self.fermi_temp}\n")
+                    inp.write("  }\n")
 
                 if spin != 1:
                     inp.write("  SpinPolarisation = Colinear {\n")
