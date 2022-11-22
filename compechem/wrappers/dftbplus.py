@@ -6,6 +6,7 @@ from compechem.systems import MDTrajectory
 from compechem.tools import process_output
 from compechem.tools import save_dftb_trajectory
 from compechem.tools import compress_dftb_trajectory
+from typing import Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -125,6 +126,147 @@ class DFTBInput:
             "S": [-0.021, -0.017, 0.000, -0.017, -0.016, 0.000, 0.000, 0.000, -0.080],
         }
 
+    def write_input(
+        self,
+        mol: System,
+        job_info: Dict,
+    ) -> None:
+
+        mol.write_gen(f"{mol.name}.gen")
+
+        with open(f"{mol.name}.gen") as file:
+            lines = file.readlines()
+            atom_types = lines[1].split()
+
+        input = "Geometry = GenFormat {\n" f'  <<< "{mol.name}.gen"\n' "}\n\n"
+
+        if job_info["type"] == "spe":
+            input += "Driver = GeometryOptimization{\n" "  MaxSteps = 0\n" "}\n\n"
+
+        elif job_info["type"] == "opt":
+            input += (
+                "Driver = GeometryOptimization{\n"
+                f"  LatticeOpt = {'Yes' if job_info['latticeopt'] else 'No'}\n"
+                "}\n\n"
+            )
+
+        elif job_info["type"] == "md_nvt":
+            input += (
+                "Driver = VelocityVerlet{\n"
+                f"  TimeStep [fs] = {job_info['timestep']}\n"
+                "  Thermostat = NoseHoover {\n"
+                f"    Temperature [K] = {job_info['temperature']}\n"
+                "    CouplingStrength [cm^-1] = 3200\n"
+                "  }\n"
+                f"  Steps = {job_info['steps']}\n"
+                "  MovedAtoms = 1:-1\n"
+                f"  MDRestartFrequency = {job_info['mdrestartfreq']}\n"
+                "  Velocities [AA/ps] {\n"
+            )
+            for velocity in mol.velocities:
+                input += f"    {velocity[1:]}\n"
+            input += "  }\n" "}\n\n"
+
+        elif job_info["type"] == "simulated_annealing":
+            input += (
+                "Driver = VelocityVerlet{\n"
+                f"  TimeStep [fs] = {job_info['timestep']}\n"
+                "  Thermostat = NoseHoover {\n"
+                "    Temperature [Kelvin] = TemperatureProfile{\n"
+                f"      constant 1 {job_info['start_temp']}\n"
+                f"      linear {job_info['ramp_steps-1']} {job_info['target_temp']}\n"
+                f"      constant {job_info['hold_steps']} {job_info['target_temp']}\n"
+                f"      linear {job_info['ramp_steps']} {job_info['start_temp']}\n"
+                "    }\n"
+                "    CouplingStrength [cm^-1] = 3200\n"
+                "  }\n"
+                "  MovedAtoms = 1:-1\n"
+                f"  MDRestartFrequency = {job_info['mdrestartfreq']}\n"
+                "    Velocities [AA/ps] {\n"
+            )
+            for velocity in mol.velocities:
+                inp.write(f"      {velocity[1:]}")
+            inp.write("  }\n" "}\n" "\n")
+
+        input += (
+            f"Hamiltonian = {self.method} {{\n"
+            "  MaxSCCIterations = 500\n"
+            f"  Charge = {job_info['charge']}\n"
+        )
+
+        if self.fermi:
+            input += (
+                "  Filling = Fermi {\n" f"    Temperature [K] = {self.fermi_temp}\n" "  }\n"
+            )
+
+        if job_info["spin"] != 1:
+            input += (
+                "  SpinPolarisation = Colinear {\n"
+                f"    UnpairedElectrons = {job_info['spin']-1}\n"
+                "  }\n"
+                "  SpinConstants = {\n"
+            )
+            if self.method == "DFTB":
+                input += "    ShellResolvedSpin = Yes\n"
+            for atom in atom_types:
+                input += (
+                    f"    {atom} = {{\n"
+                    f"      {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
+                    "    }\n"
+                )
+            input += "  }\n"
+
+        if self.method == "DFTB":
+            if self.solver:
+                input += f"  Solver = {self.solver} {{}}\n"
+            input += (
+                "  Scc = Yes\n"
+                "  SlaterKosterFiles = Type2FileNames {\n"
+                f'    Prefix = "{self.parameters}"\n'
+                '    Separator = "-"\n'
+                '    Suffix = ".skf"\n'
+                "  }\n"
+                "  MaxAngularMomentum {\n"
+            )
+            for atom in atom_types:
+                input += f'    {atom} = "{self.atom_dict[atom]}"\n'
+            input += "  }\n"
+            if mol.periodic:
+                input += "  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n"
+            if self.thirdorder:
+                input += "  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n"
+                for atom in atom_types:
+                    input += f"    {atom} = {self.hubbard_derivs[atom]}\n"
+                input += (
+                    "  }\n" "  HCorrection = Damping {\n" "    Exponent = 4.00\n" "  }\n"
+                )
+            if self.dispersion:
+                input += (
+                    "  Dispersion = SimpleDftD3 {\n"
+                    "    a1 = 0.746\n"
+                    "    a2 = 4.191\n"
+                    "    s6 = 1.0\n"
+                    "    s8 = 3.209\n"
+                    "  }\n"
+                )
+            input += "}\n"
+
+        elif self.method == "xTB":
+            if self.solver:
+                input += f"  Solver = {self.solver} {{}}\n"
+            self.parameters = "gfn2"
+            input += '  Method = "GFN2-xTB"\n'
+            if mol.periodic:
+                input += "  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n"
+            input += "}\n"
+
+        input += "\n" "ParserOptions {\n" "  ParserVersion = 11\n" "}"
+
+        with open("dftb_in.hsd", "w") as inp:
+            inp.writelines(input)
+
+        return
+
     def spe(
         self,
         mol: System,
@@ -179,96 +321,15 @@ class DFTBInput:
         )
 
         with sh.pushd(tdir):
-            mol.write_gen(f"{mol.name}.gen")
 
-            with open(f"{mol.name}.gen") as file:
-                lines = file.readlines()
-                atom_types = lines[1].split()
-
-            with open("dftb_in.hsd", "w") as inp:
-
-                inp.write(
-                    "Geometry = GenFormat {\n"
-                    f'  <<< "{mol.name}.gen"\n'
-                    "}\n"
-                    "\n"
-                    "Driver = GeometryOptimization{\n"
-                    "  MaxSteps = 0\n"
-                    "}\n"
-                    "\n"
-                    f"Hamiltonian = {self.method} {{\n"
-                    "  MaxSCCIterations = 500\n"
-                )
-                inp.write(f"  Charge = {charge}\n")
-
-                if self.fermi:
-                    inp.write("  Filling = Fermi {\n")
-                    inp.write(f"    Temperature [K] = {self.fermi_temp}\n")
-                    inp.write("  }\n")
-
-                if spin != 1:
-                    inp.write("  SpinPolarisation = Colinear {\n")
-                    inp.write(f"    UnpairedElectrons = {spin-1}\n")
-                    inp.write("  }\n")
-                    inp.write("  SpinConstants = {\n")
-                    if self.method == "DFTB":
-                        inp.write("    ShellResolvedSpin = Yes\n")
-                    for atom in atom_types:
-                        inp.write(f"    {atom} = {{\n")
-                        inp.write(
-                            f"      {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
-                        )
-                        inp.write("    }\n")
-                    inp.write("  }\n")
-
-                if self.method == "DFTB":
-                    if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}\n")
-                    inp.write(
-                        "  Scc = Yes\n"
-                        "  SlaterKosterFiles = Type2FileNames {\n"
-                        f'    Prefix = "{self.parameters}"\n'
-                        '    Separator = "-"\n'
-                        '    Suffix = ".skf"\n'
-                        "  }\n"
-                        "  MaxAngularMomentum {\n"
-                    )
-                    for atom in atom_types:
-                        inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
-                    inp.write("  }\n")
-                    if mol.periodic:
-                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    if self.thirdorder:
-                        inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
-                        for atom in atom_types:
-                            inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
-                        inp.write(
-                            "  }\n"
-                            "  HCorrection = Damping {\n"
-                            "    Exponent = 4.00\n"
-                            "  }\n"
-                        )
-                    if self.dispersion:
-                        inp.write(
-                            "  Dispersion = SimpleDftD3 {\n"
-                            "    a1 = 0.746\n"
-                            "    a2 = 4.191\n"
-                            "    s6 = 1.0\n"
-                            "    s8 = 3.209\n"
-                            "  }\n"
-                        )
-                    inp.write("}\n")
-
-                elif self.method == "xTB":
-                    if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}\n")
-                    self.parameters = "gfn2"
-                    inp.write('  Method = "GFN2-xTB"\n')
-                    if mol.periodic:
-                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    inp.write("}\n")
-
-                inp.write("\n" "ParserOptions {\n" "  ParserVersion = 11\n" "}")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "spe",
+                    "charge": charge,
+                    "spin": spin,
+                },
+            )
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
@@ -372,96 +433,16 @@ class DFTBInput:
         )
 
         with sh.pushd(tdir):
-            mol.write_gen(f"{mol.name}.gen")
 
-            with open(f"{mol.name}.gen") as file:
-                lines = file.readlines()
-                atom_types = lines[1].split()
-
-            with open("dftb_in.hsd", "w") as inp:
-
-                inp.write(
-                    "Geometry = GenFormat {\n"
-                    f'  <<< "{mol.name}.gen"\n'
-                    "}\n"
-                    "\n"
-                    "Driver = GeometryOptimization{\n"
-                    f"  LatticeOpt = {'Yes' if latticeopt else 'No'}\n"
-                    "}\n"
-                    "\n"
-                    f"Hamiltonian = {self.method} {{\n"
-                    "  MaxSCCIterations = 500\n"
-                )
-                inp.write(f"  Charge = {charge}\n")
-
-                if self.fermi:
-                    inp.write("  Filling = Fermi {\n")
-                    inp.write(f"    Temperature [K] = {self.fermi_temp}\n")
-                    inp.write("  }\n")
-
-                if spin != 1:
-                    inp.write("  SpinPolarisation = Colinear {\n")
-                    inp.write(f"    UnpairedElectrons = {spin-1}\n")
-                    inp.write("  }\n")
-                    inp.write("  SpinConstants = {\n")
-                    if self.method == "DFTB":
-                        inp.write("    ShellResolvedSpin = Yes\n")
-                    for atom in atom_types:
-                        inp.write(f"    {atom} = {{\n")
-                        inp.write(
-                            f"      {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
-                        )
-                        inp.write("    }\n")
-                    inp.write("  }\n")
-
-                if self.method == "DFTB":
-                    if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}\n")
-                    inp.write(
-                        "  Scc = Yes\n"
-                        "  SlaterKosterFiles = Type2FileNames {\n"
-                        f'    Prefix = "{self.parameters}"\n'
-                        '    Separator = "-"\n'
-                        '    Suffix = ".skf"\n'
-                        "  }\n"
-                        "  MaxAngularMomentum {\n"
-                    )
-                    for atom in atom_types:
-                        inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
-                    inp.write("  }\n")
-                    if mol.periodic:
-                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    if self.thirdorder:
-                        inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
-                        for atom in atom_types:
-                            inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
-                        inp.write(
-                            "  }\n"
-                            "  HCorrection = Damping {\n"
-                            "    Exponent = 4.00\n"
-                            "  }\n"
-                        )
-                    if self.dispersion:
-                        inp.write(
-                            "  Dispersion = SimpleDftD3 {\n"
-                            "    a1 = 0.746\n"
-                            "    a2 = 4.191\n"
-                            "    s6 = 1.0\n"
-                            "    s8 = 3.209\n"
-                            "  }\n"
-                        )
-                    inp.write("}\n")
-
-                elif self.method == "xTB":
-                    if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}\n")
-                    self.parameters = "gfn2"
-                    inp.write('  Method = "GFN2-xTB"\n')
-                    if mol.periodic:
-                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    inp.write("}\n")
-
-                inp.write("\n" "ParserOptions {\n" "  ParserVersion = 11\n" "}")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "spe",
+                    "charge": charge,
+                    "spin": spin,
+                    "latticeopt": latticeopt,
+                },
+            )
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
@@ -587,109 +568,18 @@ class DFTBInput:
 
         with sh.pushd(tdir):
 
-            mol.write_gen(f"{mol.name}.gen", box_side)
-
-            with open(f"{mol.name}.gen") as file:
-                lines = file.readlines()
-                atom_types = lines[1].split()
-
-            with open("dftb_in.hsd", "w") as inp:
-
-                inp.write(
-                    "Geometry = GenFormat {\n"
-                    f'  <<< "{mol.name}.gen"\n'
-                    "}\n"
-                    "\n"
-                    "Driver = VelocityVerlet{\n"
-                    f"  TimeStep [fs] = {timestep}\n"
-                    "  Thermostat = NoseHoover {\n"
-                    f"    Temperature [Kelvin] = {temperature}\n"
-                    "    CouplingStrength [cm^-1] = 3200\n"
-                    "  }\n"
-                    f"  Steps = {steps}\n"
-                    "  MovedAtoms = 1:-1\n"
-                    f"  MDRestartFrequency = {mdrestartfreq}\n"
-                    "    Velocities [AA/ps] {\n"
-                )
-                for velocity in mol.velocities:
-                    inp.write(f"      {velocity[1:]}")
-                inp.write(
-                    "  }\n"
-                    "}\n"
-                    "\n"
-                    f"Hamiltonian = {self.method} {{\n"
-                    "  MaxSCCIterations = 500\n"
-                )
-                inp.write(f"  Charge = {charge}\n")
-
-                if self.fermi:
-                    inp.write("  Filling = Fermi {\n")
-                    inp.write(f"    Temperature [K] = {self.fermi_temp}\n")
-                    inp.write("  }\n")
-
-                if spin != 1:
-                    inp.write("  SpinPolarisation = Colinear {\n")
-                    inp.write(f"    UnpairedElectrons = {spin-1}\n")
-                    inp.write("  }\n")
-                    inp.write("  SpinConstants = {\n")
-                    if self.method == "DFTB":
-                        inp.write("    ShellResolvedSpin = Yes\n")
-                    for atom in atom_types:
-                        inp.write(f"    {atom} = {{\n")
-                        inp.write(
-                            f"      {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
-                        )
-                        inp.write("    }\n")
-                    inp.write("  }\n")
-
-                if self.method == "DFTB":
-                    if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}\n")
-                    inp.write(
-                        "  Scc = Yes\n"
-                        "  SlaterKosterFiles = Type2FileNames {\n"
-                        f'    Prefix = "{self.parameters}"\n'
-                        '    Separator = "-"\n'
-                        '    Suffix = ".skf"\n'
-                        "  }\n"
-                        "  MaxAngularMomentum {\n"
-                    )
-                    for atom in atom_types:
-                        inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
-                    inp.write("  }\n")
-                    if mol.periodic:
-                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    if self.thirdorder:
-                        inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
-                        for atom in atom_types:
-                            inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
-                        inp.write(
-                            "  }\n"
-                            "  HCorrection = Damping {\n"
-                            "    Exponent = 4.00\n"
-                            "  }\n"
-                        )
-                    if self.dispersion:
-                        inp.write(
-                            "  Dispersion = SimpleDftD3 {\n"
-                            "    a1 = 0.746\n"
-                            "    a2 = 4.191\n"
-                            "    s6 = 1.0\n"
-                            "    s8 = 3.209\n"
-                            "  }\n"
-                        )
-                    inp.write("}\n")
-
-                elif self.method == "xTB":
-                    if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}\n")
-                    self.parameters = "gfn2"
-                    inp.write('  Method = "GFN2-xTB"\n')
-                    if mol.periodic:
-                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    inp.write("}\n")
-
-                inp.write("\n" "ParserOptions {\n" "  ParserVersion = 11\n" "}")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "spe",
+                    "charge": charge,
+                    "spin": spin,
+                    "timestep": timestep,
+                    "temperature": temperature,
+                    "steps": steps,
+                    "mdrestartfreq": mdrestartfreq,
+                },
+            )
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
@@ -817,113 +707,20 @@ class DFTBInput:
 
         with sh.pushd(tdir):
 
-            mol.write_gen(f"{mol.name}.gen", box_side)
-
-            with open(f"{mol.name}.gen") as file:
-                lines = file.readlines()
-                atom_types = lines[1].split()
-
-            with open("dftb_in.hsd", "w") as inp:
-
-                inp.write(
-                    "Geometry = GenFormat {\n"
-                    f'  <<< "{mol.name}.gen"\n'
-                    "}\n"
-                    "\n"
-                    "Driver = VelocityVerlet{\n"
-                    f"  TimeStep [fs] = {timestep}\n"
-                    "  Thermostat = NoseHoover {\n"
-                    "    Temperature [Kelvin] = TemperatureProfile{\n"
-                    f"      constant 1 {start_temp}\n"
-                    f"      linear {ramp_steps-1} {target_temp}\n"
-                    f"      constant {hold_steps} {target_temp}\n"
-                    f"      linear {ramp_steps} {start_temp}\n"
-                    "    }\n"
-                    "    CouplingStrength [cm^-1] = 3200\n"
-                    "  }\n"
-                    "  MovedAtoms = 1:-1\n"
-                    f"  MDRestartFrequency = {mdrestartfreq}\n"
-                    "    Velocities [AA/ps] {\n"
-                )
-                for velocity in mol.velocities:
-                    inp.write(f"      {velocity[1:]}")
-                inp.write(
-                    "  }\n"
-                    "}\n"
-                    "\n"
-                    f"Hamiltonian = {self.method} {{\n"
-                    "  MaxSCCIterations = 500\n"
-                )
-                inp.write(f"  Charge = {charge}\n")
-
-                if self.fermi:
-                    inp.write("  Filling = Fermi {\n")
-                    inp.write(f"    Temperature [K] = {self.fermi_temp}\n")
-                    inp.write("  }\n")
-
-                if spin != 1:
-                    inp.write("  SpinPolarisation = Colinear {\n")
-                    inp.write(f"    UnpairedElectrons = {spin-1}\n")
-                    inp.write("  }\n")
-                    inp.write("  SpinConstants = {\n")
-                    if self.method == "DFTB":
-                        inp.write("    ShellResolvedSpin = Yes\n")
-                    for atom in atom_types:
-                        inp.write(f"    {atom} = {{\n")
-                        inp.write(
-                            f"      {' '.join(str(spin) for spin in self.spin_constants[atom])}\n"
-                        )
-                        inp.write("    }\n")
-                    inp.write("  }\n")
-
-                if self.method == "DFTB":
-                    if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}\n")
-                    inp.write(
-                        "  Scc = Yes\n"
-                        "  SlaterKosterFiles = Type2FileNames {\n"
-                        f'    Prefix = "{self.parameters}"\n'
-                        '    Separator = "-"\n'
-                        '    Suffix = ".skf"\n'
-                        "  }\n"
-                        "  MaxAngularMomentum {\n"
-                    )
-                    for atom in atom_types:
-                        inp.write(f'    {atom} = "{self.atom_dict[atom]}"\n')
-                    inp.write("  }\n")
-                    if mol.periodic:
-                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    if self.thirdorder:
-                        inp.write("  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n")
-                        for atom in atom_types:
-                            inp.write(f"    {atom} = {self.hubbard_derivs[atom]}\n")
-                        inp.write(
-                            "  }\n"
-                            "  HCorrection = Damping {\n"
-                            "    Exponent = 4.00\n"
-                            "  }\n"
-                        )
-                    if self.dispersion:
-                        inp.write(
-                            "  Dispersion = SimpleDftD3 {\n"
-                            "    a1 = 0.746\n"
-                            "    a2 = 4.191\n"
-                            "    s6 = 1.0\n"
-                            "    s8 = 3.209\n"
-                            "  }\n"
-                        )
-                    inp.write("}\n")
-
-                elif self.method == "xTB":
-                    if self.solver:
-                        inp.write(f"  Solver = {self.solver} {{}}\n")
-                    self.parameters = "gfn2"
-                    inp.write('  Method = "GFN2-xTB"\n')
-                    if mol.periodic:
-                        inp.write("  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n")
-                    inp.write("}\n")
-
-                inp.write("\n" "ParserOptions {\n" "  ParserVersion = 11\n" "}")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "spe",
+                    "charge": charge,
+                    "spin": spin,
+                    "timestep": timestep,
+                    "start_temp": start_temp,
+                    "ramp_steps": ramp_steps,
+                    "target_temp": target_temp,
+                    "hold_steps": hold_steps,
+                    "mdrestartfreq": mdrestartfreq,
+                },
+            )
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
