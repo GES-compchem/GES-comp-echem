@@ -141,7 +141,7 @@ class DFTBInput:
         input = "Geometry = GenFormat {\n" f'  <<< "{mol.name}.gen"\n' "}\n\n"
 
         if job_info["type"] == "spe":
-            input += "Driver = GeometryOptimization{}\n\n"
+            input += "Driver = GeometryOptimization{\n" "  MaxSteps = 0\n" "}\n\n"
 
         elif job_info["type"] == "opt":
             input += (
@@ -437,7 +437,7 @@ class DFTBInput:
             self.write_input(
                 mol=mol,
                 job_info={
-                    "type": "spe",
+                    "type": "opt",
                     "charge": charge,
                     "spin": spin,
                     "latticeopt": latticeopt,
@@ -571,7 +571,7 @@ class DFTBInput:
             self.write_input(
                 mol=mol,
                 job_info={
-                    "type": "spe",
+                    "type": "md_nvt",
                     "charge": charge,
                     "spin": spin,
                     "timestep": timestep,
@@ -710,7 +710,7 @@ class DFTBInput:
             self.write_input(
                 mol=mol,
                 job_info={
-                    "type": "spe",
+                    "type": "simulated_annealing",
                     "charge": charge,
                     "spin": spin,
                     "timestep": timestep,
