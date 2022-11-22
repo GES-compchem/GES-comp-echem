@@ -185,7 +185,7 @@ class DFTBInput:
                 "    Velocities [AA/ps] {\n"
             )
             for velocity in mol.velocities:
-                inp.write(f"      {velocity[1:]}")
+                inp.write(f"    {velocity[1:]}")
             inp.write("  }\n" "}\n" "\n")
 
         input += (
