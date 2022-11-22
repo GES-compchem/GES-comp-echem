@@ -164,7 +164,7 @@ class DFTBInput:
                 "  Velocities [AA/ps] {\n"
             )
             for velocity in mol.velocities:
-                input += f"    {velocity[1:]}\n"
+                input += f"    {velocity[1:]}"
             input += "  }\n" "}\n\n"
 
         elif job_info["type"] == "simulated_annealing":
