@@ -4,6 +4,7 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System, Energies
 from compechem.tools import process_output, process_density
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,8 +18,7 @@ class OrcaInput:
         method: str = "PBE",
         basis_set: str = "def2-TZVP",
         aux_basis: str = "def2/J",
-        solvation: bool = False,
-        solvent: str = "water",
+        solvent: str = None,
         optionals: str = "",
         MPI_FLAGS: str = "",
         ORCADIR: str = "$ORCADIR"
@@ -32,10 +32,8 @@ class OrcaInput:
             basis set, by default "def2-TZVP"
         aux_basis : str, optional
             auxiliary basis set for RIJCOSX, by default "def2/J"
-        solvation : bool, optional
-            CPCM(SMD) implicit solvation model, by default False
         solvent : str, optional
-            SMD solvent, by default "water"
+            SMD solvent, by default None
         optionals : str, optional
             optional keywords, by default ""
         MPI_FLAGS: str, optional
@@ -49,11 +47,76 @@ class OrcaInput:
         self.method = method
         self.basis_set = basis_set
         self.aux_basis = aux_basis
-        self.solvation = solvation
         self.solvent = solvent
         self.optionals = optionals
         self.__MPI_FLAGS = MPI_FLAGS
         self.__ORCADIR = ORCADIR
+
+    def write_input(
+        self,
+        mol: System,
+        job_info: Dict,
+    ) -> None:
+
+        mol.write_xyz(f"{mol.name}.xyz")
+
+        input = (
+            f"%pal nprocs {job_info['ncores']} end\n"
+            f"%maxcore {job_info['maxcore']}\n"
+            f"! {self.method} {self.basis_set} {self.optionals}\n"
+        )
+        if self.aux_basis:
+            input += f"! RIJCOSX {self.aux_basis}\n"
+
+        if job_info["type"] == "spe":
+            pass
+
+        elif job_info["type"] == "opt":
+            if self.solvent:
+                input += "! Opt NumFreq\n"
+            else:
+                input += "! Opt Freq\n"
+
+        elif job_info["type"] == "freq":
+            if self.solvent:
+                input += "! NumFreq\n"
+            else:
+                input += "! Freq\n"
+
+        elif job_info["type"] == "nfreq":
+            input += "! NumFreq\n"
+
+        elif job_info["type"] == "scan":
+            input += "! Opt\n"
+            input += "%geom\n" "  scan\n" f"    {job_info['scan']}\n" "  end\n"
+            if job_info["constraints"]:
+                input += (
+                    "  constraints\n" f"    {{ {job_info['constraints']} C }}\n" "  end\n"
+                )
+            if job_info["invertconstraints"]:
+                input += "  invertConstraints true\n"
+            input += "end\n"
+
+        if self.solvent:
+            input += "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
+        
+        if "save_cubes" in job_info:
+            if job_info["save_cubes"] is True:
+                inp.write("%plots\n")
+                inp.write("  Format Gaussian_Cube\n")
+                inp.write("  dim1 250\n")
+                inp.write("  dim2 250\n")
+                inp.write("  dim3 250\n")
+                inp.write('  ElDens("eldens.cube");\n')
+                inp.write('  SpinDens("spindens.cube");\n')
+                inp.write("end")
+
+        input += f"* xyzfile {job_info['charge']} {job_info['spin']} {mol.name}.xyz\n"
+
+        with open("input.inp", "w") as inp:
+            inp.writelines(input)
+
+        return
 
     def spe(
         self,
@@ -114,31 +177,17 @@ class OrcaInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
-
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvation is True:
-                    inp.write(
-                        "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
-                    )
-                if save_cubes:
-                    inp.write("%plots\n")
-                    inp.write("  Format Gaussian_Cube\n")
-                    inp.write("  dim1 250\n")
-                    inp.write("  dim2 250\n")
-                    inp.write("  dim3 250\n")
-                    inp.write('  ElDens("eldens.cube");\n')
-                    inp.write('  SpinDens("spindens.cube");\n')
-                    inp.write("end")
-
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "spe",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                    "save_cubes": save_cubes,
+                },
+            )
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
@@ -248,36 +297,18 @@ class OrcaInput:
         )
 
         with sh.pushd(tdir):
-            mol.write_xyz(f"{mol.name}.xyz")
 
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if save_cubes:
-                    inp.write("%plots\n")
-                    inp.write("  Format Gaussian_Cube\n")
-                    inp.write("  dim1 250\n")
-                    inp.write("  dim2 250\n")
-                    inp.write("  dim3 250\n")
-                    inp.write('  ElDens("eldens.cube");\n')
-                    inp.write('  SpinDens("spindens.cube");\n')
-                    inp.write("end")
-                if self.solvation is True:
-                    inp.write(
-                        "! Opt NumFreq\n"
-                        "%CPCM\n"
-                        "  SMD True\n"
-                        f'  SMDsolvent "{self.solvent}"\n'
-                        "end\n"
-                    )
-                else:
-                    inp.write("! Opt Freq\n")
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "opt",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                    "save_cubes": save_cubes,
+                },
+            )
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
@@ -383,27 +414,16 @@ class OrcaInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
-
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvation is True:
-                    inp.write(
-                        "! NumFreq\n"
-                        "%CPCM\n"
-                        "  SMD True\n"
-                        f'  SMDsolvent "{self.solvent}"\n'
-                        "end\n"
-                    )
-                else:
-                    inp.write("! Freq\n")
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "freq",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                },
+            )
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
@@ -495,23 +515,16 @@ class OrcaInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
-
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                    "! NumFreq\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                if self.solvation is True:
-                    inp.write(
-                        "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
-                    )
-
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "nfreq",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                },
+            )
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
@@ -607,28 +620,20 @@ class OrcaInput:
         )
 
         with sh.pushd(tdir):
-            mol.write_xyz(f"{mol.name}.xyz")
 
-            with open("input.inp", "w") as inp:
-                inp.write(
-                    f"%pal nprocs {ncores} end\n"
-                    f"%maxcore {maxcore}\n"
-                    f"! {self.method} {self.basis_set} {self.optionals}\n"
-                )
-                if self.aux_basis:
-                    inp.write(f"! RIJCOSX {self.aux_basis}\n")
-                inp.write("! Opt\n")
-                if self.solvation is True:
-                    inp.write(
-                        "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
-                    )
-                inp.write("%geom\n" "  scan\n" f"    {scan}\n" "  end\n")
-                if constraints:
-                    inp.write("  constraints\n" f"    {{ {constraints} C }}\n" "  end\n")
-                if invertconstraints:
-                    inp.write("  invertConstraints true\n")
-                inp.write("end\n")
-                inp.write(f"* xyzfile {charge} {spin} {mol.name}.xyz\n")
+            self.write_input(
+                mol=mol,
+                job_info={
+                    "type": "scan",
+                    "ncores": ncores,
+                    "maxcore": maxcore,
+                    "charge": charge,
+                    "spin": spin,
+                    "scan": scan,
+                    "constraints": constraints,
+                    "invertconstraints": invertconstraints,
+                },
+            )
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
@@ -663,7 +668,6 @@ class M06(OrcaInput):
             method="M062X",
             basis_set="def2-TZVP",
             aux_basis="def2/J",
-            solvation=True,
             solvent="water",
             optionals="",
         )
@@ -675,7 +679,6 @@ class r2SCAN(OrcaInput):
             method="r2SCAN-3c",
             basis_set="",
             aux_basis=None,
-            solvation=True,
             solvent="water",
             optionals="",
         )
@@ -687,7 +690,6 @@ class CCSD(OrcaInput):
             method="DLPNO-CCSD",
             basis_set="Extrapolate(2/3,ANO)",
             aux_basis="AutoAux",
-            solvation=True,
             solvent="water",
             optionals="",
         )
