@@ -21,7 +21,7 @@ class OrcaInput:
         solvent: str = None,
         optionals: str = "",
         MPI_FLAGS: str = "",
-        ORCADIR: str = "$ORCADIR"
+        ORCADIR: str = "$ORCADIR",
     ) -> None:
         """
         Parameters
@@ -40,7 +40,7 @@ class OrcaInput:
             string containing optional flags to be passed to MPI when launching an ora job.
             (e.g. `--bind-to-none` or `--use-hwthread-cpus`), by default ""
         ORCADIR: str, optional
-            the path or environment variable containing the path to the ORCA folder, by 
+            the path or environment variable containing the path to the ORCA folder, by
             default "$ORCADIR"
         """
 
@@ -61,30 +61,32 @@ class OrcaInput:
         mol.write_xyz(f"{mol.name}.xyz")
 
         input = (
-            f"%pal nprocs {job_info['ncores']} end\n"
-            f"%maxcore {job_info['maxcore']}\n"
+            "%pal\n"
+            f"  nprocs {job_info['ncores']}\n"
+            "end\n\n"
+            f"%maxcore {job_info['maxcore']}\n\n"
             f"! {self.method} {self.basis_set} {self.optionals}\n"
         )
         if self.aux_basis:
             input += f"! RIJCOSX {self.aux_basis}\n"
 
         if job_info["type"] == "spe":
-            pass
+            input += "\n"
 
         elif job_info["type"] == "opt":
             if self.solvent:
-                input += "! Opt NumFreq\n"
+                input += "! Opt NumFreq\n\n"
             else:
-                input += "! Opt Freq\n"
+                input += "! Opt Freq\n\n"
 
         elif job_info["type"] == "freq":
             if self.solvent:
-                input += "! NumFreq\n"
+                input += "! NumFreq\n\n"
             else:
-                input += "! Freq\n"
+                input += "! Freq\n\n"
 
         elif job_info["type"] == "nfreq":
-            input += "! NumFreq\n"
+            input += "! NumFreq\n\n"
 
         elif job_info["type"] == "scan":
             input += "! Opt\n"
@@ -95,21 +97,20 @@ class OrcaInput:
                 )
             if job_info["invertconstraints"]:
                 input += "  invertConstraints true\n"
-            input += "end\n"
+            input += "end\n\n"
 
         if self.solvent:
-            input += "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
-        
-        if "save_cubes" in job_info:
-            if job_info["save_cubes"] is True:
-                inp.write("%plots\n")
-                inp.write("  Format Gaussian_Cube\n")
-                inp.write("  dim1 250\n")
-                inp.write("  dim2 250\n")
-                inp.write("  dim3 250\n")
-                inp.write('  ElDens("eldens.cube");\n')
-                inp.write('  SpinDens("spindens.cube");\n')
-                inp.write("end")
+            input += "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n\n"
+
+        if job_info["save_cubes"]:
+            input += "%plots\n"
+            input += "  Format Gaussian_Cube\n"
+            input += f"  dim1 {job_info['cube_dim']}\n"
+            input += f"  dim2 {job_info['cube_dim']}\n"
+            input += f"  dim3 {job_info['cube_dim']}\n"
+            input += '  ElDens("eldens.cube");\n'
+            input += '  SpinDens("spindens.cube");\n'
+            input += "end\n\n"
 
         input += f"* xyzfile {job_info['charge']} {job_info['spin']} {mol.name}.xyz\n"
 
@@ -126,6 +127,7 @@ class OrcaInput:
         charge: int = None,
         spin: int = None,
         save_cubes: bool = False,
+        cube_dim: int = 100,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -146,6 +148,8 @@ class OrcaInput:
         save_cubes: bool, optional
             if set to True, will save a cube file containing the electronic density (Grid 250)
             and the spin density (Grid 250), by default False.
+        cube_dim: int, optional
+            resolution for the cube files (default 100)
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -186,6 +190,7 @@ class OrcaInput:
                     "charge": charge,
                     "spin": spin,
                     "save_cubes": save_cubes,
+                    "cube_dim": cube_dim,
                 },
             )
 
@@ -196,7 +201,9 @@ class OrcaInput:
                     if "FINAL SINGLE POINT ENERGY" in line:
                         electronic_energy = float(line.split()[-1])
 
-            mulliken_atomic_charges, mulliken_spin_populations = parse_mulliken("output.out")
+            mulliken_atomic_charges, mulliken_spin_populations = parse_mulliken(
+                "output.out"
+            )
 
             vibronic_energy = None
 
@@ -247,6 +254,7 @@ class OrcaInput:
         charge: int = None,
         spin: int = None,
         save_cubes: bool = False,
+        cube_dim: int = 100,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -267,6 +275,8 @@ class OrcaInput:
         save_cubes: bool, optional
             if set to True, will save a cube file containing the electronic density (Grid 250)
             and the spin density (Grid 250), by default False.
+        cube_dim: int, optional
+            resolution for the cube files (default 100)
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -307,6 +317,7 @@ class OrcaInput:
                     "charge": charge,
                     "spin": spin,
                     "save_cubes": save_cubes,
+                    "cube_dim": cube_dim,
                 },
             )
 
@@ -319,7 +330,9 @@ class OrcaInput:
                     if "G-E(el)" in line:
                         vibronic_energy = float(line.split()[-4])
 
-            mulliken_atomic_charges, mulliken_spin_populations = parse_mulliken("output.out")
+            mulliken_atomic_charges, mulliken_spin_populations = parse_mulliken(
+                "output.out"
+            )
 
             if inplace is False:
 
