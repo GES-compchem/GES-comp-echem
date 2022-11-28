@@ -14,7 +14,7 @@ def compute_fukui_densities(
     spins_states: Union[None, List[int]] = None,
     optimize: bool = False,
     maxcore: int = 1000,
-) -> None:
+) -> Dict[str: Dict[str, List[float]]]:
     """
     Computes the Fukui f+, f- and f0 functions starting from a given input molecule. The
     functions are saved in Gaussian cube format and stored in the `output_densities` folder.
@@ -38,6 +38,13 @@ def compute_fukui_densities(
         of theory specified by the method option.
     maxcore: int
         The maximum amount of memory in MB to be allocated for each core.
+
+    Returns
+    -------
+    Dict[str: Dict[str, List[float]]]
+        The dictionary of dictionaries containing the localized fukui function computed from
+        the Mulliken charges. The external key encodes the levelo of theory used and the
+        basis-set while the inner keyword (either f+, f- or f0) encodes the type of Fukui function.
     """
     # Make a copy of the oriCompute a single point for the original molecule
     origin = deepcopy(molecule)
@@ -97,3 +104,18 @@ def compute_fukui_densities(
     f_zero.save(
         join("./output_densities", f"{molecule.name}_Fukui_zero.cube"), comment="Fukui f0"
     )
+
+    # Compute the localized fukui function values from the mulliken charges
+    localized_fukui = {"f+": [], "f-": [], "f0": []}
+    for atom in range(origin.atomcount):
+        localized_fukui["f+"].append(
+            anion.mulliken_atomic_charges[atom] - origin.mulliken_atomic_charges[atom]
+        )
+        localized_fukui["f-"].append(
+            origin.mulliken_atomic_charges[atom] - cation.mulliken_atomic_charges[atom]
+        )
+        localized_fukui["f0"].append(
+            (anion.mulliken_atomic_charges[atom] - cation.mulliken_atomic_charges[atom]) / 2
+        )
+
+    return {f"{orca.method}|{orca.basis_set}": localized_fukui}
