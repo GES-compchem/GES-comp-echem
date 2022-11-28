@@ -109,7 +109,7 @@ class OrcaInput:
             input += f"  dim2 {job_info['cube_dim']}\n"
             input += f"  dim3 {job_info['cube_dim']}\n"
             input += '  ElDens("eldens.cube");\n'
-            if {job_info["spin"]} != 1:
+            if job_info["spin"] != 1:
                 input += '  SpinDens("spindens.cube");\n'
             input += "end\n\n"
 
