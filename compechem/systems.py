@@ -218,6 +218,8 @@ class System:
             self.periodic = False
 
         self.velocities: list = []
+        self.mulliken_atomic_charges: dict = []
+        self.mulliken_spin_populations: dict = []
 
         self.flags: list = []
 
@@ -319,7 +321,7 @@ class System:
                 if linenum == 0:
                     self.atomcount = int(line)
                 last_geom_line = numlines - (self.atomcount + 2)
-                if linenum > last_geom_line + 1 and linenum < numlines and len(line) != 0:
+                if linenum > last_geom_line + 1 and linenum < numlines and len(line) != 1:
                     try:
                         atom = atoms_dict[int(line.split()[0])]
                     except:

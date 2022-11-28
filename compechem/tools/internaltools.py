@@ -149,6 +149,49 @@ def process_output(
             f"../error_files/{mol.name}_{charge}_{spin}_{method}_{calc}.err",
         )
 
+def process_density(
+    mol: System,
+    method: str,
+    calc: str,
+    charge: int = None,
+    spin: int = None,
+) -> None:
+    """Processes the output eldens.cube and spindens.cube files derived form a calculation 
+    by copying them to a safe directory in the parent directory tree.
+
+    Parameters
+    ----------
+    mol : System object
+        Systems processed in the calculation
+    method : str
+        level of theory for the calculation
+    calc : str
+        Type of calculation
+    charge : int, optional
+        Charge of the molecule in the calculation
+    spin : int, optional
+        Spin of the molecule in the calculation
+    """
+
+    if charge is None:
+        charge = mol.charge
+    if spin is None:
+        spin = mol.spin
+
+    os.makedirs("../output_densities", exist_ok=True)
+    if os.path.exists("eldens.cube"):
+        shutil.copy(
+            "eldens.cube",
+            f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.eldens.cube",
+        )
+    
+    if os.path.exists("spindens.cube"):
+        shutil.copy(
+            "spindens.cube",
+            f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.spindens.cube",
+        )
+    
+
 
 def save_dftb_trajectory(output_prefix):
     """Saves the geo_end.xyz and md.out files to a temporary directory where an MDTrajectory
