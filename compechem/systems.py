@@ -155,6 +155,7 @@ class Properties:
 
     def __init__(self):
         self.pka: dict = {}
+        self.mulliken_fukui: dict = {}
 
 
 class System:
