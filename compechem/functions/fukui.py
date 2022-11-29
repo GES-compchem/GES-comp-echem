@@ -8,16 +8,19 @@ from compechem.wrappers.orca import OrcaInput
 from compechem.tools.cubetools import Cube
 
 
-def compute_fukui_densities(
+def calculate_fukui(
     molecule: System,
     orca: OrcaInput,
     spins_states: Union[None, List[int]] = None,
+    cube_dim: int = 250,
     optimize: bool = False,
     maxcore: int = 1000,
-) -> Dict[str: Dict[str, List[float]]]:
+) -> Dict[str, Dict[str, List[float]]]:
     """
     Computes the Fukui f+, f- and f0 functions starting from a given input molecule. The
     functions are saved in Gaussian cube format and stored in the `output_densities` folder.
+    Localized Fukui functions are also computed from the Mulliken charges and returned as a
+    dictionary.
 
     Parameters
     ----------
@@ -33,6 +36,8 @@ def compute_fukui_densities(
         user specified values. The order of the spin multiplicity values is: molecule with
         one electron added (-1), the molecule as it is (0) and the molecule  with one of its
         electrons removed (+1).
+    cube_dim: int
+        Resolution for the cube files (default 250)
     optimize: bool
         If set to True, it will run the optimization of the origin system at the same level
         of theory specified by the method option.
@@ -49,9 +54,9 @@ def compute_fukui_densities(
     # Make a copy of the oriCompute a single point for the original molecule
     origin = deepcopy(molecule)
     if optimize:
-        orca.opt(origin, save_cubes=True, inplace=True, maxcore=maxcore)
+        orca.opt(origin, save_cubes=True, cube_dim=cube_dim, inplace=True, maxcore=maxcore)
     else:
-        orca.spe(origin, save_cubes=True, inplace=True, maxcore=maxcore)
+        orca.spe(origin, save_cubes=True, cube_dim=cube_dim, inplace=True, maxcore=maxcore)
 
     # Compute a single point for the molecule with the addition of one electron.
     cation = deepcopy(origin)
@@ -62,7 +67,7 @@ def compute_fukui_densities(
     else:
         cation.spin = 1 if origin.spin == 2 else 2
 
-    orca.spe(cation, save_cubes=True, inplace=True, maxcore=maxcore)
+    orca.spe(cation, save_cubes=True, cube_dim=cube_dim, inplace=True, maxcore=maxcore)
 
     # Compute a single point for the molecule with the subtraction of one electron.
     anion = deepcopy(origin)
@@ -73,7 +78,7 @@ def compute_fukui_densities(
     else:
         anion.spin = 1 if origin.spin == 2 else 2
 
-    orca.spe(anion, save_cubes=True, inplace=True, maxcore=maxcore)
+    orca.spe(anion, save_cubes=True, cube_dim=cube_dim, inplace=True, maxcore=maxcore)
 
     # Load cubes from the output_densities folder
     cubes: Dict[int, Cube] = {}
