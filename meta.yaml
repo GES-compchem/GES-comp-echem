@@ -23,13 +23,17 @@ requirements:
     - python>=3.8
     - pip
     - setuptools
-    - rdkit
+    - numpy
+    - pandas>=1.3.0
     - sh
+    - rdkit
 
   run:
     - python>=3.8
-    - rdkit
+    - numpy
+    - pandas>=1.3.0
     - sh
+    - rdkit
 
 
 about:
