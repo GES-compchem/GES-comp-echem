@@ -82,11 +82,14 @@ def calculate_fukui(
 
     # Load cubes from the output_densities folder
     cubes: Dict[int, Cube] = {}
-    for file in listdir("./output_densities"):
-        if file.endswith("eldens.cube"):
-            cube = Cube.from_file(join("./output_densities", file))
-            current_charge = int(file.split("_")[1])
-            cubes[current_charge] = cube
+    for mol in [cation, origin, anion]:
+
+        cubename = f"{mol.name}_{mol.charge}_{mol.spin}_{orca.method}"
+        cubename += "_opt" if origin and optimize is True else "_spe"
+        cubename += ".eldens.cube"
+        
+        cube = Cube.from_file(join("./output_densities", cubename))
+        cubes[mol.charge] = cube
 
     # Check if all the densities have been loaded correctly
     if len(cubes) != 3:
