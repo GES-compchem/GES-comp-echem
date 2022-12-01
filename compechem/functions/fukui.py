@@ -1,5 +1,8 @@
-from os import listdir
-from os.path import join
+import subprocess
+from tempfile import NamedTemporaryFile as tmp
+
+from os import system
+from os.path import join, abspath, basename
 from copy import deepcopy
 from typing import List, Dict, Union
 
@@ -113,7 +116,7 @@ def calculate_fukui(
 
     # Compute the f+ Fukui function
     f_plus = cubes[anion.charge] - cubes[origin.charge]
-    f_plus.charges(localized_fukui["f+"])
+    f_plus.charges = localized_fukui["f+"]
     f_plus.save(
         join("./output_densities", f"{molecule.name}_Fukui_plus.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
@@ -122,7 +125,7 @@ def calculate_fukui(
 
     # Compute the f- Fukui function
     f_minus = cubes[origin.charge] - cubes[cation.charge]
-    f_minus.charges(localized_fukui["f-"])
+    f_minus.charges = localized_fukui["f-"]
     f_minus.save(
         join("./output_densities", f"{molecule.name}_Fukui_minus.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
@@ -131,7 +134,7 @@ def calculate_fukui(
 
     # Compute the f0 Fukui function
     f_zero = (cubes[anion.charge] - cubes[cation.charge]).scale(0.5)
-    f_zero.charges(localized_fukui["f0"])
+    f_zero.charges = localized_fukui["f0"]
     f_zero.save(
         join("./output_densities", f"{molecule.name}_Fukui_zero.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
@@ -139,3 +142,58 @@ def calculate_fukui(
     )
 
     return {f"{orca.method}|{orca.basis_set}": localized_fukui}
+
+
+def render_fukui_cubes(cubfile: str):
+
+    root_name = basename(cubfile).strip(".fukui.cube")
+    print(root_name)
+
+    vmd_path = subprocess.check_output("which vmd", shell=True).decode("utf-8").strip("/bin/vmd\n")
+    print("PATH: ", vmd_path)
+
+    vmd_dir = abspath(f"/{vmd_path}") 
+    print("DIR: ", vmd_dir)
+
+    tachyon_path = join(vmd_dir, "lib/vmd/tachyon_LINUXAMD64")
+    print(tachyon_path)
+
+    with tmp(mode="w+") as vmd_script:
+
+        vmd_script.write(
+            f"""
+            mol addrep 0
+            display projection Orthographic
+            display resetview
+            mol new {cubfile} type {{cube}} first 0 last -1 step 1 waitfor 1 volsets {{0 }}
+            animate style Loop
+            axes location Off
+            mol modstyle 0 0 CPK 1.000000 0.300000 12.000000 12.000000
+            mol color Name
+            mol representation CPK 1.000000 0.300000 150.000000 12.000000
+            mol selection all
+            mol material Opaque
+            mol addrep 0
+            mol modcolor 1 0 Volume 0
+            mol modstyle 1 0 Isosurface 0.003000 0 0 0 1 1
+            mol modmaterial 1 0 Translucent
+            display shadows on
+            display ambientocclusion on
+            display dof on
+            color Display Background white
+            color Element C black
+            mol modcolor 0 0 Element
+            mol scaleminmax 0 1 0.000000 1.000000
+            render Tachyon {root_name}.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res 4800 4800 -o %s.png
+            exit
+            """
+        )
+        
+        vmd_script.seek(0)
+
+        system(f"vmd -dispdev text -e {vmd_script.name}")
+
+    
+
+
+    
