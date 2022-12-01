@@ -8,6 +8,9 @@ from compechem.wrappers.orca import OrcaInput
 from compechem.tools.cubetools import Cube
 
 
+FUKUI_CUBE_WARNING = "Fukui function cube file, the atomic charges column contains the localized Mulliken-charge-based fukui values"
+
+
 def calculate_fukui(
     molecule: System,
     orca: OrcaInput,
@@ -87,31 +90,13 @@ def calculate_fukui(
         cubename = f"{mol.name}_{mol.charge}_{mol.spin}_{orca.method}"
         cubename += "_opt" if origin and optimize is True else "_spe"
         cubename += ".eldens.cube"
-        
+
         cube = Cube.from_file(join("./output_densities", cubename))
         cubes[mol.charge] = cube
 
     # Check if all the densities have been loaded correctly
     if len(cubes) != 3:
         raise RuntimeError(f"Three cube files expected, {len(cubes)} found.")
-
-    # Compute the f+ Fukui function
-    f_plus = cubes[anion.charge] - cubes[origin.charge]
-    f_plus.save(
-        join("./output_densities", f"{molecule.name}_Fukui_plus.cube"), comment="Fukui f+"
-    )
-
-    # Compute the f- Fukui function
-    f_minus = cubes[origin.charge] - cubes[cation.charge]
-    f_minus.save(
-        join("./output_densities", f"{molecule.name}_Fukui_minus.cube"), comment="Fukui f-"
-    )
-
-    # Compute the f0 Fukui function
-    f_zero = (cubes[anion.charge] - cubes[cation.charge]).scale(0.5)
-    f_zero.save(
-        join("./output_densities", f"{molecule.name}_Fukui_zero.cube"), comment="Fukui f0"
-    )
 
     # Compute the localized fukui function values from the mulliken charges
     localized_fukui = {"f+": [], "f-": [], "f0": []}
@@ -125,5 +110,32 @@ def calculate_fukui(
         localized_fukui["f0"].append(
             (anion.mulliken_atomic_charges[atom] - cation.mulliken_atomic_charges[atom]) / 2
         )
+
+    # Compute the f+ Fukui function
+    f_plus = cubes[anion.charge] - cubes[origin.charge]
+    f_plus.charges(localized_fukui["f+"])
+    f_plus.save(
+        join("./output_densities", f"{molecule.name}_Fukui_plus.fukui.cube"),
+        comment_1st=FUKUI_CUBE_WARNING,
+        comment_2nd="Fukui f+",
+    )
+
+    # Compute the f- Fukui function
+    f_minus = cubes[origin.charge] - cubes[cation.charge]
+    f_minus.charges(localized_fukui["f-"])
+    f_minus.save(
+        join("./output_densities", f"{molecule.name}_Fukui_minus.fukui.cube"),
+        comment_1st=FUKUI_CUBE_WARNING,
+        comment_2nd="Fukui f-",
+    )
+
+    # Compute the f0 Fukui function
+    f_zero = (cubes[anion.charge] - cubes[cation.charge]).scale(0.5)
+    f_zero.charges(localized_fukui["f0"])
+    f_zero.save(
+        join("./output_densities", f"{molecule.name}_Fukui_zero.fukui.cube"),
+        comment_1st=FUKUI_CUBE_WARNING,
+        comment_2nd="Fukui f0",
+    )
 
     return {f"{orca.method}|{orca.basis_set}": localized_fukui}
