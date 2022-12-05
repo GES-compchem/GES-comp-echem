@@ -462,6 +462,16 @@ title="Print to PDF"
    function
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#calculate-fukui-function">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     calculate_fukui
+    </span>
+   </code>
+   function
+  </a>
+ </li>
 </ul>
 
     </nav>
@@ -496,6 +506,16 @@ title="Print to PDF"
    <code class="docutils literal notranslate">
     <span class="pre">
      calculate_potential
+    </span>
+   </code>
+   function
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#calculate-fukui-function">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     calculate_fukui
     </span>
    </code>
    function
@@ -562,6 +582,45 @@ the potential calculation will be carried out only considering the electronic co
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="calculate-fukui-function">
+<h2><code class="docutils literal notranslate"><span class="pre">calculate_fukui</span></code> function<a class="headerlink" href="#calculate-fukui-function" title="Permalink to this headline">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="compechem.functions.calculate_fukui">
+<span class="sig-prename descclassname"><span class="pre">compechem.functions.</span></span><span class="sig-name descname"><span class="pre">calculate_fukui</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">orca</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="wrappers/orca.html#compechem.wrappers.orca.OrcaInput" title="compechem.wrappers.orca.OrcaInput"><span class="pre">compechem.wrappers.orca.OrcaInput</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spins_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cube_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#compechem.functions.calculate_fukui" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes the Fukui f+, f- and f0 functions starting from a given input molecule. The
+functions are saved in Gaussian cube format and stored in the <cite>output_densities</cite> folder.
+Localized Fukui functions are also computed from the Mulliken charges and returned as a
+dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>molecule</strong> (<a class="reference internal" href="systems.html#compechem.systems.System" title="compechem.systems.System"><em>System</em></a>) – The System object containing the geometry of the selected molecule (if the geometry
+has not been optimized, please enable the optimize option)</p></li>
+<li><p><strong>orca</strong> (<a class="reference internal" href="wrappers/orca.html#compechem.wrappers.orca.OrcaInput" title="compechem.wrappers.orca.OrcaInput"><em>OrcaInput</em></a>) – The orca input wrapper object that defines the protocol to be used in the calculation.</p></li>
+<li><p><strong>spin_states</strong> (<em>Union</em><em>[</em><em>None</em><em>, </em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – If set to None, when adding or subtracting electrons will automatically switch the
+spin state from singlet to doublet and vice versa (Maximum one unpaired electrons).
+If manually set to <cite>List[int]</cite> will force the spin multeplicities according to the
+user specified values. The order of the spin multiplicity values is: molecule with
+one electron added (-1), the molecule as it is (0) and the molecule  with one of its
+electrons removed (+1).</p></li>
+<li><p><strong>cube_dim</strong> (<em>int</em>) – Resolution for the cube files (default 250)</p></li>
+<li><p><strong>optimize</strong> (<em>bool</em>) – If set to True, it will run the optimization of the origin system at the same level
+of theory specified by the method option.</p></li>
+<li><p><strong>maxcore</strong> (<em>int</em>) – The maximum amount of memory in MB to be allocated for each core.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>Dict[str</strong> – The dictionary of dictionaries containing the localized fukui function computed from
+the Mulliken charges. The external key encodes the levelo of theory used and the
+basis-set while the inner keyword (either f+, f- or f0) encodes the type of Fukui function.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[str, List[float]]]</p>
 </dd>
 </dl>
 </dd></dl>

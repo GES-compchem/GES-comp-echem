@@ -454,6 +454,11 @@ title="Print to PDF"
    1-el redox potential
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#fukui-functions">
+   Fukui functions
+  </a>
+ </li>
 </ul>
 
     </nav>
@@ -481,6 +486,11 @@ title="Print to PDF"
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#el-redox-potential">
    1-el redox potential
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#fukui-functions">
+   Fukui functions
   </a>
  </li>
 </ul>
@@ -544,6 +554,55 @@ MH_{n} \rightarrow M^{\cdot (n-1)-} + n\cdot H^{+} + e^{-}
 E°_{MH_{n}/M^{\cdot(n-1)-}} = - \frac{G_{M^{\cdot(n-1)-}} - (G_{MH_{n}} + n \cdot G_{H^{+}}) }{F} - E°_{SHE} - n \cdot 0.059 \cdot pH 
 \]</div>
 <p>where <span class="math notranslate nohighlight">\(G_{M^{\cdot(n-1)-}}\)</span> and <span class="math notranslate nohighlight">\(G_{MH_{n}}\)</span> are calculated summing the electronic + vibronic energies at the selected level of theory, <span class="math notranslate nohighlight">\(G_{H^{+}} = -270.29 kcal/mol\)</span>, <span class="math notranslate nohighlight">\(F = 23.061 kcal/volt–gram-equivalent\)</span>, and <span class="math notranslate nohighlight">\(E_{SHE} = 4.28 V\)</span>.</p>
+</section>
+<section id="fukui-functions">
+<h2>Fukui functions<a class="headerlink" href="#fukui-functions" title="Permalink to this headline">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">compechem.functions.calculate_fukui</span></code> function calculates the Fukui functions <span class="math notranslate nohighlight">\(f^+(r)\)</span>, <span class="math notranslate nohighlight">\(f^-(r)\)</span> and <span class="math notranslate nohighlight">\(f^0(r)\)</span> associated with a given molecular geometry. The Fukui functions are computed according to the definitions:</p>
+<div class="math notranslate nohighlight">
+\[
+f^+(r) = \rho_{N+1}(r) - \rho_{N}(r)
+\]</div>
+<div class="math notranslate nohighlight">
+\[
+f^-(r) = \rho_{N}(r) - \rho_{N-1}(r)
+\]</div>
+<div class="math notranslate nohighlight">
+\[
+f^0(r) = \frac{1}{2} \left[\rho_{N+1}(r) - \rho_{N-1}(r)\right]
+\]</div>
+<p>Where, given a molecule with <span class="math notranslate nohighlight">\(N\)</span> electrons, <span class="math notranslate nohighlight">\(\rho_{N}(r)\)</span> represents its electronic density while <span class="math notranslate nohighlight">\(\rho_{N\pm1}(r)\)</span> represents the electronic density of the molecule, in the same nuclear configuration, when one electron is either added (<span class="math notranslate nohighlight">\(+1\)</span>) or removed (<span class="math notranslate nohighlight">\(-1\)</span>).</p>
+<p>The Fukui functions are both computed as volumetric quantities and saved in a <a class="reference external" href="http://paulbourke.net/dataformats/cube/">Gaussian Cube</a> compatible format in the <code class="docutils literal notranslate"><span class="pre">output_density</span></code> folder and as localized values returned in the form of a dictionary. The localized Fukui functions are computed by applying the <span class="math notranslate nohighlight">\(f^+\)</span>, <span class="math notranslate nohighlight">\(f^-\)</span> and <span class="math notranslate nohighlight">\(f^0\)</span> definitions replacing the charge density with the Mulliken charges.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Please notice how the Fukui cubes contain the localized Mulliken-charge-based Fukui values in place of the atomic charges. This is explained in the first comment line of each cube file and, for sake of clarity, all the files are saved using the extension <code class="docutils literal notranslate"><span class="pre">.fukui.cube</span></code>.</p>
+</div>
+<p>The function can be called with the following minimal arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">molecule</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): The molecular structure to be used in the computation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">orca</span></code> (<code class="docutils literal notranslate"><span class="pre">OrcaInput</span></code>): The ORCA wrapper defining the level of theory to be used in the calculation.</p></li>
+</ul>
+<p>The functions assumes that the molecule supports only singlet and doublet states and switches the spin multeplicity according to the number of electrons. If different spin states needs to be considered the <code class="docutils literal notranslate"><span class="pre">spins_states</span></code> option can be used to provide the spin multeplicity values as a list.</p>
+<p>An example code snippet is provided in what follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">System</span><span class="p">(</span><span class="n">xyzfile</span><span class="p">)</span>
+<span class="n">wrapper</span> <span class="o">=</span> <span class="n">OrcaInput</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;B3LYP&quot;</span><span class="p">,</span> <span class="n">basis_set</span><span class="o">=</span><span class="s2">&quot;6-311++G**&quot;</span><span class="p">)</span>
+
+<span class="n">localized_fukui</span> <span class="o">=</span> <span class="n">calculate_fukui</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Localized Fukui functions:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">level_of_theory</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">localized_fukui</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">level_of_theory</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">mylist</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; -&gt; </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">mylist</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That for a water molecule returns the following result:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Localized</span> <span class="n">Fukui</span> <span class="n">functions</span><span class="p">:</span>
+<span class="n">B3LYP</span><span class="o">|</span><span class="mi">6</span><span class="o">-</span><span class="mi">311</span><span class="o">++</span><span class="n">G</span><span class="o">**</span>
+ <span class="o">-&gt;</span> <span class="n">f</span><span class="o">+</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.39742500000000003</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.699236</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.698188</span><span class="p">]</span>
+ <span class="o">-&gt;</span> <span class="n">f</span><span class="o">-</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.740002</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.129992</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.130005</span><span class="p">]</span>
+ <span class="o">-&gt;</span> <span class="n">f0</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.17128849999999998</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.414614</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4140965</span><span class="p">]</span>
+</pre></div>
+</div>
 </section>
 </section>
 
