@@ -144,19 +144,13 @@ def calculate_fukui(
     return {f"{orca.method}|{orca.basis_set}": localized_fukui}
 
 
-def render_fukui_cubes(cubfile: str):
+def render_fukui_cubes(cubfile: str, isovalue: float = 0.003, resolution: int = 4800):
 
     root_name = basename(cubfile).strip(".fukui.cube")
-    print(root_name)
-
     vmd_path = subprocess.check_output("which vmd", shell=True).decode("utf-8").strip("/bin/vmd\n")
-    print("PATH: ", vmd_path)
-
     vmd_dir = abspath(f"/{vmd_path}") 
-    print("DIR: ", vmd_dir)
 
     tachyon_path = join(vmd_dir, "lib/vmd/tachyon_LINUXAMD64")
-    print(tachyon_path)
 
     with tmp(mode="w+") as vmd_script:
 
@@ -175,7 +169,7 @@ def render_fukui_cubes(cubfile: str):
             mol material Opaque
             mol addrep 0
             mol modcolor 1 0 Volume 0
-            mol modstyle 1 0 Isosurface 0.003000 0 0 0 1 1
+            mol modstyle 1 0 Isosurface {isovalue} 0 0 0 1 1
             mol modmaterial 1 0 Translucent
             display shadows on
             display ambientocclusion on
@@ -184,7 +178,7 @@ def render_fukui_cubes(cubfile: str):
             color Element C black
             mol modcolor 0 0 Element
             mol scaleminmax 0 1 0.000000 1.000000
-            render Tachyon {root_name}.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res 4800 4800 -o %s.png
+            render Tachyon {root_name}.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res {resolution} {resolution} -o %s.png
             exit
             """
         )
