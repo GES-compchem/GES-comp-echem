@@ -16,3 +16,8 @@
 ```
 
 
+## `calculate_fukui` function
+
+```{eval-rst}
+.. autofunction:: compechem.functions.calculate_fukui
+```

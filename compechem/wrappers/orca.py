@@ -109,7 +109,7 @@ class OrcaInput:
             input += f"  dim2 {job_info['cube_dim']}\n"
             input += f"  dim3 {job_info['cube_dim']}\n"
             input += '  ElDens("eldens.cube");\n'
-            if {job_info["spin"]} != 1:
+            if job_info["spin"] != 1:
                 input += '  SpinDens("spindens.cube");\n'
             input += "end\n\n"
 
@@ -150,7 +150,7 @@ class OrcaInput:
             if set to True, will save a cube file containing electronic and spin densities,
             by default False.
         cube_dim: int, optional
-            resolution for the cube files (default 100)
+            resolution for the cube files (default 250)
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
