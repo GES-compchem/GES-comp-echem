@@ -77,7 +77,11 @@ $$
 
 Where, given a molecule with $N$ electrons, $\rho_{N}(r)$ represents its electronic density while $\rho_{N\pm1}(r)$ represents the electronic density of the molecule, in the same nuclear configuration, when one electron is either added ($+1$) or removed ($-1$).
 
-The Fukui functions are both computed as volumetric quantities and saved in [Gaussian Cube format](http://paulbourke.net/dataformats/cube/) in the `output_density` folder and as localized values returned in the form of a dictionary. The localized Fukui functions are computed by applying the $f^+$, $f^-$ and $f^0$ definitions replacing the charge density with the Mulliken charges.
+The Fukui functions are both computed as volumetric quantities and saved in a [Gaussian Cube](http://paulbourke.net/dataformats/cube/) compatible format in the `output_density` folder and as localized values returned in the form of a dictionary. The localized Fukui functions are computed by applying the $f^+$, $f^-$ and $f^0$ definitions replacing the charge density with the Mulliken charges.
+
+::::{important}
+Please notice how the Fukui cubes contain the localized Mulliken-charge-based Fukui values in place of the atomic charges. This is explained in the first comment line of each cube file and, for sake of clarity, all the files are saved using the extension `.fukui.cube`.
+::::
 
 The function can be called with the following minimal arguments:
 * `molecule` (`System`): The molecular structure to be used in the computation
@@ -108,4 +112,3 @@ B3LYP|6-311++G**
  -> f-: [-0.740002, -0.129992, -0.130005]
  -> f0: [-0.17128849999999998, -0.414614, -0.4140965]
 ```
-
