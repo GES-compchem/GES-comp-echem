@@ -81,10 +81,10 @@ class MolecularGeometry:
             The `MolecularGeometry` object containing the coordinates encoded in the `.xyz` file
         """
         obj = cls()
-        obj.import_xyz(path)
+        obj.load_xyz(path)
         return obj
 
-    def import_xyz(self, path: str) -> None:
+    def load_xyz(self, path: str) -> None:
         """
         Imports the coordinates of the molecule from a path pointing to a valid `.xyz` file
 
@@ -155,7 +155,7 @@ class MolecularGeometry:
             ):
                 raise RuntimeError("Mismatch between the atom count and the loaded data")
 
-    def export_xyz(self, path: str, comment: str = "") -> None:
+    def write_xyz(self, path: str, comment: str = "") -> None:
         """
         Exports the coordinates to a `.xyz` file located at a given path
 

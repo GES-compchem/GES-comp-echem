@@ -6,13 +6,13 @@ from compechem.core.basewrapper import BaseWrapper
 class Properties:
     """
     Class containing the properties associated to a system using a given level of theory.
-    
+
     Attributes
     ----------
     electronic_energy: float
         Electronic energy in Hartree.
     vibronic_energy: float
-        Vibronic energy in Hartree.
+        Vibronic contribution to the total energy in Hartree.
     pka: float
         The computed value of the pKa.
     mulliken_charges: List[float]
@@ -30,7 +30,7 @@ class Properties:
         self.mulliken_charges: List[float] = []
         self.mulliken_spin_populations: List[float] = []
         self.condensed_fukui_mulliken: List[float] = []
-    
+
     def __str__(self) -> str:
         ## IMPLEMENT IN MORE DETAILS
         msg = "--- Energies (Eh) ---\n"
@@ -39,16 +39,27 @@ class Properties:
         return msg
 
 
-
 class PropertiesArchive:
     """
     Simple wrapper around a dictionary capable of automatically storing the properties of a
     given system. Once a wrapper is provided the level of theory is stored and the computed
-    properties are automatically associated to the correct entry. 
+    properties are automatically associated to the correct entry.
     """
+
     def __init__(self) -> None:
         self.__properties: Dict[str, Properties] = {}
-    
+
+    def __len__(self) -> int:
+        """
+        The number of level of theory recorded in the archive.
+
+        Returns
+        -------
+        int
+            The length of the properties dictionary.
+        """
+        return len(self.__properties)
+
     def __get_key(self, wrapper: Union[str, BaseWrapper]) -> str:
         """
         Generates a univocal key capable of identifying the level of theory at which a set of
@@ -59,7 +70,7 @@ class PropertiesArchive:
         wrapper: Union[str, BaseWrapper]
             A string or a wrapper object indicating the level of theory to be used in accessing
             the dictionary entries.
-        
+
         Raises
         ------
         TypeError
@@ -79,12 +90,12 @@ class PropertiesArchive:
         wrapper: Union[str, BaseWrapper]
             A string or a wrapper object indicating the level of theory to be used in accessing
             the dictionary entries.
-        
+
         Raises
         ------
         ValueError
             Exceprion raised if the specified wrapper id is not available in the archive.
-        
+
         Returns
         -------
         Properties
@@ -96,10 +107,10 @@ class PropertiesArchive:
             raise ValueError(f"Cannot find any property for the level of theory {key}.")
         else:
             return self.__properties[key]
-    
+
     def __setitem__(self, wrapper: Union[str, BaseWrapper], properties: Properties) -> None:
         """
-        Sets the properties associated to a given level of theory. If the key does not exist 
+        Sets the properties associated to a given level of theory. If the key does not exist
         a new entry will be created.
 
         Arguments
@@ -109,7 +120,7 @@ class PropertiesArchive:
             properties.
         properties: Properties
             The properties to be associated to the specified level of theory.
-        
+
         Raises
         ------
         TypeError
@@ -120,7 +131,7 @@ class PropertiesArchive:
 
         key = self.__get_key(wrapper)
         self.__properties[key] = properties
-    
+
     def __iter__(self) -> Tuple[str, Properties]:
         """
         Class iterator returning the sequece of levels of theory and associated properties.
@@ -134,7 +145,7 @@ class PropertiesArchive:
         """
         for wrapper_id, properties in self.__properties.items():
             yield wrapper_id, properties
-    
+
     def add(self, wrapper: Union[str, BaseWrapper]) -> None:
         """
         When called adds, if not already existing, a level of theory in the properties dictionary.
@@ -146,7 +157,7 @@ class PropertiesArchive:
         key = self.__get_key(wrapper)
         if key not in self.__properties:
             self.__properties[key] = Properties()
-    
+
     def remove(self, wrapper: Union[str, BaseWrapper]) -> None:
         """
         Removes the specified level of theory from the properties dictionary.
@@ -157,3 +168,9 @@ class PropertiesArchive:
         """
         key = self.__get_key(wrapper)
         del self.__properties[key]
+
+    def clear(self) -> None:
+        """
+        Clear all the properties from memory
+        """
+        self.__properties = {}

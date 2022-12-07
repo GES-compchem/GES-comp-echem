@@ -2,126 +2,16 @@ from io import TextIOWrapper
 import os
 import numpy as np
 import logging
+
 from itertools import chain
+from typing import List, Dict
+
+from compechem.core.geometry import MolecularGeometry
+from compechem.core.properties import PropertiesArchive, Properties
 
 logger = logging.getLogger(__name__)
 
-atoms_dict = {
-    1: "H",
-    2: "He",
-    3: "Li",
-    4: "Be",
-    5: "B",
-    6: "C",
-    7: "N",
-    8: "O",
-    9: "F",
-    10: "Ne",
-    11: "Na",
-    12: "Mg",
-    13: "Al",
-    14: "Si",
-    15: "P",
-    16: "S",
-    17: "Cl",
-    18: "Ar",
-    19: "K",
-    20: "Ca",
-    21: "Sc",
-    22: "Ti",
-    23: "V",
-    24: "Cr",
-    25: "Mn",
-    26: "Fe",
-    27: "Co",
-    28: "Ni",
-    29: "Cu",
-    30: "Zn",
-    31: "Ga",
-    32: "Ge",
-    33: "As",
-    34: "Se",
-    35: "Br",
-    36: "Kr",
-    37: "Rb",
-    38: "Sr",
-    39: "Y",
-    40: "Zr",
-    41: "Nb",
-    42: "Mo",
-    43: "Tc",
-    44: "Ru",
-    45: "Rh",
-    46: "Pd",
-    47: "Ag",
-    48: "Cd",
-    49: "In",
-    50: "Sn",
-    51: "Sb",
-    52: "Te",
-    53: "I",
-    54: "Xe",
-    55: "Cs",
-    56: "Ba",
-    57: "La",
-    58: "Ce",
-    59: "Pr",
-    60: "Nd",
-    61: "Pm",
-    62: "Sm",
-    63: "Eu",
-    64: "Gd",
-    65: "Tb",
-    66: "Dy",
-    67: "Ho",
-    68: "Er",
-    69: "Tm",
-    70: "Yb",
-    71: "Lu",
-    72: "Hf",
-    73: "Ta",
-    74: "W",
-    75: "Re",
-    76: "Os",
-    77: "Ir",
-    78: "Pt",
-    79: "Au",
-    80: "Hg",
-    81: "Tl",
-    82: "Pb",
-    83: "Bi",
-    84: "Po",
-    85: "At",
-    86: "Rn",
-    87: "Fe",
-    88: "Ra",
-    89: "Ac",
-    90: "Th",
-    91: "Pa",
-    92: "U",
-    93: "Np",
-    94: "Pu",
-    95: "Am",
-    96: "Cm",
-    97: "Bk",
-    98: "Cf",
-    99: "Es",
-    100: "Fm",
-    101: "Md",
-    102: "No",
-    103: "Lr",
-    104: "Rf",
-    105: "Db",
-    106: "Sg",
-    107: "Bh",
-    108: "Hs",
-    109: "Mt",
-    110: "Ds",
-    111: "Rg",
-    112: "Cn",
-}
-
-
+# WILL BE REMOVED, DIRECTLY ACCESS THE SYSTEM PROPERTIES
 class Energies:
     """Molecular energies in Hartree"""
 
@@ -150,120 +40,102 @@ class Energies:
         return f"method: {self.method}, el: {self.electronic} Eh, vib: {self.vibronic} Eh"
 
 
-class Properties:
-    """Class containing system properties (such as pKa)."""
+class System(MolecularGeometry):
+    """
+    The System object describes a generic molecular system, its geometry and its computed
+    properties.
 
-    def __init__(self):
-        self.pka: dict = {}
-        self.mulliken_fukui: dict = {}
-
-
-class System:
-    """System object.
+    Parameters
+    ----------
+    xyz_file : str
+        path with the .xyz file containing the system geometry
+    charge : int, optional
+        total charge of the system. Defaults to 0 (neutral)
+    spin : int, optional
+        total spin of the system. Defaults to 1 (singlet)
+    box_side : float, optional
+        for periodic systems, defines the length (in Å) of the box side
 
     Attributes
     ----------
     name : str
-        name of the system, taken from the .xyz file
+        Name of the system, taken from the provided `.xyz` file
     charge : int
-        total charge of the system
+        Total charge of the system
     spin : int
-        total spin of the system (2S+1)
-    atomcount : int
-        number of atoms contained in the system
-    geometry : list
-        list containing the atomic coordinates of the system
-    box_side : float, optional
-        for periodic systems, defines the length (in Å) of the box side
-    energies : dict
-        dictionary containing the electronic/vibronic energies of the system,
-        calculated at various levels of theory
-    properties : dict
-        dictionary containing the properties of the system, such as pKa
+        Total spin multeplicity of the system (2S+1)
+    box_side : float
+        For periodic systems, defines the length (in Å) of the box side
+    properties : PropertiesArchive
+        The PropertiesArchive object containing all the properties of the system computed
+        using a specified level of theory.
     flags : list
         list containing all "warning" flags which might be encountered during calculations.
     """
 
     def __init__(
-        self,
-        xyz_file: str,
-        charge: int = 0,
-        spin: int = 1,
-        box_side: float = None,
+        self, xyz_file: str, charge: int = 0, spin: int = 1, box_side: float = None
     ) -> None:
-        """
-        Parameters
-        ----------
-        xyz_file : str
-            path with the .xyz file containing the system geometry
-        charge : int, optional
-            total charge of the system. Defaults to 0 (neutral)
-        spin : int, optional
-            total spin of the system. Defaults to 1 (singlet)
-        box_side : float, optional
-            for periodic systems, defines the length (in Å) of the box side
-        """
 
+        super().__init__()
+        super().load_xyz(xyz_file)
         self.name = os.path.basename(xyz_file).strip(".xyz")
         self.charge: int = charge
         self.spin: int = spin
-
-        self.atomcount: int = None
-        self.geometry: list = []
-
         self.box_side = box_side
-
-        if self.box_side:
-            self.periodic = True
-        else:
-            self.periodic = False
-
-        self.velocities: list = []
-        self.mulliken_atomic_charges: dict = []
-        self.mulliken_spin_populations: dict = []
-
+        self.properties: PropertiesArchive = PropertiesArchive()
         self.flags: list = []
 
-        self.energies: dict = {}
-        self.properties: Properties = Properties()
-
-        self.update_geometry(xyz_file)
-
     def __str__(self):
-        info = f"=== System: {self.name} === \n"
-        info += f"\nNumber of atoms: {self.atomcount}\n"
+        info = "=========================================================\n"
+        info += f"SYSTEM: {self.name}\n"
+        info += "=========================================================\n\n"
+        info += f"Number of atoms: {self.atomcount}\n"
         info += f"Charge: {self.charge}\n"
-        info += f"Spin: {self.spin}\n"
-        info += "\n--- Warnings ---\n"
-        for warning in self.flags:
-            info += f"{warning}\n"
-        info += "\n--- Energies (Eh) --- \n"
-        for method in self.energies:
-            info += f"\n* Method: {method}\n"
-            info += f"Electronic: {self.energies[method].electronic} Eh\n"
-            info += f"Vibronic: {self.energies[method].vibronic} Eh\n"
-        info += "\n--- Coordinates (Å) --- \n\n"
-        for line in self.geometry:
-            info += f"{line}"
-        info += "\n--- Velocities (Å/ps) --- \n\n"
-        for line in self.velocities:
-            info += f"{line}"
+        info += f"Spin multeplicity: {self.spin}\n"
+
+        if self.box_side:
+            info += f"Periodic system with box size: {self.box_side:.4f} Å\n"
+        info += "\n"
+
+        info += "********************** GEOMETRY *************************\n\n"
+        info += f"Total system mass: {self.mass:.4f} amu\n\n"
+
+        info += "----------------------------------------------\n"
+        info += " index  atom    x (Å)      y (Å)      z (Å)   \n"
+        info += "----------------------------------------------\n"
+        for idx, (atom, coordinates) in enumerate(self):
+            info += f" {idx:<6}{atom:^6}"
+            for c in coordinates:
+                info += "{0:^11}".format(f"{c:.5f}")
+            info += "\n"
+        info += "----------------------------------------------\n\n"
+
+        if len(self.properties) != 0:
+            info += "********************** PROPERTIES *************************\n\n"
+            for level_of_theory, properties in self.properties:
+                info += f"{level_of_theory}\n"
+                info += str(properties)
+                info += "\n"
+
+        if self.flags != []:
+            info += "********************** WARNINGS **************************\n\n"
+            for warning in self.flags:
+                info += f"{warning}\n"
 
         return info
 
-    def write_xyz(self, xyz_file: str):
-        """Writes the current geometry to a .xyz file.
+    def load_xyz(self, xyz_file: str) -> None:
+        """
+        Updates the current geometry from an external `.xyz` file.
 
         Parameters
         ----------
         xyz_file : str
-            path to the output .xyz file
+            path with the `.xyz` file of the geometry containing the new coordinates
         """
-        with open(xyz_file, "w") as file:
-            file.write(str(self.atomcount))
-            file.write("\n\n")
-            for line in self.geometry:
-                file.write(line)
+        super().load_xyz(xyz_file)
+        self.properties.clear()
 
     def write_gen(self, gen_file: str, box_side: float = None):
         """Writes the current geometry to a .gen file.
@@ -271,7 +143,7 @@ class System:
         Parameters
         ----------
         gen_file : str
-            path to the output .gen file
+            path to the output `.gen` file
         box_side : float, optional
             for periodic systems, defines the length (in Å) of the box side
         """
@@ -280,60 +152,44 @@ class System:
             box_side = self.box_side
 
         with open(gen_file, "w") as file:
-            if self.periodic:
-                file.write(f" {str(self.atomcount)} S\n")
-            else:
-                file.write(f" {str(self.atomcount)} C\n")
+
+            file.write(f" {str(self.atomcount)} ")
+            file.write("S\n" if self.is_periodic else "C\n")
+
             atom_types = []
-            for line in self.geometry:
-                if line.split()[0] not in atom_types:
-                    atom_types.append(line.split()[0])
+            for element in self.__atoms:
+                if element not in atom_types:
+                    atom_types.append(element)
+
             for atom in atom_types:
                 file.write(f" {atom}")
             file.write("\n")
+
             i = 1
-            for line in self.geometry:
-                for index, atom in enumerate(atom_types):
-                    if line.split()[0] == atom:
-                        file.write(f"{i} {line.replace(atom, str(index + 1))}")
+            for atom, coordinates in self:
+                line = f"{atom}\t" + "\t".join(list(coordinates)) + "\n"
+                for index, atom_type in enumerate(atom_types):
+                    if line.split()[0] == atom_type:
+                        file.write(f"{i} {line.replace(atom_type, str(index + 1))}")
                         i += 1
-            if self.periodic:
+
+            if self.is_periodic:
                 file.write(f" 0.000 0.000 0.000\n")
                 file.write(f" {box_side} 0.000 0.000\n")
                 file.write(f" 0.000 {box_side} 0.000\n")
                 file.write(f" 0.000 0.000 {box_side}")
 
-    def update_geometry(self, xyz_file: str):
-        """Updates the current geometry from an external .xyz file
-
-        Parameters
-        ----------
-        xyz_file : str
-            path with the .xyz file of the geometry containing the
-            new coordinates
+    @property
+    def is_periodic(self) -> bool:
         """
-        self.geometry = []
+        Indicates if the system is periodic or not
 
-        with open(xyz_file, "r") as f:
-            numlines = sum(1 for line in f)
-
-        with open(xyz_file, "r") as f:
-            for linenum, line in enumerate(f):
-                if linenum == 0:
-                    self.atomcount = int(line)
-                last_geom_line = numlines - (self.atomcount + 2)
-                if linenum > last_geom_line + 1 and linenum < numlines and len(line) != 1:
-                    try:
-                        atom = atoms_dict[int(line.split()[0])]
-                    except:
-                        atom = line.split()[0]
-                    self.geometry.append(
-                        f"{atom}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
-                    )
-                    if len(line.split()) > 4:
-                        self.velocities.append(
-                            f"{line.split()[0]}\t{line.split()[-3]}\t{line.split()[-2]}\t{line.split()[-1]}\n"
-                        )
+        Returns
+        -------
+        bool
+            True if the system is periodic (the `box_side` is not None), False otherwise.
+        """
+        return True if self.box_side is not None else False
 
 
 class Ensemble:
@@ -510,10 +366,8 @@ class MDTrajectory:
         self.md_out = f"MD_data/{traj_filepath}_md.out"
         self.geo_end = f"MD_data/{traj_filepath}_geo_end.xyz"
 
-        self.periodic = False
         self.box_side = None
         if os.path.exists(f"MD_data/{traj_filepath}.pbc"):
-            self.periodic = True
             with open(f"MD_data/{traj_filepath}.pbc") as f:
                 self.box_side = float(f.read())
 
@@ -589,9 +443,7 @@ class MDTrajectory:
             geo_end.close()
 
         # !!! implement bytestream input for System !!!
-        system = System(
-            f"{self.name}_{MDindex}.xyz", periodic=self.periodic, box_side=self.box_side
-        )
+        system = System(f"{self.name}_{MDindex}.xyz", box_side=self.box_side)
         os.remove(f"{self.name}_{MDindex}.xyz")
 
         with open(self.md_out, "r") as md_out:
@@ -611,3 +463,11 @@ class MDTrajectory:
 
     def __len__(self):
         return len(self.frames)
+
+
+if __name__ == "__main__":
+
+    path = "/home/ppravatto/Dropbox/GES/Progetti/ComputationalChemistry/coniferol.xyz"
+    mol = System(path, 0, 1)
+
+    print(mol)
