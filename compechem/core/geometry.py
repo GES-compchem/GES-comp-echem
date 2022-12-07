@@ -98,7 +98,7 @@ class MolecularGeometry:
         ValueError
             Exception raised if the path given does not point to a valid file
         RuntimeError
-            Exceptiona raised if an error occurs while loading the data from the file
+            Exception raised if an error occurs while loading the data from the file
         """
 
         # Clean all the variables
