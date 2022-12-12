@@ -1,8 +1,7 @@
 import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.systems import System, Energies
-from compechem.systems import MDTrajectory
+from compechem.systems import System
 from compechem.tools import process_output
 from compechem.tools import save_dftb_trajectory
 from compechem.tools import compress_dftb_trajectory
@@ -161,11 +160,14 @@ class DFTBInput:
                 f"  Steps = {job_info['steps']}\n"
                 "  MovedAtoms = 1:-1\n"
                 f"  MDRestartFrequency = {job_info['mdrestartfreq']}\n"
-                "  Velocities [AA/ps] {\n"
             )
-            for velocity in mol.velocities:
-                input += f"    {velocity[1:]}"
-            input += "  }\n" "}\n\n"
+            ### --> VELOCITIES HAVE BEEN REMOVED IN THE LATEST VERSION
+            # input += "  Velocities [AA/ps] {\n"
+            # for velocity in mol.velocities:
+            #     input += f"    {velocity[1:]}"
+            # input += "  }\n"
+            ### <--
+            input += "}\n\n"
 
         elif job_info["type"] == "simulated_annealing":
             input += (
@@ -182,11 +184,14 @@ class DFTBInput:
                 "  }\n"
                 "  MovedAtoms = 1:-1\n"
                 f"  MDRestartFrequency = {job_info['mdrestartfreq']}\n"
-                "    Velocities [AA/ps] {\n"
             )
-            for velocity in mol.velocities:
-                input += f"    {velocity[1:]}"
-            input += "  }\n" "}\n" "\n"
+            ### --> VELOCITIES HAVE BEEN REMOVED IN THE LATEST VERSION
+            # input += "  Velocities [AA/ps] {\n"
+            # for velocity in mol.velocities:
+            #     input += f"    {velocity[1:]}"
+            # input += "  }\n"
+            ### <--
+            input += "}\n" "\n"
 
         input += (
             f"Hamiltonian = {self.method} {{\n"
@@ -231,7 +236,7 @@ class DFTBInput:
             for atom in atom_types:
                 input += f'    {atom} = "{self.atom_dict[atom]}"\n'
             input += "  }\n"
-            if mol.periodic:
+            if mol.is_periodic:
                 input += "  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n"
             if self.thirdorder:
                 input += "  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n"
@@ -343,31 +348,18 @@ class DFTBInput:
                     if "Total Energy" in line:
                         electronic_energy = float(line.split()[2])
 
-            vibronic_energy = None
-
-            if self.method in mol.energies:
-                vibronic_energy = mol.energies[self.method].vibronic
-
             if inplace is False:
 
-                mol.write_xyz(f"{mol.name}.xyz")
+                newmol = System(f"{mol.name}.xyz", charge, spin)
 
-                newmol = System(f"{mol.name}.xyz", charge, spin, mol.box_side)
+                newmol.properties = copy.copy(mol.properties)
 
-                newmol.energies = copy.copy(mol.energies)
-
-                newmol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                newmol.properties.add(self.method)
+                newmol.properties[self.method].electronic_energy = electronic_energy
 
             else:
-                mol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                mol.properties.add(self.method)
+                mol.properties[self.method].electronic_energy = electronic_energy
 
             process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
@@ -456,34 +448,19 @@ class DFTBInput:
                     if "Total Energy" in line:
                         electronic_energy = float(line.split()[2])
 
-            vibronic_energy = None
-
-            if self.method in mol.energies:
-                vibronic_energy = mol.energies[self.method].vibronic
-
             if inplace is False:
 
-                mol.write_xyz(f"{mol.name}.xyz")
-                newmol = System(f"{mol.name}.xyz", charge, spin, mol.box_side)
+                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol.load_xyz("geo_end.xyz")
 
-                newmol.energies = copy.copy(mol.energies)
-
-                newmol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
-
-                newmol.update_geometry("geo_end.xyz")
+                newmol.properties.add(self.method)
+                newmol.properties[self.method].electronic_energy = electronic_energy
 
             else:
-                mol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
 
-                mol.update_geometry("geo_end.xyz")
+                mol.load_xyz("geo_end.xyz")
+                mol.properties.add(self.method)
+                mol.properties[self.method].electronic_energy = electronic_energy
 
             process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
@@ -590,13 +567,6 @@ class DFTBInput:
 
             import random, string
 
-            if inplace is False:
-                newmol = System("geo_end.xyz", charge, spin, mol.box_side)
-                newmol.energies = copy.copy(mol.energies)
-
-            else:
-                mol.update_geometry("geo_end.xyz")
-
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
 
             if compress_traj:
@@ -609,7 +579,7 @@ class DFTBInput:
 
             save_dftb_trajectory(f"{mol.name}_{charge}_{spin}_{suffix}")
 
-            if mol.periodic:
+            if mol.is_periodic:
                 with open(f"../MD_data/{mol.name}_{charge}_{spin}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
@@ -617,9 +587,11 @@ class DFTBInput:
             if remove_tdir:
                 shutil.rmtree(tdir)
 
-        trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
+        ### --> CURRENTLY NOT WORKING, REFACTORING NEEDED
+        # trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
+        ### <--
 
-        return trajectory
+        return None
 
     def simulated_annealing(
         self,
@@ -731,13 +703,6 @@ class DFTBInput:
 
             import random, string
 
-            if inplace is False:
-                newmol = System("geo_end.xyz", charge, spin, mol.box_side)
-                newmol.energies = copy.copy(mol.energies)
-
-            else:
-                mol.update_geometry("geo_end.xyz")
-
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
 
             if compress_traj:
@@ -747,7 +712,7 @@ class DFTBInput:
 
             save_dftb_trajectory(f"{mol.name}_{suffix}")
 
-            if mol.periodic:
+            if mol.is_periodic:
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
@@ -755,6 +720,8 @@ class DFTBInput:
             if remove_tdir:
                 shutil.rmtree(tdir)
 
-        trajectory = MDTrajectory(f"{mol.name}_{suffix}", self.method)
+        ### --> CURRENTLY NOT WORKING, REFACTORING NEEDED
+        # trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
+        ### <--
 
-        return trajectory
+        return None

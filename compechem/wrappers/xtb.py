@@ -1,7 +1,7 @@
 import os, copy, sh, shutil
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.systems import System, Energies
+from compechem.systems import System
 from compechem.tools import process_output
 from compechem.tools import add_flag
 from compechem.tools import dissociation_check
@@ -111,29 +111,18 @@ class XtbInput:
                     if "TOTAL ENERGY" in line:
                         electronic_energy = float(line.split()[-3])
 
-            vibronic_energy = None
-
-            if self.method in mol.energies:
-                vibronic_energy = mol.energies[self.method].vibronic
-
             if inplace is False:
 
                 newmol = System(f"{mol.name}.xyz", charge, spin)
 
-                newmol.energies = copy.copy(mol.energies)
+                newmol.properties = copy.copy(mol.properties)
 
-                newmol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                newmol.properties.add(self.method)
+                newmol.properties[self.method].electronic_energy = electronic_energy
 
             else:
-                mol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                mol.properties.add(self.method)
+                mol.properties[self.method].electronic_energy = electronic_energy
 
             process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
@@ -237,25 +226,18 @@ class XtbInput:
                 if inplace is False:
 
                     newmol = System(f"{mol.name}.xyz", charge, spin)
+                    newmol.load_xyz("xtbopt.xyz")
 
-                    newmol.energies = copy.copy(mol.energies)
-
-                    newmol.energies[self.method] = Energies(
-                        method=self.method,
-                        electronic=electronic_energy,
-                        vibronic=vibronic_energy,
-                    )
-
-                    newmol.update_geometry("xtbopt.xyz")
+                    newmol.properties.add(self.method)
+                    newmol.properties[self.method].electronic_energy = electronic_energy
+                    newmol.properties[self.method].vibronic_energy = vibronic_energy
 
                 else:
-                    mol.energies[self.method] = Energies(
-                        method=self.method,
-                        electronic=electronic_energy,
-                        vibronic=vibronic_energy,
-                    )
+                    mol.load_xyz("xtbopt.xyz")
 
-                    mol.update_geometry("xtbopt.xyz")
+                    mol.properties.add(self.method)
+                    mol.properties[self.method].electronic_energy = electronic_energy
+                    mol.properties[self.method].vibronic_energy = vibronic_energy
 
                 process_output(mol, self.method, "opt", charge, spin)
                 if remove_tdir:
@@ -342,20 +324,17 @@ class XtbInput:
 
                 newmol = System(f"{mol.name}.xyz", charge, spin)
 
-                newmol.energies = copy.copy(mol.energies)
+                newmol.properties = copy.copy(mol.properties)
 
-                newmol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                newmol.properties.add(self.method)
+                newmol.properties[self.method].electronic_energy = electronic_energy
+                newmol.properties[self.method].vibronic_energy = vibronic_energy
 
             else:
-                mol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+
+                mol.properties.add(self.method)
+                mol.properties[self.method].electronic_energy = electronic_energy
+                mol.properties[self.method].vibronic_energy = vibronic_energy
 
             process_output(mol, self.method, "freq", charge, spin)
             if remove_tdir:
