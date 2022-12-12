@@ -1,43 +1,16 @@
-from io import TextIOWrapper
+from __future__ import annotations
+
 import os
 import numpy as np
 import logging
 
-from itertools import chain
-from typing import List, Dict
+from typing import List
 
+from compechem.constants import kB
 from compechem.core.geometry import MolecularGeometry
-from compechem.core.properties import PropertiesArchive, Properties
+from compechem.core.properties import PropertiesArchive
 
 logger = logging.getLogger(__name__)
-
-# WILL BE REMOVED, DIRECTLY ACCESS THE SYSTEM PROPERTIES
-class Energies:
-    """Molecular energies in Hartree"""
-
-    def __init__(
-        self,
-        method: str = None,
-        electronic: float = None,
-        vibronic: float = None,
-    ) -> None:
-        """
-        Parameters
-        ----------
-        method : str, optional
-            level of theory, by default None
-        electronic : float, optional
-            electronic energy (in Hartree), by default None
-        vibronic : float, optional
-            vibronic contribution to the total energy (in Hartree),
-            by default None
-        """
-        self.method = method
-        self.electronic = electronic
-        self.vibronic = vibronic
-
-    def __str__(self):
-        return f"method: {self.method}, el: {self.electronic} Eh, vib: {self.vibronic} Eh"
 
 
 class System(MolecularGeometry):
@@ -193,97 +166,85 @@ class System(MolecularGeometry):
 
 
 class Ensemble:
-    """Ensemble object, containing a series of System objects.
+    """
+    Ensemble object, containing a series of System objects.
+
+    Parameters
+    ----------
+    systems : List[System]
+        The list of System objects to be included in the Ensemble.
 
     Attributes
     ----------
     name : str
-        name of the system represented in the ensemble, taken from the first element of
+        Name of the system represented in the ensemble, taken from the first element of
         the ensemble
-    atomcount : int
-        number of atoms contained each ensemble, taken from the first element of the
-        ensemble
-    energies : dict
-        dictionary containing the electronic/vibronic energies of the systems,
-        calculated at various levels of theory
-    container : list
-        iterable returning System objects generator for creating the Ensemble.
+    systems : List[System]
+        The list of System objects in the Ensemble.
+    properties : PropertiesArchive
+        The property archive containing the average ensamble properties calculated at
+        various levels of theory.
     """
+    def __init__(self, systems: List[System]) -> None:
 
-    def __init__(self, systems_list) -> None:
-        """
-        Parameters
-        ----------
-        systems_list : any iterable returning System objects
-            generator for creating the Ensemble.
-            Options:
-                - list of System objects
-                - MDTrajectory iterator
-        """
+        if len(systems) == 0:
+            raise ValueError("Cannot operate on an empty systems array")
 
-        self.name = systems_list[0].name
-        self.atomcount = systems_list[0].atomcount
+        if any(system != systems[0] for system in systems):
+            raise RuntimeError("Different systems encountered in list")
 
-        self.container = [systems_list]
+        self.name: str = systems[0].name
+        self.systems: List[System] = systems
+        self.properties: PropertiesArchive = PropertiesArchive()
 
-        self.energies: dict = {}
-
-    def __iter__(self):
-        chained = chain.from_iterable(self.container)
-        for item in chained:
+    def __iter__(self) -> System:
+        for item in self.systems:
             yield item
 
-    def __getitem__(self, index):
-        space = 0
-        for iterator in self.container:
-            space += len(iterator)
-            if index < space:
-                local_index = index - (space - len(iterator))
-                return iterator[local_index]
+    def __getitem__(self, index: int) -> System:
+        if index < 0 or index >= len(self.systems):
+            raise ValueError("Index out of bounds")
 
-    def __len__(self):
-        return sum([len(iterator) for iterator in self.container])
+        return self.systems[index]
 
-    def add(self, iterator):
-        """append more Systems to the ensemble from an iterator object (e.g., MDTrajectory)
+    def __len__(self) -> int:
+        return len(self.systems)
+
+    @property
+    def atomcount(self) -> int:
+        """
+        The number of atoms in the system
+
+        Returns
+        -------
+        int
+            The total number of atoms
+        """
+        return self.systems[0].atomcount
+
+    def add(self, systems: List[System]):
+        """
+        Append more Systems to the ensemble
 
         Parameters
         ----------
-        iterator : iterable
-            iterator object (e.g., MDTrajectory object)
+        systems : List[System]
+            The list of systems to be added to the ensamble
         """
-        self.container.append(iterator)
+        if any(system != self.systems[0] for system in systems):
+            raise RuntimeError("Different systems encountered in list")
 
-    # NOT WORKING - FIX IT!
-    def read_energies(self, method):
-        """reads energies from trajectory file (parsed by tools.save_dftb_trajectory()) and
-        calculates the average energy for the given trajectory
-
-        CURRENTLY NOT WORKING!!!
-
-        Parameters
-        ----------
-        method : str
-            level of theory to assign to the self.energies dictionary key
-        """
-
-        energies = []
-
-        with open(self.trajectory, "r") as f:
-            for line in f:
-                if "Energy" in line:
-                    energies.append(float(line.split()[-2]))
-
-        average_energy = sum(energies) / len(energies)
-
-        self.energies[method] = Energies(
-            method=method, electronic=average_energy, vibronic=0
-        )
+        for system in systems:
+            self.systems.append(system)
 
     def boltzmann_average(
-        self, method_el: str, method_vib: str = None, temperature: float = 297.15
+        self,
+        method_el: str,
+        method_vib: str = None,
+        temperature: float = 297.15,
     ):
-        """Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted
+        """
+        Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted
         for each molecule by its Boltzmann factor.
 
         Parameters
@@ -304,170 +265,159 @@ class Ensemble:
         actually contains the TOTAL energy of the system. Maybe in the future I'll think of
         how to separate the two contributions - LB
         """
-
         energies = []
 
-        for sys in self.container:
+        for system in self.systems:
             if method_vib is None:
-                energies.append(sys.energies[method_el].electronic)
+                energies.append(system.properties[method_el].electronic_energy)
             else:
                 energies.append(
-                    sys.energies[method_el].electronic + sys.energies[method_vib].vibronic
+                    system.properties[method_el].electronic_energy
+                    + system.properties[method_vib].vibronic_energy
                 )
 
-        # necessary for avoiding overflows with large energies
-        relative_energies = [energy - min(energies) for energy in energies]
+        # Compute the relative energy of each system in respect to the minimum to avoid overflows
+        # when computing exponential of large magnitude values
+        dE = [energy - min(energies) for energy in energies]
 
-        boltzmann_constant = 3.167e-6  # Eh/K
-        temperature = temperature
+        # Compute the relative partition function starting from the relative energy list
+        relative_Z = np.sum(np.exp([-energy / (kB * temperature) for energy in dE]))
 
-        partition_function = np.sum(
-            np.exp(
-                [
-                    -energy / (boltzmann_constant * temperature)
-                    for energy in relative_energies
-                ]
-            )
-        )
+        # Compute the populations for each system given the boltzmann distribution
+        populations = [np.exp(-energy / (kB * temperature)) / relative_Z for energy in dE]
 
-        populations = [
-            np.exp(-energy / (boltzmann_constant * temperature)) / partition_function
-            for energy in relative_energies
-        ]
-
+        # Compute the weighted energy values by including the population of each state
         weighted_energies = [
             energy * population for energy, population in zip(energies, populations)
         ]
 
-        boltzmann_entropy = -boltzmann_constant * np.sum(populations * np.log(populations))
+        # Compute the entropy of the system
+        boltzmann_entropy = -kB * np.sum(populations * np.log(populations))
 
-        self.energies[method_el] = Energies(
-            method=method_el,
-            electronic=np.sum([weighted_energies]) - temperature * boltzmann_entropy,
-            vibronic=0,
+        # Add a property entry to the property archive
+        entry_name = method_el
+        self.properties.add(entry_name)
+
+        # Compute the helmotz free energy for the ensamble
+        self.properties[method_el].helmotz_free_energy = (
+            np.sum([weighted_energies]) - temperature * boltzmann_entropy,
         )
 
 
-class MDTrajectory:
-    def __init__(self, traj_filepath, method):
-        """Iterator class for MD trajectories. Data is computed only when accessing the
-        elements of the object (via __getitem__ or __iter__)
+# class MDTrajectory:
+#     """
+#     Iterator class for MD trajectories. Data is computed only when accessing the
+#     elements of the object (via __getitem__ or __iter__)
 
-        Parameters
-        ----------
-        traj_path : str
-            path (prefix) of the trajectory files used for creating the MD run
-        method : str
-            level of theory at which the simulation was ran
-        """
-        self.name = traj_filepath
-        self.method = method
+#     Parameters
+#     ----------
+#     traj_path : str
+#         path (prefix) of the trajectory files used for creating the MD run
+#     method : str
+#         level of theory at which the simulation was ran
+#     """
+#     def __init__(self, traj_filepath: str, method: str) -> None:
 
-        self.md_out = f"MD_data/{traj_filepath}_md.out"
-        self.geo_end = f"MD_data/{traj_filepath}_geo_end.xyz"
+#         self.name = traj_filepath
+#         self.method = method
 
-        self.box_side = None
-        if os.path.exists(f"MD_data/{traj_filepath}.pbc"):
-            with open(f"MD_data/{traj_filepath}.pbc") as f:
-                self.box_side = float(f.read())
+#         self.md_out = f"MD_data/{traj_filepath}_md.out"
+#         self.geo_end = f"MD_data/{traj_filepath}_geo_end.xyz"
 
-        with open(self.geo_end, "r") as f:
+#         self.box_side = None
+#         if os.path.exists(f"MD_data/{traj_filepath}.pbc"):
+#             with open(f"MD_data/{traj_filepath}.pbc") as f:
+#                 self.box_side = float(f.read())
 
-            self.atomcount = int(f.readline())
-            first_iter = int(f.readline().split()[-1])
+#         with open(self.geo_end, "r") as f:
 
-            for line in f:
+#             self.atomcount = int(f.readline())
+#             first_iter = int(f.readline().split()[-1])
 
-                if "iter" in line:
-                    second_iter = int(line.split()[-1])
-                    self.mdrestartfreq = second_iter - first_iter
-                    break
+#             for line in f:
 
-            for line in reversed(list(f)):
-                if "iter" in line:
-                    nframes = int(line.split()[-1])
-                    break
+#                 if "iter" in line:
+#                     second_iter = int(line.split()[-1])
+#                     self.mdrestartfreq = second_iter - first_iter
+#                     break
 
-        self.frames = list(range(0, (nframes // self.mdrestartfreq) + 1))
+#             for line in reversed(list(f)):
+#                 if "iter" in line:
+#                     nframes = int(line.split()[-1])
+#                     break
 
-    def __iter__(self):
-        for index in self.frames:
-            with open(self.geo_end, "r") as geo_end:
-                yield self.__getitem__(index, geo_end)
+#         self.frames = list(range(0, (nframes // self.mdrestartfreq) + 1))
 
-    def __getitem__(self, index, geo_end: TextIOWrapper = None):
-        """returns the System object corresponding to the requested index/MD step
+#     def __iter__(self):
+#         for index in self.frames:
+#             with open(self.geo_end, "r") as geo_end:
+#                 yield self.__getitem__(index, geo_end)
 
-        Parameters
-        ----------
-        index : int
-            MD step in the simulation (as list index, not ACTUAL MD iter number)
-        geo_end : TextIOWrapper, optional
-            if __getitem__ is called from __iter__, allows passing the geo_end.xyz file so
-            it is open only once
+#     def __getitem__(self, index, geo_end: TextIOWrapper = None):
+#         """returns the System object corresponding to the requested index/MD step
 
-        Returns
-        -------
-        system
-            System object corresponding to the requested frame in the MD simulation
-        """
+#         Parameters
+#         ----------
+#         index : int
+#             MD step in the simulation (as list index, not ACTUAL MD iter number)
+#         geo_end : TextIOWrapper, optional
+#             if __getitem__ is called from __iter__, allows passing the geo_end.xyz file so
+#             it is open only once
 
-        MDindex = self.frames[index] * self.mdrestartfreq
-        close_flag = False
+#         Returns
+#         -------
+#         system
+#             System object corresponding to the requested frame in the MD simulation
+#         """
 
-        if not geo_end:
-            close_flag = True
-            geo_end = open(self.geo_end, "r")
+#         MDindex = self.frames[index] * self.mdrestartfreq
+#         close_flag = False
 
-        with open(f"{self.name}_{MDindex}.xyz", "w+") as out:
+#         if not geo_end:
+#             close_flag = True
+#             geo_end = open(self.geo_end, "r")
 
-            self.atomcount = int(geo_end.readline())
-            out.write(f"{self.atomcount}\n")
-            start = None
+#         with open(f"{self.name}_{MDindex}.xyz", "w+") as out:
 
-            for i, line in enumerate(geo_end):
+#             self.atomcount = int(geo_end.readline())
+#             out.write(f"{self.atomcount}\n")
+#             start = None
 
-                if line == f"MD iter: {MDindex}\n":
-                    start = i
-                    out.write(line)
+#             for i, line in enumerate(geo_end):
 
-                if start and i > start and i < start + self.atomcount + 1:
-                    out.write(
-                        f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
-                    )
+#                 if line == f"MD iter: {MDindex}\n":
+#                     start = i
+#                     out.write(line)
 
-                if start and i > start + self.atomcount + 1:
-                    break
+#                 if start and i > start and i < start + self.atomcount + 1:
+#                     out.write(
+#                         f"{line.split()[0]}\t{line.split()[1]}\t{line.split()[2]}\t{line.split()[3]}\n"
+#                     )
 
-        if close_flag:
-            geo_end.close()
+#                 if start and i > start + self.atomcount + 1:
+#                     break
 
-        # !!! implement bytestream input for System !!!
-        system = System(f"{self.name}_{MDindex}.xyz", box_side=self.box_side)
-        os.remove(f"{self.name}_{MDindex}.xyz")
+#         if close_flag:
+#             geo_end.close()
 
-        with open(self.md_out, "r") as md_out:
-            found = False
-            for line in md_out:
-                if line == f"MD step: {MDindex}\n":
-                    found = True
-                if "Total MD Energy" in line and found:
-                    system.energies[self.method] = Energies(
-                        method=self.method,
-                        electronic=line.split()[3],
-                        vibronic=None,
-                    )
-                    break
+#         # !!! implement bytestream input for System !!!
+#         system = System(f"{self.name}_{MDindex}.xyz", box_side=self.box_side)
+#         os.remove(f"{self.name}_{MDindex}.xyz")
 
-        return system
+#         with open(self.md_out, "r") as md_out:
+#             found = False
+#             for line in md_out:
+#                 if line == f"MD step: {MDindex}\n":
+#                     found = True
+#                 if "Total MD Energy" in line and found:
+#                     system.energies[self.method] = Energies(
+#                         method=self.method,
+#                         electronic=line.split()[3],
+#                         vibronic=None,
+#                     )
+#                     break
 
-    def __len__(self):
-        return len(self.frames)
+#         return system
 
-
-if __name__ == "__main__":
-
-    path = "/home/ppravatto/Dropbox/GES/Progetti/ComputationalChemistry/coniferol.xyz"
-    mol = System(path, 0, 1)
-
-    print(mol)
+#     def __len__(self):
+#         return len(self.frames)

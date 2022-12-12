@@ -188,6 +188,10 @@ class MolecularGeometry:
             The number of atoms in the molecule
         """
         return self.__atomcount
+    
+    @property
+    def atoms(self) -> List[str]:
+        return self.__atoms
 
     @property
     def mass(self) -> float:

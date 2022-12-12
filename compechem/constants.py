@@ -227,3 +227,6 @@ atomic_masses = {
     "Rg": 280,
     "Cn": 285,
 }
+
+
+kB = 3.167e-6  # Boltzmann constant in Eh/K

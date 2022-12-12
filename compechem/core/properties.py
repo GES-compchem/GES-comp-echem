@@ -26,6 +26,8 @@ class Properties:
     def __init__(self):
         self.electronic_energy: float = None
         self.vibronic_energy: float = None
+        self.helmotz_free_energy: float = None
+        self.gibbs_free_energy: float = None
         self.pka: float = None
         self.mulliken_charges: List[float] = []
         self.mulliken_spin_populations: List[float] = []
