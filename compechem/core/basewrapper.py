@@ -1,15 +1,14 @@
-from abc import ABC, abstractmethod
-
-class BaseWrapper(ABC):
+class BaseWrapper:
     """
-    Simple abstract base class for the definition of a software wrapper. The class has a
-    single abstract propery `wrapper_id` that, by default, automatically returns a string
-    with the wrapper name and terminated by `: `.
-    """
-    def __init__(self) -> None:
-        pass
+    Simple base class for the definition of a software wrapper. The class sets the 
+    `wrapper_info` attribute initialized with the name of the wrapper itself terminated by `: `.
 
-    @property
-    @abstractmethod
-    def wrapper_id(self) -> str:
-        return f"{self.__class__.__name__}: "
+    Arguments
+    ---------
+    method: str
+        The string indicating the method to be used in the calculation.
+    
+    """
+    def __init__(self, method: str) -> None:
+        self.method = method
+        self.wrapper_info = f"{self.__class__.__name__}: "

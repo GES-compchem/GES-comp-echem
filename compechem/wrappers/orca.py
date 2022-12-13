@@ -4,13 +4,14 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System
 from compechem.tools import process_output, process_density
+from compechem.core.basewrapper import BaseWrapper
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class OrcaInput:
+class OrcaInput(BaseWrapper):
     """Interface for running Orca calculations."""
 
     def __init__(
@@ -43,14 +44,16 @@ class OrcaInput:
             the path or environment variable containing the path to the ORCA folder, by
             default "$ORCADIR"
         """
+        super().__init__(method)
+        self.wrapper_info += f"{self.method} | {self.basis_set} | {self.solvent}"
 
-        self.method = method
         self.basis_set = basis_set
         self.aux_basis = aux_basis
         self.solvent = solvent
         self.optionals = optionals
         self.__MPI_FLAGS = MPI_FLAGS
         self.__ORCADIR = ORCADIR
+    
 
     def write_input(
         self,
