@@ -30,6 +30,7 @@ def locate_vmd() -> str:
 def render_fukui_cube(
     cubfile: str,
     isovalue: float = 0.003,
+    include_negative: bool = False,
     resolution: int = 4800,
     shadows: bool = True,
     ambientocclusion: bool = True,
@@ -46,6 +47,9 @@ def render_fukui_cube(
         The path to the `.fukui.cube` file that must be rendered.
     isovalue: float
         The isovalue at which the contour must be plotted (default: 0.003).
+    include_negative: bool
+        If set to True, will render also the negative part of the Fukui function. (default:
+        False)
     resolution: int
         The resolution of the output image (default: 4800).
     shadows: bool
@@ -82,8 +86,20 @@ def render_fukui_cube(
             mol modcolor 1 0 Volume 0
             mol modstyle 1 0 Isosurface {isovalue} 0 0 0 1 1
             mol modmaterial 1 0 Translucent
+            mol scaleminmax 0 1 0.000000 1.000000
             """
         )
+
+        if include_negative:
+            vmd_script.write(
+                f"""
+                mol addrep 0
+                mol modcolor 2 0 Volume 0
+                mol modstyle 2 0 Isosurface {-isovalue} 0 0 0 1 1
+                mol modmaterial 1 0 Translucent
+                mol scaleminmax 0 2 -1.000000 0.000000
+                """
+            )
 
         if shadows:
             vmd_script.write("display shadows on\n")
@@ -99,7 +115,6 @@ def render_fukui_cube(
             color Display Background white
             color Element C black
             mol modcolor 0 0 Element
-            mol scaleminmax 0 1 0.000000 1.000000
             render Tachyon {root_name}.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res {resolution} {resolution} -o %s.png
             exit
             """
