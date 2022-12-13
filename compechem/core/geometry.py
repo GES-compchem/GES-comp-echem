@@ -192,6 +192,10 @@ class MolecularGeometry:
     @property
     def atoms(self) -> List[str]:
         return self.__atoms
+    
+    @property
+    def coordinates(self) -> List[np.ndarray]:
+        return self.__coordinates
 
     @property
     def mass(self) -> float:
