@@ -8,62 +8,95 @@ from typing import List
 
 from compechem.constants import kB
 from compechem.core.geometry import MolecularGeometry
-from compechem.core.properties import PropertiesArchive
+from compechem.core.properties import Properties
 
 logger = logging.getLogger(__name__)
 
 
-class System(MolecularGeometry):
+class System:
     """
-    The System object describes a generic molecular system, its geometry and its computed
-    properties.
+    The System object describes a generic molecular system described at a given level of
+    theory. A system is defined based on a molecular geometry, a charge, a spin multeplicity
+    and, one a level of theory is selected, by a set of computed properties.
 
     Parameters
     ----------
     xyz_file : str
-        path with the .xyz file containing the system geometry
+        The path to the `.xyz` file containing the system geometry
     charge : int, optional
-        total charge of the system. Defaults to 0 (neutral)
+        The total charge of the system. (Default: 0 neutral)
     spin : int, optional
-        total spin of the system. Defaults to 1 (singlet)
+        The total spin multeplicity of the system. (Default: 1 singlet)
     box_side : float, optional
-        for periodic systems, defines the length (in Å) of the box side
-
-    Attributes
-    ----------
-    name : str
-        Name of the system, taken from the provided `.xyz` file
-    charge : int
-        Total charge of the system
-    spin : int
-        Total spin multeplicity of the system (2S+1)
-    box_side : float
         For periodic systems, defines the length (in Å) of the box side
-    properties : PropertiesArchive
-        The PropertiesArchive object containing all the properties of the system computed
-        using a specified level of theory.
-    flags : list
-        list containing all "warning" flags which might be encountered during calculations.
+    
+    Raises
+    ------
+    ValueError
+        Exception raised when the `.xyz` file path is invalid
     """
 
     def __init__(
         self, xyz_file: str, charge: int = 0, spin: int = 1, box_side: float = None
     ) -> None:
 
-        super().__init__()
-        super().load_xyz(xyz_file)
+        if not os.path.isfile(xyz_file):
+            raise ValueError("xyz file not found")
+
         self.name = os.path.basename(xyz_file).strip(".xyz")
-        self.charge: int = charge
-        self.spin: int = spin
-        self.box_side = box_side
-        self.properties: PropertiesArchive = PropertiesArchive()
+        self.__charge: int = charge
+        self.__spin: int = spin
+        self.__box_side = box_side
+
+        self.__geometry: MolecularGeometry = MolecularGeometry.from_xyz(xyz_file)
+        self.properties: Properties = Properties()
         self.flags: list = []
+
+    @property
+    def geometry(self) -> MolecularGeometry:
+        return self.__geometry
+
+    @geometry.setter
+    def geometry(self, new_geometry: MolecularGeometry) -> None:
+        self.__geometry = new_geometry
+        logger.info(f"Geometry changed: clearing properties for {self.name}")
+        self.properties = Properties()
+
+    @property
+    def charge(self) -> int:
+        return self.__charge
+
+    @charge.setter
+    def charge(self, new_charge: int) -> None:
+        self.__charge = new_charge
+        logger.info(f"Charge changed: clearing properties for {self.name}")
+        self.properties = Properties()
+
+    @property
+    def spin(self) -> int:
+        return self.__spin
+
+    @spin.setter
+    def spin(self, new_spin: int) -> None:
+        self.__spin = new_spin
+        logger.info(f"Spin changed: clearing properties for {self.name}")
+        self.properties = Properties()
+
+    @property
+    def box_side(self) -> float:
+        return self.__box_side
+
+    @box_side.setter
+    def box_side(self, value: float) -> None:
+        self.__box_side = value
+        logger.info(f"Box side changed: clearing properties for {self.name}")
+        self.properties = Properties()
 
     def __str__(self):
         info = "=========================================================\n"
         info += f"SYSTEM: {self.name}\n"
         info += "=========================================================\n\n"
-        info += f"Number of atoms: {self.atomcount}\n"
+        info += f"Number of atoms: {self.geometry.atomcount}\n"
         info += f"Charge: {self.charge}\n"
         info += f"Spin multeplicity: {self.spin}\n"
 
@@ -72,24 +105,68 @@ class System(MolecularGeometry):
         info += "\n"
 
         info += "********************** GEOMETRY *************************\n\n"
-        info += f"Total system mass: {self.mass:.4f} amu\n\n"
+        info += f"Total system mass: {self.geometry.mass:.4f} amu\n\n"
 
         info += "----------------------------------------------\n"
         info += " index  atom    x (Å)      y (Å)      z (Å)   \n"
         info += "----------------------------------------------\n"
-        for idx, (atom, coordinates) in enumerate(self):
+        for idx, (atom, coordinates) in enumerate(self.geometry):
             info += f" {idx:<6}{atom:^6}"
             for c in coordinates:
                 info += "{0:^11}".format(f"{c:.5f}")
             info += "\n"
         info += "----------------------------------------------\n\n"
 
-        if len(self.properties) != 0:
-            info += "********************** PROPERTIES *************************\n\n"
-            for level_of_theory, properties in self.properties:
-                info += f"{level_of_theory}\n"
-                info += str(properties)
-                info += "\n"
+        info += "********************** PROPERTIES *************************\n\n"
+        info += (
+            f"Electronic level of theory: {self.properties.level_of_theory_electronic}\n"
+        )
+        info += f"Vibronic level of theory: {self.properties.level_of_theory_vibronic}\n\n"
+        info += f"Electronic energy: {self.properties.electronic_energy} Eh\n"
+        info += f"Vibronic energy: {self.properties.vibronic_energy} Eh\n"
+        info += f"Helmholtz free energy: {self.properties.helmholtz_free_energy} Eh\n"
+        info += f"Gibbs free energy: {self.properties.gibbs_free_energy} Eh\n"
+        info += f"pKa: {self.properties.pka}\n\n"
+
+        if self.properties.mulliken_charges != []:
+
+            info += f"MULLIKEN ANALYSIS\n"
+            info += "----------------------------------------------\n"
+            info += " index  atom   charge    spin\n"
+            info += "----------------------------------------------\n"
+            for idx, (atom, charge, spin) in enumerate(
+                zip(
+                    self.properties.mulliken_charges,
+                    self.properties.mulliken_spin_populations,
+                )
+            ):
+                info += f" {idx:<6}{atom:^6}"
+                info += "{0:^10}{1:^10}\n".format(
+                    f"{charge:.5f}",
+                    f"{spin:.5f}",
+                )
+            info += "\n"
+
+        if self.properties.condensed_fukui_mulliken != {}:
+
+            info += f"CONDENSED FUKUI - MULLIKEN\n"
+            info += "----------------------------------------------\n"
+            info += " index  atom    f+      f-      f0\n"
+            info += "----------------------------------------------\n"
+            for idx, (atom, fplus, fminus, fzero) in enumerate(
+                zip(
+                    self.properties.condensed_fukui_mulliken["f+"],
+                    self.properties.condensed_fukui_mulliken["f-"],
+                    self.properties.condensed_fukui_mulliken["f0"],
+                )
+            ):
+                info += f" {idx:<6}{atom:^6}"
+                info += "{0:^10}{1:^10}{2:^10}\n".format(
+                    f"{fplus:.5f}",
+                    f"{fminus:.5f}",
+                    f"{fzero:.5f}",
+                )
+            info += "\n"
 
         if self.flags != []:
             info += "********************** WARNINGS **************************\n\n"
@@ -98,20 +175,9 @@ class System(MolecularGeometry):
 
         return info
 
-    def load_xyz(self, xyz_file: str) -> None:
-        """
-        Updates the current geometry from an external `.xyz` file.
-
-        Parameters
-        ----------
-        xyz_file : str
-            path with the `.xyz` file of the geometry containing the new coordinates
-        """
-        super().load_xyz(xyz_file)
-        self.properties.clear()
-
     def write_gen(self, gen_file: str, box_side: float = None):
-        """Writes the current geometry to a .gen file.
+        """
+        Writes the current geometry to a `.gen` file.
 
         Parameters
         ----------
@@ -126,11 +192,11 @@ class System(MolecularGeometry):
 
         with open(gen_file, "w") as file:
 
-            file.write(f" {str(self.atomcount)} ")
+            file.write(f" {str(self.geometry.atomcount)} ")
             file.write("S\n" if self.is_periodic else "C\n")
 
             atom_types = []
-            for element in self.__atoms:
+            for element in self.geometry.atoms:
                 if element not in atom_types:
                     atom_types.append(element)
 
@@ -139,7 +205,7 @@ class System(MolecularGeometry):
             file.write("\n")
 
             i = 1
-            for atom, coordinates in self:
+            for atom, coordinates in self.geometry:
                 line = f"{atom}\t" + "\t".join(list(coordinates)) + "\n"
                 for index, atom_type in enumerate(atom_types):
                     if line.split()[0] == atom_type:
@@ -185,17 +251,18 @@ class Ensemble:
         The property archive containing the average ensamble properties calculated at
         various levels of theory.
     """
+
     def __init__(self, systems: List[System]) -> None:
 
         if len(systems) == 0:
             raise ValueError("Cannot operate on an empty systems array")
 
-        if any(system != systems[0] for system in systems):
+        if any(system.geometry.atoms != systems[0].geometry.atoms for system in systems):
             raise RuntimeError("Different systems encountered in list")
 
         self.name: str = systems[0].name
         self.systems: List[System] = systems
-        self.properties: PropertiesArchive = PropertiesArchive()
+        self.helmholtz_free_energy: float = None
 
     def __iter__(self) -> System:
         for item in self.systems:
@@ -220,7 +287,7 @@ class Ensemble:
         int
             The total number of atoms
         """
-        return self.systems[0].atomcount
+        return self.systems[0].geometry.atomcount
 
     def add(self, systems: List[System]):
         """
@@ -231,7 +298,7 @@ class Ensemble:
         systems : List[System]
             The list of systems to be added to the ensamble
         """
-        if any(system != self.systems[0] for system in systems):
+        if any(system.geometry.atoms != systems[0].geometry.atoms for system in systems):
             raise RuntimeError("Different systems encountered in list")
 
         for system in systems:
@@ -239,27 +306,21 @@ class Ensemble:
 
     def boltzmann_average(
         self,
-        method_el: str,
-        method_vib: str = None,
         temperature: float = 297.15,
-    ):
+    ) -> float:
         """
-        Calculates the average free Gibbs energy of the ensemble (in Hartree), weighted
+        Calculates the average free Helmholtz energy of the ensemble (in Hartree), weighted
         for each molecule by its Boltzmann factor.
 
         Parameters
         ----------
-        method_el : str
-            level of theory for the electronic energies
-        method_vib : str, optional
-            level of theory for the vibronic contributions, if method_vib is None (default),
-            the ensemble energy will be evaluated only considering the electronic component
         temperature : float
             temperature at which to calculate the Boltzmann average, by default 297.15 K
 
         Returns
         -------
-        Creates an Energies object with the total free Gibbs energy of the ensemble.
+        float
+            The total Helmholtz free energy of the ensemble.
 
         NOTE: the vibronic contributions are included in the electronic component, which
         actually contains the TOTAL energy of the system. Maybe in the future I'll think of
@@ -268,12 +329,11 @@ class Ensemble:
         energies = []
 
         for system in self.systems:
-            if method_vib is None:
-                energies.append(system.properties[method_el].electronic_energy)
+            if system.properties.vibronic_energy is None:
+                energies.append(system.properties.electronic_energy)
             else:
                 energies.append(
-                    system.properties[method_el].electronic_energy
-                    + system.properties[method_vib].vibronic_energy
+                    system.properties.electronic_energy + system.properties.vibronic_energy
                 )
 
         # Compute the relative energy of each system in respect to the minimum to avoid overflows
@@ -294,13 +354,9 @@ class Ensemble:
         # Compute the entropy of the system
         boltzmann_entropy = -kB * np.sum(populations * np.log(populations))
 
-        # Add a property entry to the property archive
-        entry_name = method_el
-        self.properties.add(entry_name)
-
         # Compute the helmotz free energy for the ensamble
-        self.properties[method_el].helmotz_free_energy = (
-            np.sum([weighted_energies]) - temperature * boltzmann_entropy,
+        self.helmholtz_free_energy = (
+            np.sum([weighted_energies]) - temperature * boltzmann_entropy
         )
 
 

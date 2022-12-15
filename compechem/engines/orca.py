@@ -4,14 +4,14 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System
 from compechem.tools import process_output, process_density
-from compechem.core.basewrapper import BaseWrapper
+from compechem.core.base import BaseEngine
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class OrcaInput(BaseWrapper):
+class OrcaInput(BaseEngine):
     """Interface for running Orca calculations."""
 
     def __init__(
@@ -45,7 +45,6 @@ class OrcaInput(BaseWrapper):
             default "$ORCADIR"
         """
         super().__init__(method)
-        self.wrapper_info += f"{self.method} | {self.basis_set} | {self.solvent}"
 
         self.basis_set = basis_set
         self.aux_basis = aux_basis
@@ -53,6 +52,8 @@ class OrcaInput(BaseWrapper):
         self.optionals = optionals
         self.__MPI_FLAGS = MPI_FLAGS
         self.__ORCADIR = ORCADIR
+
+        self.level_of_theory += f" | basis: {self.basis_set} | solvent: {self.solvent}"
     
 
     def write_input(
@@ -61,7 +62,7 @@ class OrcaInput(BaseWrapper):
         job_info: Dict,
     ) -> None:
 
-        mol.write_xyz(f"{mol.name}.xyz")
+        mol.geometry.write_xyz(f"{mol.name}.xyz")
 
         input = (
             "%pal\n"
@@ -212,23 +213,14 @@ class OrcaInput(BaseWrapper):
                 newmol = System(f"{mol.name}.xyz", charge, spin)
 
                 newmol.properties = copy.copy(mol.properties)
-
-                newmol.properties.add(self.method)
-                newmol.properties[self.method].electronic_energy = electronic_energy
-
-                newmol.properties[self.method].mulliken_charges = mulliken_charges
-                newmol.properties[
-                    self.method
-                ].mulliken_spin_populations = mulliken_spin_populations
+                newmol.properties.set_electronic_energy(electronic_energy, self)
+                newmol.properties.set_mulliken_charges(mulliken_charges, self)
+                newmol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
 
             else:
-                mol.properties.add(self.method)
-                mol.properties[self.method].electronic_energy = electronic_energy
-
-                mol.properties[self.method].mulliken_charges = mulliken_charges
-                mol.properties[
-                    self.method
-                ].mulliken_spin_populations = mulliken_spin_populations
+                mol.properties.set_electronic_energy(electronic_energy, self)
+                mol.properties.set_mulliken_charges(mulliken_charges, self)
+                mol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
 
             process_output(mol, self.method, "spe", charge, spin)
 
@@ -329,28 +321,19 @@ class OrcaInput(BaseWrapper):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol = System("input.xyz", charge, spin)
+                newmol.name = mol.name
 
-                newmol.properties.add(self.method)
-                newmol.properties[self.method].electronic_energy = electronic_energy
-                newmol.properties[self.method].vibronic_energy = vibronic_energy
-
-                newmol.properties[self.method].mulliken_charges = mulliken_charges
-                newmol.properties[
-                    self.method
-                ].mulliken_spin_populations = mulliken_spin_populations
+                newmol.properties.set_electronic_energy(electronic_energy, self)
+                newmol.properties.set_mulliken_charges(mulliken_charges, self)
+                newmol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
 
             else:
-                mol.load_xyz(f"{mol.name}.xyz")
+                mol.geometry.load_xyz("input.xyz")
 
-                mol.properties.add(self.method)
-                mol.properties[self.method].electronic_energy = electronic_energy
-                mol.properties[self.method].vibronic_energy = vibronic_energy
-
-                mol.properties[self.method].mulliken_charges = mulliken_charges
-                mol.properties[
-                    self.method
-                ].mulliken_spin_populations = mulliken_spin_populations
+                mol.properties.set_electronic_energy(electronic_energy, self)
+                mol.properties.set_mulliken_charges(mulliken_charges, self)
+                mol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
 
             process_output(mol, self.method, "opt", charge, spin)
 
@@ -443,16 +426,12 @@ class OrcaInput(BaseWrapper):
                 newmol = System(f"{mol.name}.xyz", charge, spin)
 
                 newmol.properties = copy.copy(mol.properties)
-
-                newmol.properties.add(self.method)
-                newmol.properties[self.method].electronic_energy = electronic_energy
-                newmol.properties[self.method].vibronic_energy = vibronic_energy
+                newmol.properties.set_electronic_energy(electronic_energy, self)
+                newmol.properties.set_vibronic_energy(vibronic_energy, self)
 
             else:
-
-                mol.properties.add(self.method)
-                mol.properties[self.method].electronic_energy = electronic_energy
-                mol.properties[self.method].vibronic_energy = vibronic_energy
+                mol.properties.set_electronic_energy(electronic_energy, self)
+                mol.properties.set_vibronic_energy(vibronic_energy, self)
 
             process_output(mol, self.method, "freq", charge, spin)
             if remove_tdir:
@@ -541,16 +520,13 @@ class OrcaInput(BaseWrapper):
                 newmol = System(f"{mol.name}.xyz", charge, spin)
 
                 newmol.properties = copy.copy(mol.properties)
-
-                newmol.properties.add(self.method)
-                newmol.properties[self.method].electronic_energy = electronic_energy
-                newmol.properties[self.method].vibronic_energy = vibronic_energy
+                newmol.properties.set_electronic_energy(electronic_energy, self)
+                newmol.properties.set_vibronic_energy(vibronic_energy, self)
 
             else:
 
-                mol.properties.add(self.method)
-                mol.properties[self.method].electronic_energy = electronic_energy
-                mol.properties[self.method].vibronic_energy = vibronic_energy
+                mol.properties.set_electronic_energy(electronic_energy, self)
+                mol.properties.set_vibronic_energy(vibronic_energy, self)
 
             process_output(mol, self.method, "numfreq", charge, spin)
             if remove_tdir:
@@ -667,7 +643,7 @@ class M06(OrcaInput):
             basis_set="def2-TZVP",
             aux_basis="def2/J",
             solvent="water",
-            optionals="",
+            optionals="DEFGRID3",
         )
 
 

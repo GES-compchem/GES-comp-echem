@@ -1,6 +1,7 @@
 import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
+from compechem.core.base import BaseEngine
 from compechem.systems import System
 from compechem.tools import process_output
 from compechem.tools import save_dftb_trajectory
@@ -11,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class DFTBInput:
+class DFTBInput(BaseEngine):
     """Interface for running DFTB+ calculations
 
     Attributes
@@ -66,8 +67,8 @@ class DFTBInput:
         verbose : bool, optional
             if set to True, saves the full DFTB+ output, otherwise, only the smaller files
         """
+        super().__init__(method)
 
-        self.method = method
         self.parameters = parameters
         self.solver = solver
         self.thirdorder = thirdorder
@@ -261,7 +262,7 @@ class DFTBInput:
                 input += f"  Solver = {self.solver} {{}}\n"
             self.parameters = "gfn2"
             input += '  Method = "GFN2-xTB"\n'
-            if mol.periodic:
+            if mol.is_periodic:
                 input += "  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n"
             input += "}\n"
 
@@ -353,13 +354,10 @@ class DFTBInput:
                 newmol = System(f"{mol.name}.xyz", charge, spin)
 
                 newmol.properties = copy.copy(mol.properties)
-
-                newmol.properties.add(self.method)
-                newmol.properties[self.method].electronic_energy = electronic_energy
+                newmol.properties.set_electronic_energy(electronic_energy, self)
 
             else:
-                mol.properties.add(self.method)
-                mol.properties[self.method].electronic_energy = electronic_energy
+                mol.properties.set_electronic_energy(electronic_energy, self)
 
             process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
@@ -451,16 +449,13 @@ class DFTBInput:
             if inplace is False:
 
                 newmol = System(f"{mol.name}.xyz", charge, spin)
-                newmol.load_xyz("geo_end.xyz")
-
-                newmol.properties.add(self.method)
-                newmol.properties[self.method].electronic_energy = electronic_energy
+                newmol.geometry.load_xyz("geo_end.xyz")
+                newmol.properties.set_electronic_energy(electronic_energy, self)
 
             else:
 
-                mol.load_xyz("geo_end.xyz")
-                mol.properties.add(self.method)
-                mol.properties[self.method].electronic_energy = electronic_energy
+                mol.geometry.load_xyz("geo_end.xyz")
+                mol.properties.set_electronic_energy(electronic_energy, self)
 
             process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:

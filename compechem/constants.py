@@ -230,3 +230,4 @@ atomic_masses = {
 
 
 kB = 3.167e-6  # Boltzmann constant in Eh/K
+avogadro = 6.0221408e23 # Avogadro's number

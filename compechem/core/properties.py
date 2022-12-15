@@ -1,6 +1,11 @@
-from typing import Dict, List, Tuple, Union
+import logging, warnings
 
-from compechem.core.basewrapper import BaseWrapper
+from typing import Dict, List
+from compechem.core.base import BaseEngine
+from compechem.config import STRICT_MODE
+
+
+logger = logging.getLogger(__name__)
 
 
 class Properties:
@@ -24,155 +29,132 @@ class Properties:
     """
 
     def __init__(self):
-        self.electronic_energy: float = None
-        self.vibronic_energy: float = None
-        self.helmotz_free_energy: float = None
-        self.gibbs_free_energy: float = None
-        self.pka: float = None
-        self.mulliken_charges: List[float] = []
-        self.mulliken_spin_populations: List[float] = []
-        self.condensed_fukui_mulliken: List[float] = []
+        self.__level_of_theory_electronic: str = None
+        self.__level_of_theory_vibronic: str = None
 
-    def __str__(self) -> str:
-        ## IMPLEMENT IN MORE DETAILS
-        msg = "--- Energies (Eh) ---\n"
-        msg += f"Electronic energy: {self.electronic_energy} Eh\n"
-        msg += f"Vibronic energy: {self.vibronic_energy} Eh\n"
-        return msg
+        self.__electronic_energy: float = None
+        self.__vibronic_energy: float = None
+        self.__helmholtz_free_energy: float = None
+        self.__gibbs_free_energy: float = None
+        self.__pka: float = None
+        self.__mulliken_charges: List[float] = []
+        self.__mulliken_spin_populations: List[float] = []
+        self.__condensed_fukui_mulliken: Dict[str, List[float]] = {}
 
+    def __validate_electronic(self, engine: BaseEngine) -> bool:
+        if self.__level_of_theory_electronic is None:
+            self.__level_of_theory_electronic = engine.level_of_theory
+        elif self.__level_of_theory_electronic != engine.level_of_theory:
+            if STRICT_MODE == True:
+                raise RuntimeError(
+                    f"Cannot store properties computed at different electronic levels of theory in STRICT mode"
+                )
+            else:
+                msg = "Different electronic levels of theory used for calculating properties. Setting level of theory to undefined."
+                logger.warning(msg)
+                warnings.warn(msg)
+                self.__level_of_theory_electronic = "Undefined"
 
-class PropertiesArchive:
-    """
-    Simple wrapper around a dictionary capable of automatically storing the properties of a
-    given system. Once a wrapper is provided the level of theory is stored and the computed
-    properties are automatically associated to the correct entry.
-    """
+    def __validate_vibronic(self, engine: BaseEngine) -> bool:
+        if self.__level_of_theory_vibronic is None:
+            self.__level_of_theory_vibronic = engine.level_of_theory
+        elif self.__level_of_theory_vibronic != engine.level_of_theory:
+            if STRICT_MODE == True:
+                raise RuntimeError(
+                    f"Cannot store properties computed at different vibronic levels of theory in STRICT mode"
+                )
+            else:
+                msg = "Different vibronic levels of theory used for calculating properties. Setting level of theory to undefined."
+                logger.warning(msg)
+                warnings.warn(msg)
+                self.__level_of_theory_vibronic = "Undefined"
 
-    def __init__(self) -> None:
-        self.__properties: Dict[str, Properties] = {}
+    @property
+    def level_of_theory_electronic(self) -> str:
+        return self.__level_of_theory_electronic
 
-    def __len__(self) -> int:
-        """
-        The number of level of theory recorded in the archive.
+    @property
+    def level_of_theory_vibronic(self) -> str:
+        return self.__level_of_theory_vibronic
 
-        Returns
-        -------
-        int
-            The length of the properties dictionary.
-        """
-        return len(self.__properties)
+    @property
+    def electronic_energy(self) -> float:
+        return self.__electronic_energy
 
-    def __get_key(self, wrapper: Union[str, BaseWrapper]) -> str:
-        """
-        Generates a univocal key capable of identifying the level of theory at which a set of
-        properties have been computed.
+    def set_electronic_energy(self, value: float, electronic_engine: BaseEngine) -> None:
+        self.__validate_electronic(electronic_engine)
+        self.__electronic_energy = value
 
-        Arguments
-        ---------
-        wrapper: Union[str, BaseWrapper]
-            A string or a wrapper object indicating the level of theory to be used in accessing
-            the dictionary entries.
+    @property
+    def vibronic_energy(self) -> float:
+        return self.__vibronic_energy
 
-        Raises
-        ------
-        TypeError
-            Exception raised if the wrapper argument does not match the expected types.
-        """
-        if type(wrapper) != str and not isinstance(wrapper, BaseWrapper):
-            raise TypeError("The wrapper type must be str or be derived from BaseWrapper")
+    def set_vibronic_energy(self, value: float, vibronic_engine: BaseEngine) -> None:
+        self.__validate_vibronic(vibronic_engine)
+        self.__vibronic_energy = value
 
-        return wrapper if type(wrapper) == str else wrapper.wrapper_id
+    @property
+    def helmholtz_free_energy(self) -> float:
+        return self.__helmholtz_free_energy
 
-    def __getitem__(self, wrapper: Union[str, BaseWrapper]) -> Properties:
-        """
-        Access the properties stored under a given level of theory.
+    def set_helmholtz_free_energy(
+        self, value: float, electronic_engine: BaseEngine, vibronic_engine: BaseEngine
+    ) -> float:
+        self.__validate_electronic(electronic_engine)
+        self.__validate_vibronic(vibronic_engine)
+        self.__helmholtz_free_energy = value
 
-        Arguments
-        ---------
-        wrapper: Union[str, BaseWrapper]
-            A string or a wrapper object indicating the level of theory to be used in accessing
-            the dictionary entries.
+    @property
+    def gibbs_free_energy(self) -> float:
+        return self.__gibbs_free_energy
 
-        Raises
-        ------
-        ValueError
-            Exceprion raised if the specified wrapper id is not available in the archive.
+    def set_gibbs_free_energy(
+        self, value: float, electronic_engine: BaseEngine, vibronic_engine: BaseEngine
+    ) -> float:
+        self.__validate_electronic(electronic_engine)
+        self.__validate_vibronic(vibronic_engine)
+        self.__gibbs_free_energy = value
 
-        Returns
-        -------
-        Properties
-            The Properties object associated with the selected level of theory.
-        """
-        key = self.__get_key(wrapper)
+    @property
+    def pka(self) -> float:
+        return self.__pka
 
-        if key not in self.__properties:
-            raise ValueError(f"Cannot find any property for the level of theory {key}.")
-        else:
-            return self.__properties[key]
+    def set_pka(
+        self,
+        value: float,
+        electronic_engine: BaseEngine,
+        vibronic_engine: BaseEngine = None,
+    ) -> float:
+        self.__validate_electronic(electronic_engine)
+        self.__validate_vibronic(vibronic_engine)
+        self.__gibbs_free_energy = value
 
-    def __setitem__(self, wrapper: Union[str, BaseWrapper], properties: Properties) -> None:
-        """
-        Sets the properties associated to a given level of theory. If the key does not exist
-        a new entry will be created.
+    @property
+    def mulliken_charges(self) -> List[float]:
+        return self.__mulliken_charges
 
-        Arguments
-        ---------
-        wrapper: Union[str, BaseWrapper]
-            A string or a wrapper object indicating the level of theory used in generating the
-            properties.
-        properties: Properties
-            The properties to be associated to the specified level of theory.
+    def set_mulliken_charges(
+        self, value: List[float], electronic_engine: BaseEngine
+    ) -> None:
+        self.__validate_electronic(electronic_engine)
+        self.__mulliken_charges = value
 
-        Raises
-        ------
-        TypeError
-            Exceprion raised if the given properties object is not of type `Properites`.
-        """
-        if type(properties) != Properties:
-            raise TypeError("The properties argument must be of type Properties")
+    @property
+    def mulliken_spin_populations(self) -> List[float]:
+        return self.__mulliken_spin_populations
 
-        key = self.__get_key(wrapper)
-        self.__properties[key] = properties
+    def set_mulliken_spin_populations(
+        self, value: List[float], electronic_engine: BaseEngine
+    ) -> None:
+        self.__validate_electronic(electronic_engine)
+        self.__mulliken_spin_populations = value
 
-    def __iter__(self) -> Tuple[str, Properties]:
-        """
-        Class iterator returning the sequece of levels of theory and associated properties.
+    @property
+    def condensed_fukui_mulliken(self) -> Dict[str, List[float]]:
+        return self.__condensed_fukui_mulliken
 
-        Yields
-        ------
-        str
-            The wrapper id representing the level of theory associated to the properties.
-        Properties
-            The properties computed at the specified level of theory.
-        """
-        for wrapper_id, properties in self.__properties.items():
-            yield wrapper_id, properties
-
-    def add(self, wrapper: Union[str, BaseWrapper]) -> None:
-        """
-        When called adds, if not already existing, a level of theory in the properties dictionary.
-
-        wrapper: Union[str, BaseWrapper]
-            A string or a wrapper object indicating the level of theory used in generating the
-            properties.
-        """
-        key = self.__get_key(wrapper)
-        if key not in self.__properties:
-            self.__properties[key] = Properties()
-
-    def remove(self, wrapper: Union[str, BaseWrapper]) -> None:
-        """
-        Removes the specified level of theory from the properties dictionary.
-
-        wrapper: Union[str, BaseWrapper]
-            A string or a wrapper object indicating the level of theory used in generating the
-            properties.
-        """
-        key = self.__get_key(wrapper)
-        del self.__properties[key]
-
-    def clear(self) -> None:
-        """
-        Clear all the properties from memory
-        """
-        self.__properties = {}
+    def set_condensed_fukui_mulliken(
+        self, value: Dict[str, List[float]], electronic_engine: BaseEngine
+    ) -> None:
+        self.__validate_electronic(electronic_engine)
+        self.__condensed_fukui_mulliken = value

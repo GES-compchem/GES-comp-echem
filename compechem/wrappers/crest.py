@@ -52,7 +52,7 @@ def tautomer_search(
 
     with sh.pushd(tdir):
 
-        mol.write_xyz("geom.xyz")
+        mol.geometry.write_xyz("geom.xyz")
 
         if solvation:
             os.system(
@@ -69,8 +69,8 @@ def tautomer_search(
             tautomers = []
 
             while tautomers_to_check:
-                tautomer = tautomers_to_check.pop(0)
-                tautomer.write_xyz(f"{tautomer.name}.xyz")
+                tautomer: System = tautomers_to_check.pop(0)
+                tautomer.geometry.write_xyz(f"{tautomer.name}.xyz")
                 if cyclization_check("geom.xyz", f"{tautomer.name}.xyz") is True:
                     logger.warning(
                         f"Cyclization change spotted for {tautomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
@@ -139,7 +139,7 @@ def conformer_search(
 
     with sh.pushd(tdir):
 
-        mol.write_xyz("geom.xyz")
+        mol.geometry.write_xyz("geom.xyz")
 
         if solvation:
             os.system(
@@ -158,8 +158,8 @@ def conformer_search(
             conformers = []
 
             while conformers_to_check:
-                conformer = conformers_to_check.pop(0)
-                conformer.write_xyz(f"{conformer.name}.xyz")
+                conformer: System = conformers_to_check.pop(0)
+                conformer.geometry.write_xyz(f"{conformer.name}.xyz")
                 if cyclization_check("geom.xyz", f"{conformer.name}.xyz") is True:
                     logger.warning(
                         f"Cyclization change spotted for {conformer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
@@ -224,7 +224,7 @@ def deprotonate(
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_DEPROT", dir=os.getcwd())
 
     with sh.pushd(tdir):
-        mol.write_xyz("geom.xyz")
+        mol.geometry.write_xyz("geom.xyz")
 
         if solvation:
             os.system(
@@ -243,8 +243,8 @@ def deprotonate(
             deprotomers = []
 
             while deprotomers_to_check:
-                deprotomer = deprotomers_to_check.pop(0)
-                deprotomer.write_xyz(f"{deprotomer.name}.xyz")
+                deprotomer: System = deprotomers_to_check.pop(0)
+                deprotomer.geometry.write_xyz(f"{deprotomer.name}.xyz")
                 if cyclization_check("geom.xyz", f"{deprotomer.name}.xyz") is True:
                     logger.warning(
                         f"Cyclization change spotted for {deprotomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
@@ -318,7 +318,7 @@ def protonate(
 
     with sh.pushd(tdir):
 
-        mol.write_xyz("geom.xyz")
+        mol.geometry.write_xyz("geom.xyz")
 
         if solvation:
             os.system(
@@ -337,8 +337,8 @@ def protonate(
             protomers = []
 
             while protomers_to_check:
-                protomer = protomers_to_check.pop(0)
-                protomer.write_xyz(f"{protomer.name}.xyz")
+                protomer: System = protomers_to_check.pop(0)
+                protomer.geometry.write_xyz(f"{protomer.name}.xyz")
                 if cyclization_check("geom.xyz", f"{protomer.name}.xyz") is True:
                     logger.warning(
                         f"Cyclization change spotted for {protomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
@@ -436,8 +436,8 @@ def qcg_grow(
 
     with sh.pushd(tdir):
 
-        solute.write_xyz("solute.xyz")
-        solvent.write_xyz("solvent.xyz")
+        solute.geometry.write_xyz("solute.xyz")
+        solvent.geometry.write_xyz("solvent.xyz")
 
         if solvation:
             os.system(
@@ -448,11 +448,11 @@ def qcg_grow(
                 f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
             )
 
-        solute.write_xyz(f"{solute.name}.xyz")
+        solute.geometry.write_xyz(f"{solute.name}.xyz")
         cluster = System(f"{solute.name}.xyz", charge, spin)
 
         try:
-            cluster.update_geometry("grow/cluster.xyz")
+            cluster.geometry.load_xyz("grow/cluster.xyz")
         except:
             logger.error(
                 f"{solute.name}, charge {solute.charge} spin {solute.spin}, cluster growth failed."
@@ -547,8 +547,8 @@ def qcg_ensemble(
 
     with sh.pushd(tdir):
 
-        solute.write_xyz("solute.xyz")
-        solvent.write_xyz("solvent.xyz")
+        solute.geometry.write_xyz("solute.xyz")
+        solvent.geometry.write_xyz("solvent.xyz")
 
         if solvation:
             os.system(
