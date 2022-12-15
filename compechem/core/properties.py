@@ -41,14 +41,29 @@ class Properties:
         self.__mulliken_spin_populations: List[float] = []
         self.__condensed_fukui_mulliken: Dict[str, List[float]] = {}
 
+    def __clear_electronic(self):
+        self.__electronic_energy = None
+        self.__helmholtz_free_energy = None
+        self.__gibbs_free_energy = None
+        self.__pka = None
+        self.__mulliken_charges = []
+        self.__mulliken_spin_populations = []
+        self.__condensed_fukui_mulliken = {}
+
+    def __clear_vibronic(self):
+        self.__vibronic_energy = None
+        self.__helmholtz_free_energy = None
+        self.__gibbs_free_energy = None
+        self.__pka = None
+
     def __validate_electronic(self, engine: BaseEngine) -> bool:
         if self.__level_of_theory_electronic is None:
             self.__level_of_theory_electronic = engine.level_of_theory
         elif self.__level_of_theory_electronic != engine.level_of_theory:
             if STRICT_MODE == True:
-                raise RuntimeError(
-                    f"Cannot store properties computed at different electronic levels of theory in STRICT mode"
-                )
+                msg = "Different electronic levels of theory used for calculating properties. Clearing properties with different electronic level of theory."
+                logger.warning(msg)
+                self.__clear_electronic()
             else:
                 msg = "Different electronic levels of theory used for calculating properties. Setting level of theory to undefined."
                 logger.warning(msg)
@@ -56,13 +71,27 @@ class Properties:
                 self.__level_of_theory_electronic = "Undefined"
 
     def __validate_vibronic(self, engine: BaseEngine) -> bool:
+
         if self.__level_of_theory_vibronic is None:
+
             self.__level_of_theory_vibronic = engine.level_of_theory
+            
+            if self.__pka is not None:
+                if STRICT_MODE == True:
+                    msg = "Added vibronic energy. Clearing pKa computed with electronic energy only."
+                    logger.warning(msg)
+                    self.__pka = None
+                else:
+                    msg = "Added vibronic energy to Properties with pKa previously computed with electronic energy only."
+                    logger.warning(msg)
+                    warnings.warn(msg)
+
         elif self.__level_of_theory_vibronic != engine.level_of_theory:
+
             if STRICT_MODE == True:
-                raise RuntimeError(
-                    f"Cannot store properties computed at different vibronic levels of theory in STRICT mode"
-                )
+                msg = "Different vibronic levels of theory used for calculating properties. Clearing properties with different vibronic level of theory."
+                logger.warning(msg)
+                self.__clear_vibronic()
             else:
                 msg = "Different vibronic levels of theory used for calculating properties. Setting level of theory to undefined."
                 logger.warning(msg)

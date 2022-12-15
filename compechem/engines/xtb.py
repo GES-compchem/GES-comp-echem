@@ -223,12 +223,14 @@ class XtbInput(BaseEngine):
 
                     newmol = System(f"{mol.name}.xyz", charge, spin)
                     newmol.geometry.load_xyz("xtbopt.xyz")
+                    newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
                     newmol.properties.set_electronic_energy(electronic_energy, self)
                     newmol.properties.set_vibronic_energy(vibronic_energy, self)
 
                 else:
                     mol.geometry.load_xyz("xtbopt.xyz")
+                    mol.geometry.level_of_theory_geometry = self.level_of_theory
 
                     mol.properties.set_electronic_energy(electronic_energy, self)
                     mol.properties.set_vibronic_energy(vibronic_energy, self)

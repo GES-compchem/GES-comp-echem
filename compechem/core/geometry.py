@@ -17,6 +17,7 @@ class MolecularGeometry:
         self.__atomcount: int = 0
         self.__atoms: List[str] = []
         self.__coordinates: List[np.ndarray] = []
+        self.level_of_theory_geometry: str = None
 
     def __getitem__(self, index: int) -> Tuple[str, np.ndarray]:
         if index < 0 or index >= self.atomcount:

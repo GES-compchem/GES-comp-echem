@@ -323,15 +323,19 @@ class OrcaInput(BaseEngine):
 
                 newmol = System("input.xyz", charge, spin)
                 newmol.name = mol.name
+                newmol.geometry.level_of_theory_geometry(self.level_of_theory)
 
                 newmol.properties.set_electronic_energy(electronic_energy, self)
+                newmol.properties.set_vibronic_energy(vibronic_energy, self)
                 newmol.properties.set_mulliken_charges(mulliken_charges, self)
                 newmol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
 
             else:
                 mol.geometry.load_xyz("input.xyz")
+                mol.geometry.level_of_theory_geometry(self.level_of_theory)
 
                 mol.properties.set_electronic_energy(electronic_energy, self)
+                mol.properties.set_vibronic_energy(vibronic_energy, self)
                 mol.properties.set_mulliken_charges(mulliken_charges, self)
                 mol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
 
