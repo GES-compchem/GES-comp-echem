@@ -1,8 +1,9 @@
 import logging, warnings
+import compechem.config
 
 from typing import Dict, List
 from compechem.core.base import BaseEngine
-from compechem.config import STRICT_MODE
+
 
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,7 @@ class Properties:
         self.__condensed_fukui_mulliken: Dict[str, List[float]] = {}
 
     def __clear_electronic(self):
+        self.__level_of_theory_electronic = None
         self.__electronic_energy = None
         self.__helmholtz_free_energy = None
         self.__gibbs_free_energy = None
@@ -51,33 +53,45 @@ class Properties:
         self.__condensed_fukui_mulliken = {}
 
     def __clear_vibronic(self):
+        self.__level_of_theory_vibronic = None
         self.__vibronic_energy = None
         self.__helmholtz_free_energy = None
         self.__gibbs_free_energy = None
         self.__pka = None
+    
+    def __check_engine(self, engine: BaseEngine) -> None:
+        if not isinstance(engine, BaseEngine):
+            raise TypeError("The engine argument must be derived from `BaseEngine`")
 
-    def __validate_electronic(self, engine: BaseEngine) -> bool:
+    def __validate_electronic(self, engine: BaseEngine) -> None:
+
+        self.__check_engine(engine)
+
         if self.__level_of_theory_electronic is None:
             self.__level_of_theory_electronic = engine.level_of_theory
+
         elif self.__level_of_theory_electronic != engine.level_of_theory:
-            if STRICT_MODE == True:
+            if compechem.config.STRICT_MODE == True:
                 msg = "Different electronic levels of theory used for calculating properties. Clearing properties with different electronic level of theory."
                 logger.warning(msg)
                 self.__clear_electronic()
+                self.__level_of_theory_electronic = engine.level_of_theory
+
             else:
                 msg = "Different electronic levels of theory used for calculating properties. Setting level of theory to undefined."
                 logger.warning(msg)
                 warnings.warn(msg)
                 self.__level_of_theory_electronic = "Undefined"
 
-    def __validate_vibronic(self, engine: BaseEngine) -> bool:
+    def __validate_vibronic(self, engine: BaseEngine) -> None:
+
+        self.__check_engine(engine)
 
         if self.__level_of_theory_vibronic is None:
-
             self.__level_of_theory_vibronic = engine.level_of_theory
             
             if self.__pka is not None:
-                if STRICT_MODE == True:
+                if compechem.config.STRICT_MODE == True:
                     msg = "Added vibronic energy. Clearing pKa computed with electronic energy only."
                     logger.warning(msg)
                     self.__pka = None
@@ -88,10 +102,12 @@ class Properties:
 
         elif self.__level_of_theory_vibronic != engine.level_of_theory:
 
-            if STRICT_MODE == True:
+            if compechem.config.STRICT_MODE == True:
                 msg = "Different vibronic levels of theory used for calculating properties. Clearing properties with different vibronic level of theory."
                 logger.warning(msg)
                 self.__clear_vibronic()
+                self.__level_of_theory_vibronic = engine.level_of_theory
+
             else:
                 msg = "Different vibronic levels of theory used for calculating properties. Setting level of theory to undefined."
                 logger.warning(msg)
@@ -155,8 +171,9 @@ class Properties:
         vibronic_engine: BaseEngine = None,
     ) -> float:
         self.__validate_electronic(electronic_engine)
-        self.__validate_vibronic(vibronic_engine)
-        self.__gibbs_free_energy = value
+        if vibronic_engine is not None:
+            self.__validate_vibronic(vibronic_engine)
+        self.__pka = value
 
     @property
     def mulliken_charges(self) -> List[float]:
