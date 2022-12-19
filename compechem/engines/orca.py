@@ -116,6 +116,11 @@ class OrcaInput(BaseEngine):
             if job_info["spin"] != 1:
                 input += '  SpinDens("spindens.cube");\n'
             input += "end\n\n"
+        
+        if job_info["hirshfeld"]:
+            input += "%output\n"
+            input += "  Print[P_Hirshfeld] 1\n"
+            input += "end\n\n"
 
         input += f"* xyzfile {job_info['charge']} {job_info['spin']} {mol.name}.xyz\n"
 
@@ -133,6 +138,7 @@ class OrcaInput(BaseEngine):
         spin: int = None,
         save_cubes: bool = False,
         cube_dim: int = 250,
+        hirshfeld: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -155,6 +161,8 @@ class OrcaInput(BaseEngine):
             by default False.
         cube_dim: int, optional
             resolution for the cube files (default 250)
+        hirshfeld: bool
+            if set to true, will run the Hirshfeld population analysis. (default: False)
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -196,6 +204,7 @@ class OrcaInput(BaseEngine):
                     "spin": spin,
                     "save_cubes": save_cubes,
                     "cube_dim": cube_dim,
+                    "hirshfeld": hirshfeld,
                 },
             )
 
@@ -229,6 +238,7 @@ class OrcaInput(BaseEngine):
         spin: int = None,
         save_cubes: bool = False,
         cube_dim: int = 250,
+        hirshfeld: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -251,6 +261,8 @@ class OrcaInput(BaseEngine):
             by default False.
         cube_dim: int, optional
             resolution for the cube files (default 250)
+        hirshfeld: bool
+            if set to true, will run the Hirshfeld population analysis. (default: False)
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -292,6 +304,7 @@ class OrcaInput(BaseEngine):
                     "spin": spin,
                     "save_cubes": save_cubes,
                     "cube_dim": cube_dim,
+                    "hirshfeld": hirshfeld,
                 },
             )
 
@@ -621,7 +634,7 @@ class OrcaInput(BaseEngine):
         # Parse the Mulliken atomic charges and spin populations
         #-----------------------------------------------------------------------------------
         counter = 0
-        mulliken_charges, mulliken_spins = {}, {}
+        mulliken_charges, mulliken_spins = [], []
         spin_available = False
         with open("output.out", "r") as file:
 
@@ -655,24 +668,61 @@ class OrcaInput(BaseEngine):
                             break
                         else:
                             data = buffer.replace(":", "").split()
-                            mulliken_charges[int(data[0])] = float(data[2])
+                            mulliken_charges.append(float(data[2]))
 
                             if spin_available:
-                                mulliken_spins[int(data[0])] = float(data[3])
+                                mulliken_spins.append(float(data[3]))
                             else:
-                                mulliken_spins[int(data[0])] = 0
+                                mulliken_spins.append(0.)
                 else:
                     continue
 
                 # If break has been called after mulliken has been modified the section end
                 # has been reached, as such, break also from the reading operation
-                if mulliken_charges != {}:
+                if mulliken_charges != []:
                     break
-            
+        
+        if mulliken_charges != []:
             mol.properties.set_mulliken_charges(mulliken_charges, self)
             mol.properties.set_mulliken_spin_populations(mulliken_spins, self)
         
+        # Parse the Hirshfeld atomic charges and spin populations
+        #-----------------------------------------------------------------------------------
+        hirshfeld_charges, hirshfeld_spins = [], []
+        with open("output.out", "r") as file:
+            
+            for line in file:
 
+                # Read the file until the HIRSHFELD ANALYSIS title is found
+                if "HIRSHFELD ANALYSIS" in line:
+
+                    # Discard the following 6 lines to skip formatting and total integrated 
+                    # densities
+                    for i in range(6):
+                        _ = file.readline()
+                    
+                    # Read the whole hirshfeld section until a empty line is found
+                    while True:
+
+                        # Read the next line
+                        buffer = file.readline()
+
+                        # If the line is empty then break else parse the line
+                        if buffer == "\n":
+                            break
+
+                        else:
+                            data = buffer.split()
+                            hirshfeld_charges.append(float(data[2]))
+                            hirshfeld_spins.append(float(data[3]))
+                
+                elif hirshfeld_charges != []:
+                    break
+        
+        if hirshfeld_charges != []:
+            mol.properties.set_hirshfeld_charges(hirshfeld_charges, self)
+            mol.properties.set_hirshfeld_spin_populations(hirshfeld_spins, self)
+                        
 
 class M06(OrcaInput):
     def __init__(self):
