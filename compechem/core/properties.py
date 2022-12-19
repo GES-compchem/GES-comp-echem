@@ -38,8 +38,8 @@ class Properties:
         self.__helmholtz_free_energy: float = None
         self.__gibbs_free_energy: float = None
         self.__pka: float = None
-        self.__mulliken_charges: List[float] = []
-        self.__mulliken_spin_populations: List[float] = []
+        self.__mulliken_charges: Dict[int, float] = {}
+        self.__mulliken_spin_populations: Dict[int, float] = {}
         self.__condensed_fukui_mulliken: Dict[str, List[float]] = {}
 
     def __clear_electronic(self):
@@ -48,8 +48,8 @@ class Properties:
         self.__helmholtz_free_energy = None
         self.__gibbs_free_energy = None
         self.__pka = None
-        self.__mulliken_charges = []
-        self.__mulliken_spin_populations = []
+        self.__mulliken_charges = {}
+        self.__mulliken_spin_populations = {}
         self.__condensed_fukui_mulliken = {}
 
     def __clear_vibronic(self):
@@ -176,21 +176,21 @@ class Properties:
         self.__pka = value
 
     @property
-    def mulliken_charges(self) -> List[float]:
+    def mulliken_charges(self) -> Dict[int, float]:
         return self.__mulliken_charges
 
     def set_mulliken_charges(
-        self, value: List[float], electronic_engine: BaseEngine
+        self, value: Dict[int, float], electronic_engine: BaseEngine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__mulliken_charges = value
 
     @property
-    def mulliken_spin_populations(self) -> List[float]:
+    def mulliken_spin_populations(self) -> Dict[int, float]:
         return self.__mulliken_spin_populations
 
     def set_mulliken_spin_populations(
-        self, value: List[float], electronic_engine: BaseEngine
+        self, value: Dict[int, float], electronic_engine: BaseEngine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__mulliken_spin_populations = value

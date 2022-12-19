@@ -201,26 +201,13 @@ class OrcaInput(BaseEngine):
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "FINAL SINGLE POINT ENERGY" in line:
-                        electronic_energy = float(line.split()[-1])
-
-            mulliken_charges, mulliken_spin_populations = parse_mulliken("output.out")
-
             if inplace is False:
-
                 newmol = System(f"{mol.name}.xyz", charge, spin)
-
                 newmol.properties = copy.copy(mol.properties)
-                newmol.properties.set_electronic_energy(electronic_energy, self)
-                newmol.properties.set_mulliken_charges(mulliken_charges, self)
-                newmol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
+                self.parse_output(newmol)
 
             else:
-                mol.properties.set_electronic_energy(electronic_energy, self)
-                mol.properties.set_mulliken_charges(mulliken_charges, self)
-                mol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
+                self.parse_output(mol)
 
             process_output(mol, self.method, "spe", charge, spin)
 
@@ -310,34 +297,16 @@ class OrcaInput(BaseEngine):
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "FINAL SINGLE POINT ENERGY" in line:
-                        electronic_energy = float(line.split()[-1])
-                    if "G-E(el)" in line:
-                        vibronic_energy = float(line.split()[-4])
-
-            mulliken_charges, mulliken_spin_populations = parse_mulliken("output.out")
-
             if inplace is False:
-
                 newmol = System("input.xyz", charge, spin)
                 newmol.name = mol.name
                 newmol.geometry.level_of_theory_geometry(self.level_of_theory)
-
-                newmol.properties.set_electronic_energy(electronic_energy, self)
-                newmol.properties.set_vibronic_energy(vibronic_energy, self)
-                newmol.properties.set_mulliken_charges(mulliken_charges, self)
-                newmol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
+                self.parse_output(newmol)
 
             else:
                 mol.geometry.load_xyz("input.xyz")
                 mol.geometry.level_of_theory_geometry(self.level_of_theory)
-
-                mol.properties.set_electronic_energy(electronic_energy, self)
-                mol.properties.set_vibronic_energy(vibronic_energy, self)
-                mol.properties.set_mulliken_charges(mulliken_charges, self)
-                mol.properties.set_mulliken_spin_populations(mulliken_spin_populations, self)
+                self.parse_output(mol)
 
             process_output(mol, self.method, "opt", charge, spin)
 
@@ -418,26 +387,16 @@ class OrcaInput(BaseEngine):
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "FINAL SINGLE POINT ENERGY" in line:
-                        electronic_energy = float(line.split()[-1])
-                    if "G-E(el)" in line:
-                        vibronic_energy = float(line.split()[-4])
-
             if inplace is False:
-
                 newmol = System(f"{mol.name}.xyz", charge, spin)
-
                 newmol.properties = copy.copy(mol.properties)
-                newmol.properties.set_electronic_energy(electronic_energy, self)
-                newmol.properties.set_vibronic_energy(vibronic_energy, self)
+                self.parse_output(newmol)
 
             else:
-                mol.properties.set_electronic_energy(electronic_energy, self)
-                mol.properties.set_vibronic_energy(vibronic_energy, self)
+                self.parse_output(mol)
 
             process_output(mol, self.method, "freq", charge, spin)
+
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -512,25 +471,13 @@ class OrcaInput(BaseEngine):
 
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "FINAL SINGLE POINT ENERGY" in line:
-                        electronic_energy = float(line.split()[-1])
-                    if "G-E(el)" in line:
-                        vibronic_energy = float(line.split()[-4])
-
             if inplace is False:
-
                 newmol = System(f"{mol.name}.xyz", charge, spin)
-
                 newmol.properties = copy.copy(mol.properties)
-                newmol.properties.set_electronic_energy(electronic_energy, self)
-                newmol.properties.set_vibronic_energy(vibronic_energy, self)
+                self.parse_output(newmol)
 
             else:
-
-                mol.properties.set_electronic_energy(electronic_energy, self)
-                mol.properties.set_vibronic_energy(vibronic_energy, self)
+                self.parse_output(mol)
 
             process_output(mol, self.method, "numfreq", charge, spin)
             if remove_tdir:
@@ -638,6 +585,93 @@ class OrcaInput(BaseEngine):
                 shutil.rmtree(tdir)
 
             return ensemble
+    
+
+    def parse_output(self, mol: System) -> None:
+        """
+        The function will parse an ORCA output file automatically looking for all the relevant
+        numerical properties derived form a calculation. All the properties of the given molecule
+        will be set or updated.
+
+        Parameters
+        ----------
+        mol: str
+            The system to which the properties must be written to.
+
+        Raises
+        ------
+        RuntimeError
+            Exception raised if the given path to the output file is not valid.
+        """
+
+        if not os.path.isfile("output.out"):
+            raise RuntimeError("Cannot parse output, the `output.out` file does not exist.")
+        
+        # Parse the final single point energy and the vibronic energy
+        #-----------------------------------------------------------------------------------
+        with open("output.out", "r") as out:
+            for line in out:
+                if "FINAL SINGLE POINT ENERGY" in line:
+                    electronic_energy = float(line.split()[-1])
+                    mol.properties.set_electronic_energy(electronic_energy, self)
+                if "G-E(el)" in line:
+                    vibronic_energy = float(line.split()[-4])
+                    mol.properties.set_vibronic_energy(vibronic_energy, self)
+
+        # Parse the Mulliken atomic charges and spin populations
+        #-----------------------------------------------------------------------------------
+        counter = 0
+        mulliken_charges, mulliken_spins = {}, {}
+        spin_available = False
+        with open("output.out", "r") as file:
+
+            # Count the number of "MULLIKEN ATOMIC CHARGES" sections in the file
+            sections = file.read().count("MULLIKEN ATOMIC CHARGES")
+
+            # Trace back to the beginning of the file
+            file.seek(0)
+
+            # Cycle over all the lines of the fuke
+            for line in file:
+
+                # If a "MULLIKEN ATOMIC CHARGES" section is found, increment the counter
+                if "MULLIKEN ATOMIC CHARGES" in line:
+                    counter += 1
+
+                # If the index of the "MULLIKEN ATOMIC CHARGES" correspond with the last one
+                # proceed with the file parsing else continue
+                if counter == sections:
+
+                    # Check if the section contains also the "SPIN POPULATIONS" column
+                    if "SPIN POPULATIONS" in line:
+                        spin_available = True
+
+                    _ = file.readline()  # Skip the table line
+
+                    # Iterate over the whole section reading line by line
+                    while True:
+                        buffer = file.readline()
+                        if "Sum of atomic charges" in buffer:
+                            break
+                        else:
+                            data = buffer.replace(":", "").split()
+                            mulliken_charges[int(data[0])] = float(data[2])
+
+                            if spin_available:
+                                mulliken_spins[int(data[0])] = float(data[3])
+                            else:
+                                mulliken_spins[int(data[0])] = 0
+                else:
+                    continue
+
+                # If break has been called after mulliken has been modified the section end
+                # has been reached, as such, break also from the reading operation
+                if mulliken_charges != {}:
+                    break
+            
+            mol.properties.set_mulliken_charges(mulliken_charges, self)
+            mol.properties.set_mulliken_spin_populations(mulliken_spins, self)
+        
 
 
 class M06(OrcaInput):
@@ -671,85 +705,3 @@ class CCSD(OrcaInput):
             solvent="water",
             optionals="",
         )
-
-
-def parse_mulliken(output: str) -> Tuple[Dict[int, float], Dict[int, float]]:
-    """
-    Given an ORCA output file the function will extract a dictionary containing the mulliken
-    charges associated to each atom.
-
-    Parameters
-    ----------
-    output: str
-        The path to the ORCA output file.
-
-    Raises
-    ------
-    ValueError
-        Exception raised if the given path to the output file is not valid.
-
-    Returns
-    -------
-    Dict[int, float]
-        The dictionary containing the index of the atom as an integer key associated to the
-        correspondent floating point Mulliken atomic charge value.
-    Dict[int, float]
-        The dictionary containing the index of the atom as an integer key associated to the
-        correspondent floating point Mulliken atomic spin population value.
-    """
-
-    if os.path.exists(output):
-
-        counter = 0
-        charges, spins = {}, {}
-        spin_available = False
-        with open(output, "r") as file:
-
-            # Count the number of "MULLIKEN ATOMIC CHARGES" sections in the file
-            sections = file.read().count("MULLIKEN ATOMIC CHARGES")
-
-            # Trace back to the beginning of the file
-            file.seek(0)
-
-            # Cycle over all the lines of the fuke
-            for line in file:
-
-                # If a "MULLIKEN ATOMIC CHARGES" section is found, increment the counter
-                if "MULLIKEN ATOMIC CHARGES" in line:
-                    counter += 1
-
-                # If the index of the "MULLIKEN ATOMIC CHARGES" correspond with the last one
-                # proceed with the file parsing else continue
-                if counter == sections:
-
-                    # Check if the section contains also the "SPIN POPULATIONS" column
-                    if "SPIN POPULATIONS" in line:
-                        spin_available = True
-
-                    _ = file.readline()  # Skip the table line
-
-                    # Iterate over the whole section reading line by line
-                    while True:
-                        buffer = file.readline()
-                        if "Sum of atomic charges" in buffer:
-                            break
-                        else:
-                            data = buffer.replace(":", "").split()
-                            charges[int(data[0])] = float(data[2])
-
-                            if spin_available:
-                                spins[int(data[0])] = float(data[3])
-                            else:
-                                spins[int(data[0])] = 0
-                else:
-                    continue
-
-                # If break has been called after mulliken has been modified the section end
-                # has been reached, as such, break also from the reading operation
-                if charges != {}:
-                    break
-
-    else:
-        raise ValueError(f"File {output} not found!")
-
-    return charges, spins
