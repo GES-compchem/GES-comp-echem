@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System
-from compechem.tools import process_output, process_density
+from compechem.tools import process_output
 from compechem.core.base import BaseEngine
 
 import logging
@@ -218,10 +218,7 @@ class OrcaInput(BaseEngine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "spe", charge, spin)
-
-            if save_cubes:
-                process_density(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge, spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -321,10 +318,7 @@ class OrcaInput(BaseEngine):
                 mol.geometry.level_of_theory_geometry(self.level_of_theory)
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "opt", charge, spin)
-
-            if save_cubes:
-                process_density(mol, self.method, "opt", charge, spin)
+            process_output(mol, self.method, "opt", charge, spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
