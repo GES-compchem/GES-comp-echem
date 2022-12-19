@@ -19,9 +19,10 @@ def calculate_fukui(
 ) -> Dict[str, Dict[str, List[float]]]:
     """
     Computes the Fukui f+, f- and f0 functions starting from a given input molecule. The
-    functions are saved in Gaussian cube format and stored in the `output_densities` folder.
-    Localized Fukui functions are also computed from the Mulliken charges and returned as a
-    dictionary.
+    functions are saved in Gaussian cube compatible format and stored in the 
+    `output_densities` folder. Localized Fukui functions are also computed from the Mulliken
+    and Hirshfeld charges and saved in the molecule properties. Please notice that the charges
+    in the `.fukui.cube` produced are replaced by the Mulliken condensed fukui functions.
 
     Parameters
     ----------
@@ -41,15 +42,18 @@ def calculate_fukui(
         Resolution for the cube files (default 250)
     maxcore: int
         The maximum amount of memory in MB to be allocated for each core.
-
-    Returns
-    -------
-    Dict[str, List[float]]
-        The dictionary of dictionaries containing the localized fukui function computed from
-        the Mulliken charges. The key (either f+, f- or f0) encodes the type of Fukui function.
     """
+    # RUN ALL THE REQUIRED CALCULATIONS
+    # --------------------------------------------------------------------------------------
     # Compute a single point for the molecule
-    orca.spe(molecule, save_cubes=True, cube_dim=cube_dim, inplace=True, maxcore=maxcore)
+    orca.spe(
+        molecule,
+        save_cubes=True,
+        cube_dim=cube_dim,
+        hirshfeld=True,
+        inplace=True,
+        maxcore=maxcore,
+    )
 
     # Compute a single point for the molecule with the addition of one electron.
     cation = deepcopy(molecule)
@@ -60,7 +64,14 @@ def calculate_fukui(
     else:
         cation.spin = 1 if molecule.spin == 2 else 2
 
-    orca.spe(cation, save_cubes=True, cube_dim=cube_dim, inplace=True, maxcore=maxcore)
+    orca.spe(
+        cation,
+        save_cubes=True,
+        cube_dim=cube_dim,
+        hirshfeld=True,
+        inplace=True,
+        maxcore=maxcore
+    )
 
     # Compute a single point for the molecule with the subtraction of one electron.
     anion = deepcopy(molecule)
@@ -71,8 +82,49 @@ def calculate_fukui(
     else:
         anion.spin = 1 if molecule.spin == 2 else 2
 
-    orca.spe(anion, save_cubes=True, cube_dim=cube_dim, inplace=True, maxcore=maxcore)
+    orca.spe(
+        anion,
+        save_cubes=True,
+        cube_dim=cube_dim,
+        hirshfeld=True,
+        inplace=True,
+        maxcore=maxcore
+    )
 
+    # COMPUTE CONDENSED FUKUI FUNCTIONS
+    #---------------------------------------------------------------------------------------
+    # Compute the localized fukui function values from the Mulliken charges
+    localized_fukui_mulliken = {"f+": [], "f-": [], "f0": []}
+    for atom in range(molecule.geometry.atomcount):
+        localized_fukui_mulliken["f+"].append(
+            anion.properties.mulliken_charges[atom] - molecule.properties.mulliken_charges[atom]
+        )
+        localized_fukui_mulliken["f-"].append(
+            molecule.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom]
+        )
+        localized_fukui_mulliken["f0"].append(
+            (anion.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom]) / 2
+        )
+    
+    molecule.properties.set_condensed_fukui_mulliken(localized_fukui_mulliken, orca)
+
+    # Compute the localized fukui function values from the Hirshfeld charges
+    localized_fukui_hirshfeld = {"f+": [], "f-": [], "f0": []}
+    for atom in range(molecule.geometry.atomcount):
+        localized_fukui_hirshfeld["f+"].append(
+            anion.properties.hirshfeld_charges[atom] - molecule.properties.hirshfeld_charges[atom]
+        )
+        localized_fukui_hirshfeld["f-"].append(
+            molecule.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom]
+        )
+        localized_fukui_hirshfeld["f0"].append(
+            (anion.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom]) / 2
+        )
+    
+    molecule.properties.set_condensed_fukui_hirshfeld(localized_fukui_hirshfeld, orca)
+
+    # LOAD THE VOLUMETRIC FILES AND COMPUTE THE FUKUI FUNCTIONS
+    # --------------------------------------------------------------------------------------
     # Load cubes from the output_densities folder
     cubes: Dict[int, Cube] = {}
     for mol in [cation, molecule, anion]:
@@ -84,22 +136,9 @@ def calculate_fukui(
     if len(cubes) != 3:
         raise RuntimeError(f"Three cube files expected, {len(cubes)} found.")
 
-    # Compute the localized fukui function values from the mulliken charges
-    localized_fukui = {"f+": [], "f-": [], "f0": []}
-    for atom in range(molecule.geometry.atomcount):
-        localized_fukui["f+"].append(
-            anion.properties.mulliken_charges[atom] - molecule.properties.mulliken_charges[atom]
-        )
-        localized_fukui["f-"].append(
-            molecule.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom]
-        )
-        localized_fukui["f0"].append(
-            (anion.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom]) / 2
-        )
-
     # Compute the f+ Fukui function
     f_plus = cubes[anion.charge] - cubes[molecule.charge]
-    f_plus.charges = localized_fukui["f+"]
+    f_plus.charges = localized_fukui_mulliken["f+"]
     f_plus.save(
         join("./output_densities", f"{molecule.name}_Fukui_plus.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
@@ -108,7 +147,7 @@ def calculate_fukui(
 
     # Compute the f- Fukui function
     f_minus = cubes[molecule.charge] - cubes[cation.charge]
-    f_minus.charges = localized_fukui["f-"]
+    f_minus.charges = localized_fukui_mulliken["f-"]
     f_minus.save(
         join("./output_densities", f"{molecule.name}_Fukui_minus.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
@@ -117,14 +156,10 @@ def calculate_fukui(
 
     # Compute the f0 Fukui function
     f_zero = (cubes[anion.charge] - cubes[cation.charge]).scale(0.5)
-    f_zero.charges = localized_fukui["f0"]
+    f_zero.charges = localized_fukui_mulliken["f0"]
     f_zero.save(
         join("./output_densities", f"{molecule.name}_Fukui_zero.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
         comment_2nd="Fukui f0",
     )
-    
-    molecule.properties.set_condensed_fukui_mulliken(localized_fukui, orca)
-
-    return localized_fukui
     

@@ -43,6 +43,7 @@ class Properties:
         self.__condensed_fukui_mulliken: Dict[str, List[float]] = {}
         self.__hirshfeld_charges: List[float] = []
         self.__hirshfeld_spin_populations: List[float] = []
+        self.__condensed_fukui_hirshfeld: Dict[str, List[float]] = {}
 
     def __clear_electronic(self):
         self.__level_of_theory_electronic = None
@@ -55,6 +56,7 @@ class Properties:
         self.__condensed_fukui_mulliken = {}
         self.__hirshfeld_charges = []
         self.__hirshfeld_spin_populations = []
+        self.__condensed_fukui_hirshfeld = {}
 
     def __clear_vibronic(self):
         self.__level_of_theory_vibronic = None
@@ -228,5 +230,15 @@ class Properties:
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__hirshfeld_spin_populations = value
+    
+    @property
+    def condensed_fukui_hirshfeld(self) -> Dict[str, List[float]]:
+        return self.__condensed_fukui_hirshfeld
+
+    def set_condensed_fukui_hirshfeld(
+        self, value: Dict[str, List[float]], electronic_engine: BaseEngine
+    ) -> None:
+        self.__validate_electronic(electronic_engine)
+        self.__condensed_fukui_hirshfeld = value
     
 
