@@ -54,6 +54,9 @@ class OrcaInput(BaseEngine):
         self.__ORCADIR = ORCADIR
 
         self.level_of_theory += f" | basis: {self.basis_set} | solvent: {self.solvent}"
+
+        self.__output_suffix = f"orca_{self.method}_{self.basis_set}_"
+        self.__output_suffix = "vacuum" if solvent in None else f"{self.solvent}"
     
 
     def write_input(
@@ -218,7 +221,7 @@ class OrcaInput(BaseEngine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "spe", charge, spin, save_cubes=save_cubes)
+            process_output(mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -318,7 +321,7 @@ class OrcaInput(BaseEngine):
                 mol.geometry.level_of_theory_geometry(self.level_of_theory)
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "opt", charge, spin, save_cubes=save_cubes)
+            process_output(mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -402,7 +405,7 @@ class OrcaInput(BaseEngine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "freq", charge, spin)
+            process_output(mol, self.__output_suffix, "freq", charge, spin)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -486,7 +489,7 @@ class OrcaInput(BaseEngine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "numfreq", charge, spin)
+            process_output(mol, self.__output_suffix, "numfreq", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -587,7 +590,7 @@ class OrcaInput(BaseEngine):
 
             ensemble = Ensemble(mol_list)
 
-            process_output(mol, self.method, "scan", charge, spin)
+            process_output(mol, self.__output_suffix, "scan", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 

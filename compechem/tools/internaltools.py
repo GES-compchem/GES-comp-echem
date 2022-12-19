@@ -122,7 +122,7 @@ def process_output(
     mol : System object
         Systems processed in the calculation
     method : str
-        level of theory for the calculation
+        String indicating the level of theory for the calculation
     calc : str
         Type of calculation
     charge : int, optional
