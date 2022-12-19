@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import logging, warnings
 import compechem.config
 
 from typing import Dict, List
 from compechem.core.base import BaseEngine
-
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ class Properties:
         self.__helmholtz_free_energy = None
         self.__gibbs_free_energy = None
         self.__pka = None
-    
+
     def __check_engine(self, engine: BaseEngine) -> None:
         if not isinstance(engine, BaseEngine):
             raise TypeError("The engine argument must be derived from `BaseEngine`")
@@ -95,7 +96,7 @@ class Properties:
 
         if self.__level_of_theory_vibronic is None:
             self.__level_of_theory_vibronic = engine.level_of_theory
-            
+
             if self.__pka is not None:
                 if compechem.config.STRICT_MODE == True:
                     msg = "Added vibronic energy. Clearing pKa computed with electronic energy only."
@@ -119,6 +120,63 @@ class Properties:
                 logger.warning(msg)
                 warnings.warn(msg)
                 self.__level_of_theory_vibronic = "Undefined"
+
+    def to_dict(self) -> dict:
+        """
+        Generates a dictionary representation of the class. The obtained dictionary can be
+        saved and used to re-load the object using the built-in `from_dict` class method.
+
+        Returns
+        -------
+        dict
+            The dictionary listing, with human friendly names, the attributes of the class
+        """
+        data = {}
+        data["Level of theory electronic"] = self.__level_of_theory_electronic
+        data["Level of theory vibronic"] = self.__level_of_theory_vibronic
+        data["Electronic energy (Eh)"] = self.__electronic_energy
+        data["Vibronic energy (Eh)"] = self.__vibronic_energy
+        data["Helmholtz energy (Eh)"] = self.__helmholtz_free_energy
+        data["Gibbs energy (Eh)"] = self.__gibbs_free_energy
+        data["pKa"] = self.__pka
+        data["Mulliken charges"] = self.__mulliken_charges
+        data["Mulliken spin populations"] = self.__mulliken_spin_populations
+        data["Mulliken Fukui"] = self.__condensed_fukui_mulliken
+        data["Hirshfeld charges"] = self.__hirshfeld_charges
+        data["Hirshfeld spin populations"] = self.__hirshfeld_spin_populations
+        data["Hirshfeld Fukui"] = self.__condensed_fukui_hirshfeld
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Properties:
+        """
+        Construct a Properties object from the data encoded in a dictionary.
+
+        Arguments
+        ---------
+        data: dict
+            The dictionary containing the class attributes
+
+        Returns
+        -------
+        Properties
+            The fully initialized Properties object
+        """
+        obj = cls()
+        obj.__level_of_theory_electronic = data["Level of theory electronic"]
+        obj.__level_of_theory_vibronic = data["Level of theory vibronic"]
+        obj.__electronic_energy = data["Electronic energy (Eh)"]
+        obj.__vibronic_energy = data["Vibronic energy (Eh)"]
+        obj.__helmholtz_free_energy = data["Helmholtz energy (Eh)"]
+        obj.__gibbs_free_energy = data["Gibbs energy (Eh)"]
+        obj.__pka = data["pKa"]
+        obj.__mulliken_charges = data["Mulliken charges"]
+        obj.__mulliken_spin_populations = data["Mulliken spin populations"]
+        obj.__condensed_fukui_mulliken = data["Mulliken Fukui"]
+        obj.__hirshfeld_charges = data["Hirshfeld charges"]
+        obj.__hirshfeld_spin_populations = data["Hirshfeld spin populations"]
+        obj.__condensed_fukui_hirshfeld = data["Hirshfeld Fukui"]
+        return obj
 
     @property
     def level_of_theory_electronic(self) -> str:
@@ -210,27 +268,27 @@ class Properties:
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__condensed_fukui_mulliken = value
-    
+
     @property
     def hirshfeld_charges(self) -> List[float]:
         return self.__hirshfeld_charges
-    
+
     def set_hirshfeld_charges(
         self, value: List[float], electronic_engine: BaseEngine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__hirshfeld_charges = value
-    
+
     @property
     def hirshfeld_spin_populations(self) -> List[float]:
         return self.__hirshfeld_spin_populations
-    
+
     def set_hirshfeld_spin_populations(
         self, value: List[float], electronic_engine: BaseEngine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__hirshfeld_spin_populations = value
-    
+
     @property
     def condensed_fukui_hirshfeld(self) -> Dict[str, List[float]]:
         return self.__condensed_fukui_hirshfeld
@@ -240,5 +298,3 @@ class Properties:
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__condensed_fukui_hirshfeld = value
-    
-

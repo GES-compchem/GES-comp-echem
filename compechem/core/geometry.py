@@ -84,6 +84,45 @@ class MolecularGeometry:
         obj = cls()
         obj.load_xyz(path)
         return obj
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> MolecularGeometry:
+        """
+        Construct a MolecularGeometry object from the data encoded in a dictionary.
+
+        Arguments
+        ---------
+        data: dict
+            The dictionary containing the class attributes
+        
+        Returns
+        -------
+        MolecularGeometry
+            The fully initialized MolecularGeometry object
+        """
+        obj = cls()
+        obj.__atomcount = data["Number of atoms"]
+        obj.__atoms = data["Elements list"]
+        obj.__coordinates = [np.array(v) for v in data["Coordinates"]]
+        obj.level_of_theory_geometry = data["Level of theory geometry"]
+        return obj
+    
+    def to_dict(self) -> dict:
+        """
+        Generates a dictionary representation of the class. The obtained dictionary can be
+        saved and used to re-load the object using the built-in `from_dict` class method.
+
+        Returns
+        -------
+        dict
+            The dictionary listing, with human friendly names, the attributes of the class
+        """
+        data = {}
+        data["Number of atoms"] = self.__atomcount
+        data["Elements list"] = self.__atoms
+        data["Coordinates"] = [list(v) for v in self.__coordinates]
+        data["Level of theory geometry"] = self.level_of_theory_geometry
+        return data
 
     def load_xyz(self, path: str) -> None:
         """

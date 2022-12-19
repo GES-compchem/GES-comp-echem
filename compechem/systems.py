@@ -1,16 +1,26 @@
 from __future__ import annotations
 
-import os
+import os, json
 import numpy as np
 import logging
 
 from typing import List
+from enum import Enum
 
 from compechem.constants import kB
 from compechem.core.geometry import MolecularGeometry
 from compechem.core.properties import Properties
 
 logger = logging.getLogger(__name__)
+
+
+class SupportedTypes(Enum):
+    """
+    The enumeration listing the file types (.xyz and .json) supported by the System class
+    constructor.
+    """
+    XYZ = ".xyz"
+    JSON = ".json"
 
 
 class System:
@@ -21,15 +31,17 @@ class System:
 
     Parameters
     ----------
-    xyz_file : str
-        The path to the `.xyz` file containing the system geometry
+    filepath : str
+        The path to the file containing the system geometry or data
+    filetype: SupportedTypes
+        The type of file loaded (default: XYZ)
     charge : int, optional
         The total charge of the system. (Default: 0 neutral)
     spin : int, optional
         The total spin multeplicity of the system. (Default: 1 singlet)
     box_side : float, optional
         For periodic systems, defines the length (in Å) of the box side
-    
+
     Raises
     ------
     ValueError
@@ -37,20 +49,64 @@ class System:
     """
 
     def __init__(
-        self, xyz_file: str, charge: int = 0, spin: int = 1, box_side: float = None
+        self,
+        filepath: str,
+        filetype: SupportedTypes = SupportedTypes.XYZ,
+        charge: int = 0,
+        spin: int = 1,
+        box_side: float = None,
     ) -> None:
 
-        if not os.path.isfile(xyz_file):
-            raise ValueError("xyz file not found")
+        if not os.path.isfile(filepath):
+            raise ValueError(f"The specified file `{filepath}` does not exist.")
 
-        self.name = os.path.basename(xyz_file).strip(".xyz")
-        self.__charge: int = charge
-        self.__spin: int = spin
-        self.__box_side = box_side
+        if filetype == SupportedTypes.XYZ:
+            self.name = os.path.basename(filepath).strip(".xyz")
+            self.__charge: int = charge
+            self.__spin: int = spin
+            self.__box_side = box_side
+            self.__geometry: MolecularGeometry = MolecularGeometry.from_xyz(filepath)
+            self.properties: Properties = Properties()
+            self.flags: list = []
+        
+        elif filetype == SupportedTypes.JSON:
+            
+            with open(filepath, 'r') as jsonfile:
+                data = json.load(jsonfile)
 
-        self.__geometry: MolecularGeometry = MolecularGeometry.from_xyz(xyz_file)
-        self.properties: Properties = Properties()
-        self.flags: list = []
+            self.name = data["Name"]
+            self.__charge = data["Charge"]
+            self.__spin = data["Spin"]
+            self.__box_side = data["Box Side"]
+            self.__geometry = MolecularGeometry().from_dict(data["Geometry"])
+            self.properties = Properties().from_dict(data["Properties"])
+            self.flags = data["Flags"]
+
+        else:
+            raise RuntimeError("The specified format is not supported")
+
+    def save_json(self, path: str) -> None:
+        """
+        Saves a JSON representation of the object that can be stored on disk and loaded (using
+        the class constructor with the option SupportedTypes.JSON) at a later time to 
+        re-generate ad identical System object.
+
+        Arguments
+        ---------
+        path: str
+            The path to the .json file that must be created.
+        """
+        data = {}
+        data["Name"] = self.name
+        data["Charge"] = self.__charge
+        data["Spin"] = self.__spin
+        data["Box Side"] = self.__box_side
+        data["Geometry"] = self.__geometry.to_dict()
+        data["Properties"] = self.properties.to_dict()
+        data["Flags"] = self.flags
+
+        with open(path, "w") as jsonfile:
+            json.dump(data, jsonfile)
 
     @property
     def geometry(self) -> MolecularGeometry:
