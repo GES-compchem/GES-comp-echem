@@ -1,7 +1,7 @@
 class BaseEngine:
     """
-    Simple base class for the definition of a software wrapper. The class sets the 
-    `wrapper_info` attribute initialized with the name of the wrapper itself terminated by `: `.
+    Simple base class for the definition of a software engine. The class sets the 
+    `level_of_theory` and `method`attributes.
 
     Arguments
     ---------

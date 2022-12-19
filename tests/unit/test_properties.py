@@ -32,6 +32,8 @@ def test_Properties_properties():
     assert p.mulliken_charges == []
     assert p.mulliken_spin_populations == []
     assert p.condensed_fukui_mulliken == {}
+    assert p.hirshfeld_charges == []
+    assert p.hirshfeld_spin_populations == []
 
     # Define a BaseEngine instance to be used in setting the level of theory
     el_engine = BaseEngine("ElMethod")
@@ -46,6 +48,8 @@ def test_Properties_properties():
     p.set_mulliken_charges([6, 7, 8], el_engine)
     p.set_mulliken_spin_populations([9, 10 , 11], el_engine)
     p.set_condensed_fukui_mulliken({"f+": [0, 1, 2]}, el_engine)
+    p.set_hirshfeld_charges([12, 13, 14], el_engine)
+    p.set_hirshfeld_spin_populations([15, 16 , 17], el_engine)
 
     # Check that all the properties matces the set values
     assert p.level_of_theory_electronic == el_engine.level_of_theory
@@ -58,6 +62,8 @@ def test_Properties_properties():
     assert_array_almost_equal(p.mulliken_charges, [6, 7, 8], decimal=6)
     assert_array_almost_equal(p.mulliken_spin_populations, [9, 10, 11], decimal=6)
     assert_array_almost_equal(p.condensed_fukui_mulliken["f+"], [0, 1, 2], decimal=6)
+    assert_array_almost_equal(p.hirshfeld_charges, [12, 13, 14], decimal=6)
+    assert_array_almost_equal(p.hirshfeld_spin_populations, [15, 16, 17], decimal=6)
 
 
 def test_strict_mode_conflict_electronic():

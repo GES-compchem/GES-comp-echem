@@ -112,22 +112,26 @@ def process_output(
     calc: str,
     charge: int = None,
     spin: int = None,
+    save_cubes: bool = False,
 ):
     """Processes the output of a calculation, copying the output files to a safe directory
-    in the parent directory tree, and cleans the temporary directory if requested.
+    (output_files) in the parent directory tree, and cleans the temporary directory if requested.
 
     Parameters
     ----------
     mol : System object
         Systems processed in the calculation
     method : str
-        level of theory for the calculation
+        String indicating the level of theory for the calculation
     calc : str
         Type of calculation
     charge : int, optional
         Charge of the molecule in the calculation
     spin : int, optional
         Spin of the molecule in the calculation
+    save_cubes: bool
+        If set to true will copy the `.cube` files in a safe directory (`output_densities`)
+        in the parent directory tree
     """
 
     if charge is None:
@@ -136,6 +140,7 @@ def process_output(
         spin = mol.spin
 
     os.makedirs("../output_files", exist_ok=True)
+
     if os.path.exists("output.out"):
         shutil.copy(
             "output.out",
@@ -149,48 +154,21 @@ def process_output(
             f"../error_files/{mol.name}_{charge}_{spin}_{method}_{calc}.err",
         )
 
-def process_density(
-    mol: System,
-    method: str,
-    calc: str,
-    charge: int = None,
-    spin: int = None,
-) -> None:
-    """Processes the output eldens.cube and spindens.cube files derived form a calculation 
-    by copying them to a safe directory in the parent directory tree.
+    if save_cubes:
 
-    Parameters
-    ----------
-    mol : System object
-        Systems processed in the calculation
-    method : str
-        level of theory for the calculation
-    calc : str
-        Type of calculation
-    charge : int, optional
-        Charge of the molecule in the calculation
-    spin : int, optional
-        Spin of the molecule in the calculation
-    """
+        os.makedirs("../output_densities", exist_ok=True)
+        
+        if os.path.exists("eldens.cube"):
+            shutil.copy(
+                "eldens.cube",
+                f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.eldens.cube",
+            )
 
-    if charge is None:
-        charge = mol.charge
-    if spin is None:
-        spin = mol.spin
-
-    os.makedirs("../output_densities", exist_ok=True)
-    if os.path.exists("eldens.cube"):
-        shutil.copy(
-            "eldens.cube",
-            f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.eldens.cube",
-        )
-    
-    if os.path.exists("spindens.cube"):
-        shutil.copy(
-            "spindens.cube",
-            f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.spindens.cube",
-        )
-    
+        if os.path.exists("spindens.cube"):
+            shutil.copy(
+                "spindens.cube",
+                f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.spindens.cube",
+            )
 
 
 def save_dftb_trajectory(output_prefix):
