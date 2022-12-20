@@ -1,30 +1,9 @@
-import subprocess
 from tempfile import NamedTemporaryFile as tmp
 
 from os import system
-from os.path import join, abspath, basename
+from os.path import join, basename
 
-
-def locate_vmd() -> str:
-    """
-    Locate the path to 'vmd' from the system PATH.
-
-    Raises
-    ------
-    RuntimeError
-        Exception raised if vmd is not found
-
-    Returns
-    -------
-    str
-        The path to the vmd base folder (the one containing the `bin` and `lib` subfolders)
-    """
-    output = subprocess.check_output("whereis vmd", shell=True).decode("utf-8").strip("\n")
-
-    if len(output.split(": ")) == 1:
-        raise RuntimeError("cannot find 'vmd' in the system path")
-    else:
-        return abspath(output.split(": ")[-1].rstrip("/bin/vmd"))
+from compechem.core.dependency_finder import locate_vmd
 
 
 def render_fukui_cube(
