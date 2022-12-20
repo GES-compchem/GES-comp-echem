@@ -3,8 +3,9 @@ import pytest, pathlib, json
 from numpy.testing import assert_array_almost_equal
 from os.path import abspath, dirname, join
 
-
 from compechem.systems import System, SupportedTypes
+from compechem.core.base import BaseEngine
+from compechem.core.geometry import MolecularGeometry
 
 # Get the path of the tests directory
 TEST_DIR = dirname(abspath(__file__))
@@ -113,3 +114,99 @@ def test_System_save_json(tmp_path_factory):
     }
 
     assert data == expected
+
+
+# Test the geometry property getter and setter of the System class
+def test_System_geometry_property():
+
+    xyzfile = join(TEST_DIR, "utils/xyz_examples/with_comment.xyz")
+    mol = System(xyzfile)
+
+    expected_coordinates = [
+        [-3.21035, -0.58504, -0.01395],
+        [-2.24247, -0.61827, 0.01848],
+        [-3.4892, -1.24911, 0.63429],
+    ]
+
+    mol.properties.set_electronic_energy(1.5, BaseEngine("Dummy"))
+
+    assert mol.properties.electronic_energy == 1.5
+    for i, (_, coord) in enumerate(mol.geometry):
+        assert_array_almost_equal(coord, expected_coordinates[i], decimal=6)
+
+    mol.geometry = MolecularGeometry().from_xyz(xyzfile)
+    assert mol.properties.electronic_energy == None
+
+
+def test_System_geometry_property_none_rejection():
+
+    xyzfile = join(TEST_DIR, "utils/xyz_examples/with_comment.xyz")
+    mol = System(xyzfile)
+
+    try:
+        mol.geometry = None
+    except:
+        assert True
+    else:
+        assert (
+            False
+        ), "Exception not raised when trying to set the geometry attribute to None"
+
+    try:
+        mol.geometry = MolecularGeometry()
+    except:
+        assert True
+    else:
+        assert (
+            False
+        ), "Exception not raised when trying to set the geometry attribute as empty"
+
+
+# Test the charge property getter and setter of the System class
+def test_System_charge_property():
+
+    xyzfile = join(TEST_DIR, "utils/xyz_examples/with_comment.xyz")
+    mol = System(xyzfile)
+
+    mol.properties.set_electronic_energy(1.5, BaseEngine("Dummy"))
+
+    assert mol.charge == 0
+    assert mol.properties.electronic_energy == 1.5
+
+    mol.charge = 1
+    assert mol.charge == 1
+    assert mol.properties.electronic_energy == None
+
+
+# Test the spin property getter and setter of the System class
+def test_System_spin_property():
+
+    xyzfile = join(TEST_DIR, "utils/xyz_examples/with_comment.xyz")
+    mol = System(xyzfile)
+
+    mol.properties.set_electronic_energy(1.5, BaseEngine("Dummy"))
+
+    assert mol.spin == 1
+    assert mol.properties.electronic_energy == 1.5
+
+    mol.spin = 2
+    assert mol.spin == 2
+    assert mol.properties.electronic_energy == None
+
+
+# Test the box_side property getter and setter of the System class
+def test_System_box_side_property():
+
+    xyzfile = join(TEST_DIR, "utils/xyz_examples/with_comment.xyz")
+    mol = System(xyzfile)
+
+    mol.properties.set_electronic_energy(1.5, BaseEngine("Dummy"))
+
+    assert mol.box_side == None
+    assert mol.is_periodic == False
+    assert mol.properties.electronic_energy == 1.5
+
+    mol.box_side = 10.4
+    assert mol.box_side == 10.4
+    assert mol.is_periodic == True
+    assert mol.properties.electronic_energy == None

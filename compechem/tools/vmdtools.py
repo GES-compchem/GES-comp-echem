@@ -17,8 +17,8 @@ def render_fukui_cube(
     VMD_PATH: str = None,
 ) -> None:
     """
-    Given the path to a Fukui function cube file saves a `.png` render of the positive part
-    of the function.
+    Given the path to a Fukui function cube file saves a `.png` render the volumetric Fukui
+    function.
 
     Arguments
     ---------
