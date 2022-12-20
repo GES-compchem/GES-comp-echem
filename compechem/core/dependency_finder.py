@@ -120,5 +120,4 @@ def locate_orca(version: str = None, get_folder: bool = False) -> str:
             f"orca {orca_version} retuires OpenMPI {msg}. OpenMPI {openmpi_version} found instead."
         )
 
-    return path.rsplit("/orca") if get_folder is True else path
-
+    return path.rstrip("/orca") if get_folder is True else path
