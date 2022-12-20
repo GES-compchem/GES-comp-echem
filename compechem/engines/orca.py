@@ -1,10 +1,12 @@
 import os, copy, shutil, sh
 from typing import Dict, Tuple
 from tempfile import mkdtemp
+
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System
 from compechem.tools import process_output
 from compechem.core.base import BaseEngine
+from compechem.core.dependency_finder import locate_orca
 
 import logging
 
@@ -22,7 +24,7 @@ class OrcaInput(BaseEngine):
         solvent: str = None,
         optionals: str = "",
         MPI_FLAGS: str = "",
-        ORCADIR: str = "$ORCADIR",
+        ORCADIR: str = None,
     ) -> None:
         """
         Parameters
@@ -41,8 +43,8 @@ class OrcaInput(BaseEngine):
             string containing optional flags to be passed to MPI when launching an ora job.
             (e.g. `--bind-to-none` or `--use-hwthread-cpus`), by default ""
         ORCADIR: str, optional
-            the path or environment variable containing the path to the ORCA folder, by
-            default "$ORCADIR"
+            the path or environment variable containing the path to the ORCA folder. If set
+            to None (default) the orca executable will be loaded automatically.
         """
         super().__init__(method)
 
@@ -51,7 +53,7 @@ class OrcaInput(BaseEngine):
         self.solvent = solvent
         self.optionals = optionals
         self.__MPI_FLAGS = MPI_FLAGS
-        self.__ORCADIR = ORCADIR
+        self.__ORCADIR = ORCADIR if ORCADIR is not None else locate_orca(get_folder=True)
 
         self.level_of_theory += f" | basis: {self.basis_set} | solvent: {self.solvent}"
 

@@ -46,17 +46,22 @@ def locate_vmd() -> str:
     return path.rstrip("/bin/vmd")
 
 
-def locate_orca(version: str = "5.0.3") -> str:
+def locate_orca(version: str = None, get_folder: bool = False) -> str:
     """
     Locate the path to the 'orca' executable from the system PATH. If the executable is
-    located, check if the version matches the desired one and if the correct version of
-    OpenMPI is exported (explicit reference to the static builds).
+    located check that the correct version of OpenMPI is exported (explicit reference to
+    the static builds). If specified, check that the correct version of orca is loaded.
 
     Arguments
     ---------
-    str
-        The string defining the desired version of orca (default: '5.0.3')
-
+    version: str
+        The string defining the desired version of orca. If set to None (default) all version
+        of orca are accepted.
+    get_folder: bool
+        If set to True will return the path of the folder containing the orca executable instead
+        of the default path to the executable itself. Equivalent to applying an `rstrip('/orca')`
+        to the executable path
+        
     Returns
     -------
     str
@@ -78,7 +83,7 @@ def locate_orca(version: str = "5.0.3") -> str:
     if orca_version is None:
         raise RuntimeError("Failed to read the version of the orca software.")
 
-    elif orca_version != version:
+    elif version is not None and orca_version != version:
         raise RuntimeError(
             f"The required orca version is not available. Version {orca_version} found instead."
         )
@@ -108,12 +113,12 @@ def locate_orca(version: str = "5.0.3") -> str:
         "4.1.*": ["3.1.3", "2.1.5"]
     }
 
-    key = ".".join(version.split(".")[0:-1] + ["*"])
+    key = ".".join(orca_version.split(".")[0:-1] + ["*"])
     if openmpi_version not in openmpi_required[key]:
         msg = " or ".join(openmpi_required[key])
         raise RuntimeError(
-            f"orca {version} retuires OpenMPI {msg}. OpenMPI {openmpi_version} found instead."
+            f"orca {orca_version} retuires OpenMPI {msg}. OpenMPI {openmpi_version} found instead."
         )
 
-    return path
+    return path.rsplit("/orca") if get_folder is True else path
 
