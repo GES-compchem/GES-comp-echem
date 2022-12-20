@@ -61,7 +61,7 @@ def locate_orca(version: str = None, get_folder: bool = False) -> str:
         If set to True will return the path of the folder containing the orca executable instead
         of the default path to the executable itself. Equivalent to applying an `rstrip('/orca')`
         to the executable path
-        
+
     Returns
     -------
     str
@@ -107,11 +107,7 @@ def locate_orca(version: str = None, get_folder: bool = False) -> str:
         raise RuntimeError("OpenMPI is either not available or the version cannot be found")
 
     # Check if the available version meets the requirements
-    openmpi_required ={
-        "5.0.*": ["4.1.1"],
-        "4.2.*": ["3.1.4"],
-        "4.1.*": ["3.1.3", "2.1.5"]
-    }
+    openmpi_required = {"5.0.*": ["4.1.1"], "4.2.*": ["3.1.4"], "4.1.*": ["3.1.3", "2.1.5"]}
 
     key = ".".join(orca_version.split(".")[0:-1] + ["*"])
     if openmpi_version not in openmpi_required[key]:

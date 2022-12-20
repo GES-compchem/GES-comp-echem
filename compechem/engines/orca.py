@@ -58,8 +58,7 @@ class OrcaInput(BaseEngine):
         self.level_of_theory += f" | basis: {self.basis_set} | solvent: {self.solvent}"
 
         self.__output_suffix = f"orca_{self.method}_{self.basis_set}_"
-        self.__output_suffix = "vacuum" if solvent in None else f"{self.solvent}"
-    
+        self.__output_suffix = "vacuum" if solvent is None else f"{self.solvent}"
 
     def write_input(
         self,
@@ -121,7 +120,7 @@ class OrcaInput(BaseEngine):
             if job_info["spin"] != 1:
                 input += '  SpinDens("spindens.cube");\n'
             input += "end\n\n"
-        
+
         if job_info["hirshfeld"]:
             input += "%output\n"
             input += "  Print[P_Hirshfeld] 1\n"
@@ -223,7 +222,9 @@ class OrcaInput(BaseEngine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes)
+            process_output(
+                mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes
+            )
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -315,15 +316,17 @@ class OrcaInput(BaseEngine):
             if inplace is False:
                 newmol = System("input.xyz", charge, spin)
                 newmol.name = mol.name
-                newmol.geometry.level_of_theory_geometry(self.level_of_theory)
+                newmol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(newmol)
 
             else:
                 mol.geometry.load_xyz("input.xyz")
-                mol.geometry.level_of_theory_geometry(self.level_of_theory)
+                mol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(mol)
 
-            process_output(mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes)
+            process_output(
+                mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes
+            )
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -597,7 +600,6 @@ class OrcaInput(BaseEngine):
                 shutil.rmtree(tdir)
 
             return ensemble
-    
 
     def parse_output(self, mol: System) -> None:
         """
@@ -618,9 +620,9 @@ class OrcaInput(BaseEngine):
 
         if not os.path.isfile("output.out"):
             raise RuntimeError("Cannot parse output, the `output.out` file does not exist.")
-        
+
         # Parse the final single point energy and the vibronic energy
-        #-----------------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------------
         with open("output.out", "r") as out:
             for line in out:
                 if "FINAL SINGLE POINT ENERGY" in line:
@@ -631,7 +633,7 @@ class OrcaInput(BaseEngine):
                     mol.properties.set_vibronic_energy(vibronic_energy, self)
 
         # Parse the Mulliken atomic charges and spin populations
-        #-----------------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------------
         counter = 0
         mulliken_charges, mulliken_spins = [], []
         spin_available = False
@@ -672,7 +674,7 @@ class OrcaInput(BaseEngine):
                             if spin_available:
                                 mulliken_spins.append(float(data[3]))
                             else:
-                                mulliken_spins.append(0.)
+                                mulliken_spins.append(0.0)
                 else:
                     continue
 
@@ -680,26 +682,26 @@ class OrcaInput(BaseEngine):
                 # has been reached, as such, break also from the reading operation
                 if mulliken_charges != []:
                     break
-        
+
         if mulliken_charges != []:
             mol.properties.set_mulliken_charges(mulliken_charges, self)
             mol.properties.set_mulliken_spin_populations(mulliken_spins, self)
-        
+
         # Parse the Hirshfeld atomic charges and spin populations
-        #-----------------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------------
         hirshfeld_charges, hirshfeld_spins = [], []
         with open("output.out", "r") as file:
-            
+
             for line in file:
 
                 # Read the file until the HIRSHFELD ANALYSIS title is found
                 if "HIRSHFELD ANALYSIS" in line:
 
-                    # Discard the following 6 lines to skip formatting and total integrated 
+                    # Discard the following 6 lines to skip formatting and total integrated
                     # densities
                     for i in range(6):
                         _ = file.readline()
-                    
+
                     # Read the whole hirshfeld section until a empty line is found
                     while True:
 
@@ -714,14 +716,14 @@ class OrcaInput(BaseEngine):
                             data = buffer.split()
                             hirshfeld_charges.append(float(data[2]))
                             hirshfeld_spins.append(float(data[3]))
-                
+
                 elif hirshfeld_charges != []:
                     break
-        
+
         if hirshfeld_charges != []:
             mol.properties.set_hirshfeld_charges(hirshfeld_charges, self)
             mol.properties.set_hirshfeld_spin_populations(hirshfeld_spins, self)
-                        
+
 
 class M06(OrcaInput):
     def __init__(self):
