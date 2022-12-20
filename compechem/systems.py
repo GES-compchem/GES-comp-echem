@@ -114,6 +114,13 @@ class System:
 
     @geometry.setter
     def geometry(self, new_geometry: MolecularGeometry) -> None:
+
+        if type(new_geometry) != MolecularGeometry:
+            raise TypeError("The geometry attribute must be of type MolecularGeometry")
+        
+        elif new_geometry.atomcount == 0:
+            raise ValueError("The geometry object cannot be empty or not initialized")
+
         self.__geometry = new_geometry
         logger.info(f"Geometry changed: clearing properties for {self.name}")
         self.properties = Properties()
@@ -214,6 +221,46 @@ class System:
                     self.properties.condensed_fukui_mulliken["f+"],
                     self.properties.condensed_fukui_mulliken["f-"],
                     self.properties.condensed_fukui_mulliken["f0"],
+                )
+            ):
+                info += f" {idx:<6}{atom:^6}"
+                info += "{0:^10}{1:^10}{2:^10}\n".format(
+                    f"{fplus:.5f}",
+                    f"{fminus:.5f}",
+                    f"{fzero:.5f}",
+                )
+            info += "\n"
+        
+        if self.properties.hirshfeld_charges != []:
+
+            info += f"HIRSHFELD ANALYSIS\n"
+            info += "----------------------------------------------\n"
+            info += " index  atom   charge    spin\n"
+            info += "----------------------------------------------\n"
+            for idx, (atom, charge, spin) in enumerate(
+                zip(
+                    self.properties.hirshfeld_charges,
+                    self.properties.hirshfeld_spin_populations,
+                )
+            ):
+                info += f" {idx:<6}{atom:^6}"
+                info += "{0:^10}{1:^10}\n".format(
+                    f"{charge:.5f}",
+                    f"{spin:.5f}",
+                )
+            info += "\n"
+        
+        if self.properties.condensed_fukui_hirshfeld != {}:
+
+            info += f"CONDENSED FUKUI - HIRSHFELD\n"
+            info += "----------------------------------------------\n"
+            info += " index  atom    f+      f-      f0\n"
+            info += "----------------------------------------------\n"
+            for idx, (atom, fplus, fminus, fzero) in enumerate(
+                zip(
+                    self.properties.condensed_fukui_hirshfeld["f+"],
+                    self.properties.condensed_fukui_hirshfeld["f-"],
+                    self.properties.condensed_fukui_hirshfeld["f0"],
                 )
             ):
                 info += f" {idx:<6}{atom:^6}"
