@@ -9,7 +9,11 @@ def test_OrcaInput___init__():
 
     try:
         orca = OrcaInput(
-            method="HF", basis_set="def2-SVP", aux_basis="def2/J", solvent="water"
+            method="HF",
+            basis_set="def2-SVP",
+            aux_basis="def2/J",
+            solvent="water",
+            ORCADIR=ORCADIR,
         )
 
     except:
