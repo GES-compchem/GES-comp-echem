@@ -50,7 +50,7 @@ def test_OrcaInput_spe_vac():
 
 
 # Test the spe() function on a water molecule in solvent
-def test_OrcaInput_spe_vac():
+def test_OrcaInput_spe_solvent():
 
     orca = OrcaInput(
         method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="water"
