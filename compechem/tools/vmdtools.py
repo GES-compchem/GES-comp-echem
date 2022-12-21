@@ -66,6 +66,7 @@ def render_fukui_cube(
             mol modstyle 1 0 Isosurface {isovalue} 0 0 0 1 1
             mol modmaterial 1 0 Translucent
             mol scaleminmax 0 1 0.000000 1.000000
+            display cuemode Linear
             """
         )
 
@@ -94,7 +95,99 @@ def render_fukui_cube(
             color Display Background white
             color Element C black
             mol modcolor 0 0 Element
-            render Tachyon {root_name}.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res {resolution} {resolution} -o %s.png
+            render Tachyon {root_name}.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res {resolution} {resolution} -o {root_name}.png
+            exit
+            """
+        )
+
+        vmd_script.seek(0)
+        system(f"vmd -dispdev text -e {vmd_script.name}")
+
+
+def render_condensed_fukui(
+    cubfile: str,
+    resolution: int = 4800,
+    shadows: bool = True,
+    ambientocclusion: bool = True,
+    dof: bool = True,
+    VMD_PATH: str = None,
+) -> None:
+    """
+    Given the path to a Fukui function cube file saves a `.png` render of the condensed Fukui
+    functions.
+
+    Arguments
+    ---------
+    cubefile: str
+        The path to the `.fukui.cube` file that must be rendered.
+    resolution: int
+        The resolution of the output image (default: 4800).
+    shadows: bool
+        If set to True will enable the vmd shadows option
+    ambientocclusion: bool
+        If set to True will enable the vmd ambientocclusion option
+    dof: bool
+        If set to True will enable the vmd dof option
+    VMD_PATH: str
+        The path to the vmd folder. Is set to None (default), will automatically search vmd
+        in the system PATH.
+    """
+    vmd_root = VMD_PATH if VMD_PATH is not None else locate_vmd()
+    tachyon_path = join(vmd_root, "lib/vmd/tachyon_LINUXAMD64")
+
+    root_name = basename(cubfile).strip(".fukui.cube")
+
+    with tmp(mode="w+") as vmd_script:
+
+        vmd_script.write(
+            f"""
+            mol addrep 0
+            display projection Orthographic
+            mol new {cubfile} type {{cube}} first 0 last -1 step 1 waitfor 1 volsets {{0 }}
+            """
+        )
+
+        vmd_script.write(
+            """
+            animate style Loop
+            mol selection all
+            mol color Charge
+            mol representation Licorice 0.1 20.000000 20.000000
+            mol material Opaque
+            mol modrep 0 0
+            color Display Background white
+            display cuemode Linear
+            axes location Off
+
+            label delete Atoms all
+            set all [atomselect 0 "all"]
+            set i 0
+            foreach atom [$all list] {
+            label add Atoms "0/$atom"
+            label textformat Atoms $i {%q}
+            label textoffset Atoms $i { 0.025  0.0  }
+            incr i
+            }
+
+            label textsize 1
+            label textthickness 3
+            color Labels Atoms black
+            display resetview
+            """
+        )
+
+        if shadows:
+            vmd_script.write("display shadows on\n")
+
+        if ambientocclusion:
+            vmd_script.write("display ambientocclusion on\n")
+
+        if dof:
+            vmd_script.write("display dof on")
+
+        vmd_script.write(
+            f"""
+            render Tachyon {root_name}_condensed.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res {resolution} {resolution} -o {root_name}_condensed.png
             exit
             """
         )
