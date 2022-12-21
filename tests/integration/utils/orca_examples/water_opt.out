@@ -169,7 +169,7 @@ INFO   : the flag for use of the SHARK integral package has been found!
 ================================================================================
                                        INPUT FILE
 ================================================================================
-NAME = water_opt_vac.inp
+NAME = water_opt.inp
 |  1> %pal
 |  2>   nprocs 4
 |  3> end
@@ -182,7 +182,8 @@ NAME = water_opt_vac.inp
 | 10> 
 | 11> * xyzfile 0 1 water.xyz
 | 12> 
-| 13>                          ****END OF INPUT****
+| 13> 
+| 14>                          ****END OF INPUT****
 ================================================================================
 
                        *****************************
@@ -315,7 +316,7 @@ Atom   2H    basis set group =>   2
 ------------------------------------------------------------------------------
 
 
-Reading SHARK input file water_opt_vac.SHARKINP.tmp ... ok
+Reading SHARK input file water_opt.SHARKINP.tmp ... ok
 ----------------------
 SHARK INTEGRAL PACKAGE
 ----------------------
@@ -357,10 +358,10 @@ Primitive shell pairs kept                  ...       265
           la=2 lb=2:      1 shell pairs
 
 Calculating one electron integrals          ... done (  0.0 sec)
-Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.1 sec)
+Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.0 sec)
 Calculating Nuclear repulsion               ... done (  0.0 sec) ENN=      9.084297099237 Eh
 
-SHARK setup successfully completed in   0.2 seconds
+SHARK setup successfully completed in   0.1 seconds
 
 Maximum memory used throughout the entire GTOINT-calculation: 8.7 MB
 
@@ -392,7 +393,7 @@ Hamiltonian:
 
 
 General Settings:
- Integral files         IntName         .... water_opt_vac
+ Integral files         IntName         .... water_opt
  Hartree-Fock type      HFTyp           .... RHF
  Total Charge           Charge          ....    0
  Multiplicity           Mult            ....    1
@@ -463,10 +464,10 @@ Smallest eigenvalue                        ... 3.830e-02
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.007 sec
-Total time needed                          ...    0.029 sec
+Time for construction of square roots      ...    0.004 sec
+Total time needed                          ...    0.009 sec
 
-Time for model grid setup =    0.035 sec
+Time for model grid setup =    0.019 sec
 
 ------------------------------
 INITIAL GUESS: MODEL POTENTIAL
@@ -475,7 +476,7 @@ Loading Hartree-Fock densities                     ... done
 Calculating cut-offs                               ... done
 Initializing the effective Hamiltonian             ... done
 Setting up the integral package (SHARK)            ... done
-Starting the Coulomb interaction                   ... done (   0.1 sec)
+Starting the Coulomb interaction                   ... done (   0.0 sec)
 Reading the grid                                   ... done
 Mapping shells                                     ... done
 Starting the XC term evaluation                    ... done (   0.0 sec)
@@ -489,7 +490,7 @@ Diagonalizing the Hamiltonian                      ... done (   0.0 sec)
 Back transforming the eigenvectors                 ... done (   0.0 sec)
 Now organizing SCF variables                       ... done
                       ------------------
-                      INITIAL GUESS DONE (   0.2 sec)
+                      INITIAL GUESS DONE (   0.1 sec)
                       ------------------
 -------------------
 DFT GRID GENERATION
@@ -510,7 +511,7 @@ Total number of grid points                  ...    12750
 Total number of batches                      ...      201
 Average number of points per batch           ...       63
 Average number of grid points per atom       ...     4250
-Time for grid setup =    0.154 sec
+Time for grid setup =    0.047 sec
 
 --------------
 SCF ITERATIONS
@@ -581,11 +582,11 @@ SCF CONVERGENCE
   Last Orbital Gradient      ...    1.0855e-06  Tolerance :   1.0000e-05
   Last Orbital Rotation      ...    1.5357e-06  Tolerance :   1.0000e-05
 
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
-             **** ENERGY FILE WAS UPDATED (water_opt_vac.en.tmp) ****
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
+             **** ENERGY FILE WAS UPDATED (water_opt.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
 ----------------
 ORBITAL ENERGIES
 ----------------
@@ -706,27 +707,27 @@ B(  0-O ,  1-H ) :   1.0105 B(  0-O ,  2-H ) :   1.0105
 TIMINGS
 -------
 
-Total SCF time: 0 days 0 hours 0 min 3 sec 
+Total SCF time: 0 days 0 hours 0 min 2 sec 
 
-Total time                  ....       3.047 sec
-Sum of individual times     ....       2.583 sec  ( 84.8%)
+Total time                  ....       2.169 sec
+Sum of individual times     ....       1.922 sec  ( 88.6%)
 
-Fock matrix formation       ....       1.628 sec  ( 53.4%)
-  Split-RI-J                ....       0.713 sec  ( 43.8% of F)
-  XC integration            ....       0.419 sec  ( 25.7% of F)
-    Basis function eval.    ....       0.020 sec  (  4.7% of XC)
-    Density eval.           ....       0.017 sec  (  4.1% of XC)
-    XC-Functional eval.     ....       0.021 sec  (  5.0% of XC)
-    XC-Potential eval.      ....       0.007 sec  (  1.6% of XC)
-Diagonalization             ....       0.170 sec  (  5.6%)
+Fock matrix formation       ....       1.226 sec  ( 56.5%)
+  Split-RI-J                ....       0.377 sec  ( 30.8% of F)
+  XC integration            ....       0.428 sec  ( 34.9% of F)
+    Basis function eval.    ....       0.018 sec  (  4.2% of XC)
+    Density eval.           ....       0.018 sec  (  4.3% of XC)
+    XC-Functional eval.     ....       0.027 sec  (  6.2% of XC)
+    XC-Potential eval.      ....       0.007 sec  (  1.7% of XC)
+Diagonalization             ....       0.150 sec  (  6.9%)
 Density matrix formation    ....       0.005 sec  (  0.2%)
-Population analysis         ....       0.068 sec  (  2.2%)
-Initial guess               ....       0.122 sec  (  4.0%)
+Population analysis         ....       0.043 sec  (  2.0%)
+Initial guess               ....       0.055 sec  (  2.5%)
 Orbital Transformation      ....       0.000 sec  (  0.0%)
 Orbital Orthonormalization  ....       0.000 sec  (  0.0%)
-DIIS solution               ....       0.255 sec  (  8.4%)
-SOSCF solution              ....       0.146 sec  (  4.8%)
-Grid generation             ....       0.189 sec  (  6.2%)
+DIIS solution               ....       0.234 sec  ( 10.8%)
+SOSCF solution              ....       0.143 sec  (  6.6%)
+Grid generation             ....       0.066 sec  (  3.0%)
 
 Maximum memory used throughout the entire SCF-calculation: 6.2 MB
 
@@ -756,7 +757,7 @@ SHARK Integral package           ... ON
 
 Nuc. rep. gradient       (SHARK) ... done (  0.0 sec)
 HCore & Overlap gradient (SHARK) ... done (  0.0 sec)
-RI-J gradient            (SHARK) ... done (  0.1 sec)
+RI-J gradient            (SHARK) ... done (  0.0 sec)
 Exchange-correlation gradient    ... done
 
 ------------------
@@ -781,11 +782,11 @@ MAX gradient                       ...    0.0054246112
 TIMINGS
 -------
 
-Total SCF gradient time            ...        0.219 sec
+Total SCF gradient time            ...        0.128 sec
 
-One electron gradient       ....       0.005 sec  (  2.1%)
-RI-J Coulomb gradient       ....       0.068 sec  ( 31.0%)
-XC gradient                 ....       0.023 sec  ( 10.6%)
+One electron gradient       ....       0.002 sec  (  1.4%)
+RI-J Coulomb gradient       ....       0.047 sec  ( 36.7%)
+XC gradient                 ....       0.026 sec  ( 20.1%)
 
 Maximum memory used throughout the entire SCFGRAD-calculation: 4.8 MB
 ------------------------------------------------------------------------------
@@ -912,7 +913,7 @@ INTERNAL COORDINATES (A.U.)
 ------------------------------------------------------------------------------
 
 
-Reading SHARK input file water_opt_vac.SHARKINP.tmp ... ok
+Reading SHARK input file water_opt.SHARKINP.tmp ... ok
 ----------------------
 SHARK INTEGRAL PACKAGE
 ----------------------
@@ -954,10 +955,10 @@ Primitive shell pairs kept                  ...       265
           la=2 lb=2:      1 shell pairs
 
 Calculating one electron integrals          ... done (  0.0 sec)
-Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.1 sec)
+Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.0 sec)
 Calculating Nuclear repulsion               ... done (  0.0 sec) ENN=      9.043882306550 Eh
 
-SHARK setup successfully completed in   0.2 seconds
+SHARK setup successfully completed in   0.1 seconds
 
 Maximum memory used throughout the entire GTOINT-calculation: 8.7 MB
 
@@ -973,7 +974,7 @@ Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
 Time for construction of square roots      ...    0.005 sec
-Total time needed                          ...    0.010 sec
+Total time needed                          ...    0.009 sec
 
 -------------------
 DFT GRID GENERATION
@@ -994,7 +995,7 @@ Total number of grid points                  ...    12749
 Total number of batches                      ...      201
 Average number of points per batch           ...       63
 Average number of grid points per atom       ...     4250
-Time for grid setup =    0.061 sec
+Time for grid setup =    0.050 sec
 
 --------------
 SCF ITERATIONS
@@ -1023,11 +1024,11 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -76.27265791 Eh           -2075.48454 eV
   Last Energy change         ...   -6.3523e-11  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    1.4492e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
-             **** ENERGY FILE WAS UPDATED (water_opt_vac.en.tmp) ****
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
+             **** ENERGY FILE WAS UPDATED (water_opt.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
 Total SCF time: 0 days 0 hours 0 min 1 sec 
 
 Maximum memory used throughout the entire SCF-calculation: 6.2 MB
@@ -1058,7 +1059,7 @@ SHARK Integral package           ... ON
 
 Nuc. rep. gradient       (SHARK) ... done (  0.0 sec)
 HCore & Overlap gradient (SHARK) ... done (  0.0 sec)
-RI-J gradient            (SHARK) ... done (  0.1 sec)
+RI-J gradient            (SHARK) ... done (  0.0 sec)
 Exchange-correlation gradient    ... done
 
 ------------------
@@ -1083,11 +1084,11 @@ MAX gradient                       ...    0.0017590931
 TIMINGS
 -------
 
-Total SCF gradient time            ...        0.238 sec
+Total SCF gradient time            ...        0.125 sec
 
-One electron gradient       ....       0.002 sec  (  0.7%)
-RI-J Coulomb gradient       ....       0.127 sec  ( 53.2%)
-XC gradient                 ....       0.027 sec  ( 11.2%)
+One electron gradient       ....       0.003 sec  (  2.6%)
+RI-J Coulomb gradient       ....       0.047 sec  ( 37.4%)
+XC gradient                 ....       0.020 sec  ( 16.0%)
 
 Maximum memory used throughout the entire SCFGRAD-calculation: 4.8 MB
 ------------------------------------------------------------------------------
@@ -1214,7 +1215,7 @@ INTERNAL COORDINATES (A.U.)
 ------------------------------------------------------------------------------
 
 
-Reading SHARK input file water_opt_vac.SHARKINP.tmp ... ok
+Reading SHARK input file water_opt.SHARKINP.tmp ... ok
 ----------------------
 SHARK INTEGRAL PACKAGE
 ----------------------
@@ -1259,7 +1260,7 @@ Calculating one electron integrals          ... done (  0.0 sec)
 Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.0 sec)
 Calculating Nuclear repulsion               ... done (  0.0 sec) ENN=      9.032679230760 Eh
 
-SHARK setup successfully completed in   0.2 seconds
+SHARK setup successfully completed in   0.1 seconds
 
 Maximum memory used throughout the entire GTOINT-calculation: 8.7 MB
 
@@ -1274,8 +1275,8 @@ Smallest eigenvalue                        ... 3.837e-02
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.004 sec
-Total time needed                          ...    0.026 sec
+Time for construction of square roots      ...    0.005 sec
+Total time needed                          ...    0.010 sec
 
 -------------------
 DFT GRID GENERATION
@@ -1296,7 +1297,7 @@ Total number of grid points                  ...    12748
 Total number of batches                      ...      201
 Average number of points per batch           ...       63
 Average number of grid points per atom       ...     4249
-Time for grid setup =    0.064 sec
+Time for grid setup =    0.050 sec
 
 --------------
 SCF ITERATIONS
@@ -1325,11 +1326,11 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -76.27268607 Eh           -2075.48530 eV
   Last Energy change         ...   -5.2438e-11  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    1.3599e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
-             **** ENERGY FILE WAS UPDATED (water_opt_vac.en.tmp) ****
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
+             **** ENERGY FILE WAS UPDATED (water_opt.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
 Total SCF time: 0 days 0 hours 0 min 1 sec 
 
 Maximum memory used throughout the entire SCF-calculation: 6.2 MB
@@ -1360,7 +1361,7 @@ SHARK Integral package           ... ON
 
 Nuc. rep. gradient       (SHARK) ... done (  0.0 sec)
 HCore & Overlap gradient (SHARK) ... done (  0.0 sec)
-RI-J gradient            (SHARK) ... done (  0.1 sec)
+RI-J gradient            (SHARK) ... done (  0.0 sec)
 Exchange-correlation gradient    ... done
 
 ------------------
@@ -1385,11 +1386,11 @@ MAX gradient                       ...    0.0004284485
 TIMINGS
 -------
 
-Total SCF gradient time            ...        0.240 sec
+Total SCF gradient time            ...        0.117 sec
 
-One electron gradient       ....       0.002 sec  (  0.8%)
-RI-J Coulomb gradient       ....       0.110 sec  ( 46.0%)
-XC gradient                 ....       0.027 sec  ( 11.2%)
+One electron gradient       ....       0.002 sec  (  1.6%)
+RI-J Coulomb gradient       ....       0.046 sec  ( 38.9%)
+XC gradient                 ....       0.018 sec  ( 15.0%)
 
 Maximum memory used throughout the entire SCFGRAD-calculation: 4.8 MB
 ------------------------------------------------------------------------------
@@ -1515,7 +1516,7 @@ INTERNAL COORDINATES (A.U.)
 ------------------------------------------------------------------------------
 
 
-Reading SHARK input file water_opt_vac.SHARKINP.tmp ... ok
+Reading SHARK input file water_opt.SHARKINP.tmp ... ok
 ----------------------
 SHARK INTEGRAL PACKAGE
 ----------------------
@@ -1557,10 +1558,10 @@ Primitive shell pairs kept                  ...       265
           la=2 lb=2:      1 shell pairs
 
 Calculating one electron integrals          ... done (  0.0 sec)
-Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.1 sec)
+Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.0 sec)
 Calculating Nuclear repulsion               ... done (  0.0 sec) ENN=      9.035392916939 Eh
 
-SHARK setup successfully completed in   0.3 seconds
+SHARK setup successfully completed in   0.1 seconds
 
 Maximum memory used throughout the entire GTOINT-calculation: 8.7 MB
 
@@ -1576,7 +1577,7 @@ Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
 Time for construction of square roots      ...    0.004 sec
-Total time needed                          ...    0.022 sec
+Total time needed                          ...    0.009 sec
 
 -------------------
 DFT GRID GENERATION
@@ -1597,7 +1598,7 @@ Total number of grid points                  ...    12748
 Total number of batches                      ...      201
 Average number of points per batch           ...       63
 Average number of grid points per atom       ...     4249
-Time for grid setup =    0.062 sec
+Time for grid setup =    0.047 sec
 
 --------------
 SCF ITERATIONS
@@ -1624,12 +1625,12 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -76.27268698 Eh           -2075.48533 eV
   Last Energy change         ...   -1.5296e-09  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    1.7917e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
-             **** ENERGY FILE WAS UPDATED (water_opt_vac.en.tmp) ****
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
-Total SCF time: 0 days 0 hours 0 min 1 sec 
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
+             **** ENERGY FILE WAS UPDATED (water_opt.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
+Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 Maximum memory used throughout the entire SCF-calculation: 6.2 MB
 
@@ -1659,7 +1660,7 @@ SHARK Integral package           ... ON
 
 Nuc. rep. gradient       (SHARK) ... done (  0.0 sec)
 HCore & Overlap gradient (SHARK) ... done (  0.0 sec)
-RI-J gradient            (SHARK) ... done (  0.1 sec)
+RI-J gradient            (SHARK) ... done (  0.0 sec)
 Exchange-correlation gradient    ... done
 
 ------------------
@@ -1684,11 +1685,11 @@ MAX gradient                       ...    0.0000914076
 TIMINGS
 -------
 
-Total SCF gradient time            ...        0.235 sec
+Total SCF gradient time            ...        0.130 sec
 
-One electron gradient       ....       0.002 sec  (  0.9%)
-RI-J Coulomb gradient       ....       0.083 sec  ( 35.4%)
-XC gradient                 ....       0.021 sec  (  8.8%)
+One electron gradient       ....       0.002 sec  (  1.4%)
+RI-J Coulomb gradient       ....       0.050 sec  ( 38.5%)
+XC gradient                 ....       0.018 sec  ( 13.6%)
 
 Maximum memory used throughout the entire SCFGRAD-calculation: 4.9 MB
 ------------------------------------------------------------------------------
@@ -1843,7 +1844,7 @@ Atom   2H    basis set group =>   2
 ------------------------------------------------------------------------------
 
 
-Reading SHARK input file water_opt_vac.SHARKINP.tmp ... ok
+Reading SHARK input file water_opt.SHARKINP.tmp ... ok
 ----------------------
 SHARK INTEGRAL PACKAGE
 ----------------------
@@ -1885,10 +1886,10 @@ Primitive shell pairs kept                  ...       265
           la=2 lb=2:      1 shell pairs
 
 Calculating one electron integrals          ... done (  0.0 sec)
-Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.1 sec)
+Calculating RI/J V-Matrix + Cholesky decomp.... done (  0.0 sec)
 Calculating Nuclear repulsion               ... done (  0.0 sec) ENN=      9.036217632608 Eh
 
-SHARK setup successfully completed in   0.2 seconds
+SHARK setup successfully completed in   0.1 seconds
 
 Maximum memory used throughout the entire GTOINT-calculation: 8.7 MB
 
@@ -1920,7 +1921,7 @@ Hamiltonian:
 
 
 General Settings:
- Integral files         IntName         .... water_opt_vac
+ Integral files         IntName         .... water_opt
  Hartree-Fock type      HFTyp           .... RHF
  Total Charge           Charge          ....    0
  Multiplicity           Mult            ....    1
@@ -1988,16 +1989,16 @@ Convergence Tolerance:
 
 Diagonalization of the overlap matrix:
 Smallest eigenvalue                        ... 3.831e-02
-Time for diagonalization                   ...    0.000 sec
+Time for diagonalization                   ...    0.001 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.005 sec
-Total time needed                          ...    0.016 sec
+Time for construction of square roots      ...    0.003 sec
+Total time needed                          ...    0.008 sec
 
 ---------------------
 INITIAL GUESS: MOREAD
 ---------------------
-Guess MOs are being read from file: water_opt_vac.gbw
+Guess MOs are being read from file: water_opt.gbw
 Input Geometry matches current geometry (good)
 Input basis set matches current basis set (good)
 MOs were renormalized
@@ -2024,7 +2025,7 @@ Total number of grid points                  ...    12748
 Total number of batches                      ...      201
 Average number of points per batch           ...       63
 Average number of grid points per atom       ...     4249
-Time for grid setup =    0.068 sec
+Time for grid setup =    0.049 sec
 
 --------------
 SCF ITERATIONS
@@ -2085,11 +2086,11 @@ SCF CONVERGENCE
   Last Orbital Gradient      ...    7.9354e-07  Tolerance :   1.0000e-05
   Last Orbital Rotation      ...    1.8495e-06  Tolerance :   1.0000e-05
 
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
-             **** ENERGY FILE WAS UPDATED (water_opt_vac.en.tmp) ****
-             **** THE GBW FILE WAS UPDATED (water_opt_vac.gbw) ****
-             **** DENSITY water_opt_vac.scfp WAS UPDATED ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
+             **** ENERGY FILE WAS UPDATED (water_opt.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (water_opt.gbw) ****
+             **** DENSITY water_opt.scfp WAS UPDATED ****
 ----------------
 ORBITAL ENERGIES
 ----------------
@@ -2210,27 +2211,27 @@ B(  0-O ,  1-H ) :   1.0097 B(  0-O ,  2-H ) :   1.0097
 TIMINGS
 -------
 
-Total SCF time: 0 days 0 hours 0 min 1 sec 
+Total SCF time: 0 days 0 hours 0 min 0 sec 
 
-Total time                  ....       1.126 sec
-Sum of individual times     ....       0.758 sec  ( 67.3%)
+Total time                  ....       0.788 sec
+Sum of individual times     ....       0.583 sec  ( 74.0%)
 
-Fock matrix formation       ....       0.492 sec  ( 43.7%)
-  Split-RI-J                ....       0.245 sec  ( 49.9% of F)
-  XC integration            ....       0.130 sec  ( 26.3% of F)
-    Basis function eval.    ....       0.005 sec  (  4.2% of XC)
-    Density eval.           ....       0.005 sec  (  3.8% of XC)
-    XC-Functional eval.     ....       0.007 sec  (  5.4% of XC)
+Fock matrix formation       ....       0.368 sec  ( 46.7%)
+  Split-RI-J                ....       0.120 sec  ( 32.7% of F)
+  XC integration            ....       0.123 sec  ( 33.5% of F)
+    Basis function eval.    ....       0.006 sec  (  5.0% of XC)
+    Density eval.           ....       0.005 sec  (  4.4% of XC)
+    XC-Functional eval.     ....       0.007 sec  (  5.6% of XC)
     XC-Potential eval.      ....       0.002 sec  (  1.6% of XC)
-Diagonalization             ....       0.023 sec  (  2.1%)
-Density matrix formation    ....       0.003 sec  (  0.2%)
-Population analysis         ....       0.066 sec  (  5.9%)
-Initial guess               ....       0.002 sec  (  0.2%)
+Diagonalization             ....       0.022 sec  (  2.8%)
+Density matrix formation    ....       0.003 sec  (  0.3%)
+Population analysis         ....       0.041 sec  (  5.2%)
+Initial guess               ....       0.002 sec  (  0.3%)
 Orbital Transformation      ....       0.000 sec  (  0.0%)
 Orbital Orthonormalization  ....       0.000 sec  (  0.0%)
-DIIS solution               ....       0.025 sec  (  2.2%)
-SOSCF solution              ....       0.078 sec  (  6.9%)
-Grid generation             ....       0.068 sec  (  6.1%)
+DIIS solution               ....       0.021 sec  (  2.7%)
+SOSCF solution              ....       0.077 sec  (  9.8%)
+Grid generation             ....       0.049 sec  (  6.3%)
 
 Maximum memory used throughout the entire SCF-calculation: 6.2 MB
 
@@ -2257,8 +2258,8 @@ FINAL SINGLE POINT ENERGY       -76.272686998306
 Dipole Moment Calculation                       ... on
 Quadrupole Moment Calculation                   ... off
 Polarizability Calculation                      ... off
-GBWName                                         ... water_opt_vac.gbw
-Electron density                                ... water_opt_vac.scfp
+GBWName                                         ... water_opt.gbw
+Electron density                                ... water_opt.scfp
 The origin for moment calculation is the CENTER OF MASS  = (-6.003739, -1.169268  0.035822)
 
 -------------
@@ -2332,8 +2333,8 @@ Average number of grid points per atom       ...     6658
 
 Building densities                               ... done   (      0.0 sec)
 Calculating rho(r) on the grid                   ... done   (      0.0 sec)
-Building xc-kernel on the grid                   ... done   (      0.1 sec)
-                                                     done   (      0.3 sec)
+Building xc-kernel on the grid                   ... done   (      0.0 sec)
+                                                     done   (      0.2 sec)
 
 Nuclear repulsion Hessian  (SHARK)               ... done   (      0.0 sec)
 
@@ -2345,31 +2346,31 @@ Transforming the overlap derivative matrices     ... done   (      0.0 sec)
 Making the Q(x) pseudodensities                  ... done   (      0.0 sec)
 Adding the E*S(x)*S(y) terms to the Hessian      ... done   (      0.0 sec)
 Calculating energy weighted overlap derivatives  ... done   (      0.0 sec)
-Two electron integral derivatives (SHARK-RI)     ... done   (      0.6 sec)
+Two electron integral derivatives (SHARK-RI)     ... done   (      0.2 sec)
 Exchange-correlation integral derivatives        ... done   (      0.1 sec)
 tr(F(y)Q(x)) contribution to the Hessian         ... done   (      0.0 sec)
-Response fock operator R(S(x)) (SHARK-RI)        ... done   (      0.3 sec)
-XC Response fock operator R(S(x))                ... done   (      0.1 sec)
+Response fock operator R(S(x)) (SHARK-RI)        ... done   (      0.1 sec)
+XC Response fock operator R(S(x))                ... done   (      0.0 sec)
 tr(F(y)S(x)) contribution to the Hessian         ... done   (      0.0 sec)
 Transforming and finalizing RHSs                 ... done   (      0.0 sec)
 
 ----------------------------------------------
 Solving the CP-SCF equations (RI)                ...
 ----------------------------------------------
-     CP-SCF ITERATION   0:   1.1954e-01 (   0.1 sec   0/  9 done)
+     CP-SCF ITERATION   0:   1.1954e-01 (   0.0 sec   0/  9 done)
      CP-SCF ITERATION   1:   2.0889e-02 (   0.0 sec   0/  9 done)
-     CP-SCF ITERATION   2:   2.1515e-03 (   0.1 sec   0/  9 done)
-     CP-SCF ITERATION   3:   2.9059e-04 (   0.1 sec   1/  9 done)
-     CP-SCF ITERATION   4:   1.8799e-05 (   0.1 sec   9/  9 done)
+     CP-SCF ITERATION   2:   2.1515e-03 (   0.0 sec   0/  9 done)
+     CP-SCF ITERATION   3:   2.9059e-04 (   0.0 sec   1/  9 done)
+     CP-SCF ITERATION   4:   1.8799e-05 (   0.0 sec   9/  9 done)
                     *** THE CP-SCF HAS CONVERGED ***
 
-                                                 ... done   (      0.5 sec)
+                                                 ... done   (      0.2 sec)
 Forming perturbed density Hessian contributions  ... done   (      0.0 sec)
-2nd integral derivative contribs (SHARK-RI)      ... done   (      0.4 sec)
-Exchange-correlation Hessian                     ... done   (      0.2 sec)
+2nd integral derivative contribs (SHARK-RI)      ... done   (      0.2 sec)
+Exchange-correlation Hessian                     ... done   (      0.1 sec)
 Dipole derivatives                               ... (center of mass: -6.003739, -1.169268  0.035822)done   (      0.1 sec)
 
-Total SCF Hessian time: 0 days 0 hours 0 min 3 sec 
+Total SCF Hessian time: 0 days 0 hours 0 min 1 sec 
 
 Writing the Hessian file to the disk             ... done
 
@@ -2570,11 +2571,11 @@ G-E(el)                           ...      0.00301009 Eh      1.89 kcal/mol
 
 Timings for individual modules:
 
-Sum of individual times         ...       19.401 sec (=   0.323 min)
-GTO integral calculation        ...        2.846 sec (=   0.047 min)  14.7 %
-SCF iterations                  ...       10.006 sec (=   0.167 min)  51.6 %
-SCF Gradient evaluation         ...        2.166 sec (=   0.036 min)  11.2 %
-Geometry relaxation             ...        0.231 sec (=   0.004 min)   1.2 %
-Analytical frequency calculation...        4.153 sec (=   0.069 min)  21.4 %
+Sum of individual times         ...       13.298 sec (=   0.222 min)
+GTO integral calculation        ...        1.882 sec (=   0.031 min)  14.2 %
+SCF iterations                  ...        7.818 sec (=   0.130 min)  58.8 %
+SCF Gradient evaluation         ...        1.516 sec (=   0.025 min)  11.4 %
+Geometry relaxation             ...        0.192 sec (=   0.003 min)   1.4 %
+Analytical frequency calculation...        1.889 sec (=   0.031 min)  14.2 %
                              ****ORCA TERMINATED NORMALLY****
-TOTAL RUN TIME: 0 days 0 hours 0 minutes 21 seconds 766 msec
+TOTAL RUN TIME: 0 days 0 hours 0 minutes 15 seconds 297 msec

@@ -1,7 +1,7 @@
 import pytest
 
 from compechem.engines.orca import OrcaInput
-from compechem.systems import System
+from compechem.systems import System, Ensemble
 from os.path import dirname, abspath
 from shutil import rmtree
 
@@ -30,32 +30,11 @@ def test_OrcaInput___init__():
         )
 
 
-# Test the spe() function on a water molecule in vacuum
-def test_OrcaInput_spe_vac():
+# Test the spe() function on a radical cation water molecule in DMSO
+def test_OrcaInput_spe():
 
-    orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
-    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
-
-    try:
-        orca.spe(mol, ncores=4, inplace=True)
-    except:
-        assert False, "Unexpected exception raised during SPE calculation"
-
-    else:
-        assert mol.properties.level_of_theory_electronic == orca.level_of_theory
-        assert_array_almost_equal(
-            mol.properties.electronic_energy, -76.272562753586, decimal=6
-        )
-        rmtree("output_files")
-
-
-# Test the spe() function on a water molecule in solvent
-def test_OrcaInput_spe_vac():
-
-    orca = OrcaInput(
-        method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="water"
-    )
-    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+    orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
     try:
         orca.spe(mol, ncores=4, inplace=True)
@@ -65,13 +44,25 @@ def test_OrcaInput_spe_vac():
     else:
         assert mol.properties.level_of_theory_electronic == orca.level_of_theory
         assert_array_almost_equal(
-            mol.properties.electronic_energy, -76.283779209329, decimal=6
+            mol.properties.electronic_energy, -75.942595825106, decimal=6
         )
+
+        expected_mulliken_charges = np.array([0.377902, 0.311149, 0.310950])
+        assert_array_almost_equal(
+            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4
+        )
+        expected_mulliken_spin_populations = np.array([1.044851, -0.022422, -0.022429])
+        assert_array_almost_equal(
+            expected_mulliken_spin_populations,
+            mol.properties.mulliken_spin_populations,
+            decimal=4,
+        )
+
         rmtree("output_files")
 
 
 # Test the opt() function on a water molecule in vacuum
-def test_OrcaInput_opt_vac():
+def test_OrcaInput_opt():
 
     orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
@@ -90,11 +81,112 @@ def test_OrcaInput_opt_vac():
         )
         assert_array_almost_equal(mol.properties.vibronic_energy, 0.00301009, decimal=6)
 
-        expected = [
+        expected_mulliken_charges = np.array([-0.285546, 0.142772, 0.142773])
+        assert_array_almost_equal(
+            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4
+        )
+
+        expected_geometry = [
             np.array([-3.216653, -0.578663, -0.020175]),
             np.array([-2.244047, -0.623851, 0.023928]),
             np.array([-3.481320, -1.249905, 0.635066]),
         ]
-        assert_array_almost_equal(expected, mol.geometry.coordinates, decimal=6)
+        assert_array_almost_equal(expected_geometry, mol.geometry.coordinates, decimal=6)
+
+        rmtree("output_files")
+
+
+# Test the freq() function on a water molecule in vacuum
+def test_OrcaInput_freq():
+
+    orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        orca.freq(mol, ncores=4, inplace=True)
+    except:
+        assert False, "Unexpected exception raised during frequency analysis"
+
+    else:
+        assert mol.properties.level_of_theory_electronic == orca.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == orca.level_of_theory
+
+        assert_array_almost_equal(
+            mol.properties.electronic_energy, -76.272562753586, decimal=6
+        )
+        assert_array_almost_equal(mol.properties.vibronic_energy, 0.00327855, decimal=6)
+
+        expected_mulliken_charges = np.array([-0.285593, 0.142795, 0.142798])
+        assert_array_almost_equal(
+            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4
+        )
+
+        rmtree("output_files")
+
+
+# Test the nfreq() function on a water molecule in ethanol
+def test_OrcaInput_nfreq():
+
+    orca = OrcaInput(
+        method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="ethanol"
+    )
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        orca.freq(mol, ncores=4, inplace=True)
+    except:
+        assert False, "Unexpected exception raised during numerical frequency analysis"
+
+    else:
+        assert mol.properties.level_of_theory_electronic == orca.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == orca.level_of_theory
+
+        assert_array_almost_equal(
+            mol.properties.electronic_energy, -76.283368184519, decimal=6
+        )
+        assert_array_almost_equal(mol.properties.vibronic_energy, 0.00317889, decimal=6)
+
+        expected_mulliken_charges = np.array([-0.363774, 0.181883, 0.181890])
+        assert_array_almost_equal(
+            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4
+        )
+
+        rmtree("output_files")
+
+
+# Test the scan() function on a water molecule in vacuum
+def test_OrcaInput_scan():
+
+    orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        ensemble: Ensemble = orca.scan(mol, scan="B 0 1 = 0.8, 1.5, 10", ncores=4)
+    except:
+        assert False, "Unexpected exception raised during relaxed surface scan"
+
+    else:
+        assert len(ensemble.systems) == 10
+
+        expected_energies = np.array(
+            [
+                -76.23067389,
+                -76.26216326,
+                -76.27234942,
+                -76.27002128,
+                -76.26050938,
+                -76.24706330,
+                -76.23167352,
+                -76.21556679,
+                -76.19949798,
+                -76.18392213,
+            ]
+        )
+
+        calculated_energies = np.array(
+            [system.properties.electronic_energy for system in ensemble.systems]
+        )
+
+        assert_array_almost_equal(calculated_energies, expected_energies, decimal=6)
 
         rmtree("output_files")

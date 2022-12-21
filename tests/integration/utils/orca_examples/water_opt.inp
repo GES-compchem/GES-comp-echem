@@ -6,5 +6,7 @@ end
 
 ! PBE def2-SVP 
 ! RIJCOSX def2/J
+! Opt Freq
 
 * xyzfile 0 1 water.xyz
+

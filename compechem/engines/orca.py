@@ -397,6 +397,9 @@ class OrcaInput(BaseEngine):
                     "maxcore": maxcore,
                     "charge": charge,
                     "spin": spin,
+                    "save_cubes": False,
+                    "cube_dim": None,
+                    "hirshfeld": False,
                 },
             )
 
@@ -476,11 +479,13 @@ class OrcaInput(BaseEngine):
             self.write_input(
                 mol=mol,
                 job_info={
-                    "type": "nfreq",
                     "ncores": ncores,
                     "maxcore": maxcore,
                     "charge": charge,
                     "spin": spin,
+                    "save_cubes": False,
+                    "cube_dim": None,
+                    "hirshfeld": False,
                 },
             )
 
@@ -569,6 +574,9 @@ class OrcaInput(BaseEngine):
                     "maxcore": maxcore,
                     "charge": charge,
                     "spin": spin,
+                    "save_cubes": False,
+                    "cube_dim": None,
+                    "hirshfeld": False,
                     "scan": scan,
                     "constraints": constraints,
                     "invertconstraints": invertconstraints,
@@ -588,10 +596,27 @@ class OrcaInput(BaseEngine):
 
             mol_list = []
 
+            # ---> evaluate if this section should/could be included in parse_output
+            energies = []
+            with open("output.out", "r") as f:
+                read_energies = False
+                for line in f:
+                    if "The Calculated Surface using the SCF energy" in line:
+                        read_energies = True
+                        continue
+                    if read_energies:
+                        if len(line.split()) == 2:
+                            energies.append(float(line.split()[-1]))
+                        else:
+                            break
+            # <---
+
             for xyz in xyz_list:
                 index = xyz.split(".")[1]
                 shutil.move(f"input.{index}.xyz", f"{mol.name}.{index}.xyz")
-                mol_list.append(System(f"{mol.name}.{index}.xyz", charge=charge, spin=spin))
+                system = System(f"{mol.name}.{index}.xyz", charge=charge, spin=spin)
+                system.properties.set_electronic_energy(energies.pop(0), self)
+                mol_list.append(system)
 
             ensemble = Ensemble(mol_list)
 

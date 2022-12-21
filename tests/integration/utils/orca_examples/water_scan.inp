@@ -6,10 +6,13 @@ end
 
 ! PBE def2-SVP 
 ! RIJCOSX def2/J
+! Opt 
 
-%CPCM
-  SMD True
-  SMDsolvent "water"
+%geom 
+  scan 
+    B 0 1 = 0.8, 1.5, 10
+  end
 end
 
 * xyzfile 0 1 water.xyz
+
