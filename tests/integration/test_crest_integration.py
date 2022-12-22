@@ -5,9 +5,6 @@ from compechem.systems import System, Ensemble
 from os.path import dirname, abspath
 from shutil import rmtree
 
-import numpy as np
-from numpy.testing import assert_array_almost_equal
-
 # Get the path of the tests directory
 TEST_DIR = dirname(abspath(__file__))
 
