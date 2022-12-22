@@ -53,7 +53,7 @@ class OrcaInput(BaseEngine):
         self.solvent = solvent
         self.optionals = optionals
         self.__MPI_FLAGS = MPI_FLAGS
-        self.__ORCADIR = ORCADIR if ORCADIR is not None else locate_orca(get_folder=True)
+        self.__ORCADIR = ORCADIR if ORCADIR else locate_orca(get_folder=True)
 
         self.level_of_theory += f" | basis: {self.basis_set} | solvent: {self.solvent}"
 

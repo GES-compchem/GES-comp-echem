@@ -117,3 +117,41 @@ def locate_orca(version: str = None, get_folder: bool = False) -> str:
         )
 
     return path.rstrip("/orca") if get_folder is True else path
+
+
+def locate_xtb(version: str = None) -> str:
+    """
+    Locate the path to the 'xtb' executable from the system PATH.
+    If specified, check that the correct version of xtb is loaded.
+
+    Arguments
+    ---------
+    version: str
+        The string defining the desired version of xtb. If set to None (default) all version
+        of xtb are accepted.
+
+    Returns
+    -------
+    str
+        The path to the xtb executable file.
+    """
+    path = locate_executable("xtb")
+
+    # Check if the available version of xtb matches the requirements
+    xtb_version = None
+    output = subprocess.run(["xtb", "--version"], capture_output=True, text=True).stdout
+    for line in output.split("\n"):
+
+        if "xtb version" in line:
+            xtb_version: str = line.split()[3]
+            break
+
+    if xtb_version is None:
+        raise RuntimeError("Failed to read the version of the xtb software.")
+
+    elif version is not None and xtb_version != version:
+        raise RuntimeError(
+            f"The required xtb version is not available. Version {xtb_version} found instead."
+        )
+
+    return path

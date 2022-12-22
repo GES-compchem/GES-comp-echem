@@ -7,6 +7,8 @@ from compechem.tools import process_output
 from compechem.tools import add_flag
 from compechem.tools import dissociation_check
 from compechem.tools import cyclization_check
+from compechem.core.dependency_finder import locate_xtb
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,6 +22,7 @@ class XtbInput(BaseEngine):
         method: str = "gfn2",
         solvent: str = "water",
         optionals: str = "",
+        XTBPATH: str = None,
     ) -> None:
         """
         Parameters
@@ -30,6 +33,9 @@ class XtbInput(BaseEngine):
             ALPB solvent, by default "water"
         optionals : str, optional
             optional keywords/flags, by default ""
+        XTBPATH: str, optional
+            the path to the xtb executable. If set to None (default) the xtb executable will
+            be loaded automatically.
         """
 
         super().__init__(method)
@@ -37,6 +43,7 @@ class XtbInput(BaseEngine):
 
         self.solvent = solvent
         self.optionals = optionals
+        self.__XTBPATH = XTBPATH if XTBPATH else locate_xtb()
 
     def spe(
         self,
@@ -97,12 +104,12 @@ class XtbInput(BaseEngine):
 
             if self.solvent:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             with open("output.out", "r") as out:
@@ -189,12 +196,12 @@ class XtbInput(BaseEngine):
 
             if self.solvent:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             if dissociation_check() is True:
@@ -301,12 +308,12 @@ class XtbInput(BaseEngine):
 
             if self.solvent:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             with open("output.out", "r") as out:

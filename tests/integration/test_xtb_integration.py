@@ -1,0 +1,139 @@
+import pytest
+
+from compechem.engines.xtb import XtbInput
+from compechem.systems import System, Ensemble
+from os.path import dirname, abspath
+from shutil import rmtree
+
+import numpy as np
+from numpy.testing import assert_array_almost_equal
+
+# Get the path of the tests directory
+TEST_DIR = dirname(abspath(__file__))
+
+# Test the XtbInput class constructor
+def test_XtbInput___init__():
+
+    try:
+        xtb = XtbInput(solvent="water")
+
+    except:
+        assert False, "Unenxpected exception raised during XtbInput class construction"
+
+    else:
+        assert xtb.method == "gfn2"
+        assert xtb.level_of_theory == "XtbInput || method: gfn2 | solvent: water"
+
+
+# Test the spe() function on a radical cation water molecule in DMSO
+def test_XtbInput_spe():
+
+    xtb = XtbInput(solvent="DMSO")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
+
+    try:
+        xtb.spe(mol, ncores=4, inplace=True)
+    except:
+        assert False, "Unexpected exception raised during SPE calculation"
+
+    else:
+        assert mol.properties.level_of_theory_electronic == xtb.level_of_theory
+        assert_array_almost_equal(
+            mol.properties.electronic_energy, -4.547249570099, decimal=6
+        )
+
+        expected_mulliken_charges = np.array([-0.121, 0.560, 0.560])
+        # --> mulliken charges not yet implemented
+        # assert_array_almost_equal(
+        #     expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
+        # )
+        # <--
+        # --> mulliken spin populations not yet implemented
+        # expected_mulliken_spin_populations = np.array([1.044851, -0.022422, -0.022429])
+        # assert_array_almost_equal(
+        #     expected_mulliken_spin_populations,
+        #     mol.properties.mulliken_spin_populations,
+        #     decimal=4,
+        # )
+        # <--
+
+        rmtree("output_files")
+        rmtree("error_files")
+
+
+# Test the opt() function on a urea molecule in vacuum
+def test_XtbInput_opt():
+
+    xtb = XtbInput(solvent=None)
+    mol = System(f"{TEST_DIR}/utils/xyz_files/urea.xyz")
+
+    try:
+        xtb.opt(mol, ncores=4, inplace=True)
+    except:
+        assert False, "Unexpected exception raised during geometry optimization"
+
+    else:
+        assert mol.properties.level_of_theory_electronic == xtb.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == xtb.level_of_theory
+
+        assert_array_almost_equal(
+            mol.properties.electronic_energy, -14.097142459981, decimal=6
+        )
+        assert_array_almost_equal(mol.properties.vibronic_energy, 0.032427777313, decimal=6)
+
+        expected_mulliken_charges = np.array(
+            [0.345, -0.301, 0.192, 0.170, -0.300, 0.170, 0.192, -0.470]
+        )
+        # --> mulliken charges not yet implemented
+        # assert_array_almost_equal(
+        #     expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
+        # )
+        # <--
+
+        expected_geometry = [
+            np.array([0.38572247721477, 4.16024211476103, 3.49696517842814]),
+            np.array([0.49249877420667, 3.54386302158299, 2.28280472105639]),
+            np.array([0.47349293185483, 2.54024248272376, 2.27028654511170]),
+            np.array([0.78255213235431, 4.02888732249512, 1.45441390653355]),
+            np.array([0.49592224672893, 5.52076774691656, 3.45053768495885]),
+            np.array([0.78395028923093, 6.01190423416108, 2.62507311147151]),
+            np.array([0.47712970895806, 6.01670697903511, 4.32319081549932]),
+            np.array([0.16900193748757, 3.55540746889578, 4.52165211842273]),
+        ]
+        assert_array_almost_equal(expected_geometry, mol.geometry.coordinates, decimal=6)
+
+        rmtree("output_files")
+        rmtree("error_files")
+
+
+# Test the freq() function on a urea molecule in vacuum
+def test_XtbInput_freq():
+
+    xtb = XtbInput(solvent=None)
+    mol = System(f"{TEST_DIR}/utils/xyz_files/urea.xyz")
+
+    try:
+        xtb.freq(mol, ncores=4, inplace=True)
+    except:
+        assert False, "Unexpected exception raised during frequency analysis"
+
+    else:
+        assert mol.properties.level_of_theory_electronic == xtb.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == xtb.level_of_theory
+
+        assert_array_almost_equal(
+            mol.properties.electronic_energy, -14.093063923335, decimal=6
+        )
+        assert_array_almost_equal(mol.properties.vibronic_energy, 0.033817193430, decimal=6)
+
+        expected_mulliken_charges = np.array(
+            [0.334, -0.301, 0.191, 0.169, -0.301, 0.169, 0.191, -0.452]
+        )
+        # --> mulliken charges not yet implemented
+        # assert_array_almost_equal(
+        #     expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
+        # )
+        # <--
+
+        rmtree("output_files")
+        rmtree("error_files")
