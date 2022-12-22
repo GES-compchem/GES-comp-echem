@@ -99,8 +99,6 @@ def locate_orca(version: str = None, get_folder: bool = False) -> str:
 
         if "(Open MPI)" in line:
             openmpi_version: str = line.split()[3]
-
-        elif openmpi_version is not None:
             break
 
     if openmpi_version is None:
