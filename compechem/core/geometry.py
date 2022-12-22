@@ -84,7 +84,7 @@ class MolecularGeometry:
         obj = cls()
         obj.load_xyz(path)
         return obj
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> MolecularGeometry:
         """
@@ -94,7 +94,7 @@ class MolecularGeometry:
         ---------
         data: dict
             The dictionary containing the class attributes
-        
+
         Returns
         -------
         MolecularGeometry
@@ -106,7 +106,7 @@ class MolecularGeometry:
         obj.__coordinates = [np.array(v) for v in data["Coordinates"]]
         obj.level_of_theory_geometry = data["Level of theory geometry"]
         return obj
-    
+
     def to_dict(self) -> dict:
         """
         Generates a dictionary representation of the class. The obtained dictionary can be
@@ -153,24 +153,47 @@ class MolecularGeometry:
         # Open the file in read mode
         with open(path, "r") as file:
 
-            # Read the whole file and count the number of lines
-            nlines = sum(1 for _ in file)
+            # Read the whole file and count both the number of lines and terminal empty lines
+            nlines, offset = 0, 0
+            for line in file:
+                nlines += 1
+
+                if line == "\n":
+                    offset += 1
+                else:
+                    offset = 0
+
             file.seek(0)
 
             # Extract the number of atoms from the first line and compute the beginning of
             # the last xyz coordinate block (required when operating on trajectories)
             self.__atomcount = int(file.readline())
-            beginning = nlines - (self.__atomcount + 2)
+            beginning = nlines - (self.__atomcount + offset + 2)
 
-            # Read the file line by line
+            file.seek(0)
+
+            # Read the file line by line starting from the beginning
             line: str = ""
             for n, line in enumerate(file):
 
                 # Split the line to seprate the various fields
                 sline = line.split()
 
-                # Discart all the lines before the last block and discard empty comment lines
-                if n <= beginning or len(line) <= 1:
+                # Discart all the lines before the last block and the comment line
+                if n < beginning or n == beginning + 1:
+                    continue
+
+                # Check that the block begins with the expected atomcount to confirm
+                elif n == beginning:
+                    if len(sline) != 1 or int(sline[0]) != self.__atomcount:
+                        raise RuntimeError(
+                            "The beginning of the xyz block does not match the expected atomcount"
+                        )
+                    else:
+                        continue
+
+                # Discard all the trailing empty lines
+                elif line == "\n":
                     continue
 
                 # If the file contains atomic numbers instead of symbols convert them into
@@ -228,11 +251,11 @@ class MolecularGeometry:
             The number of atoms in the molecule
         """
         return self.__atomcount
-    
+
     @property
     def atoms(self) -> List[str]:
         return self.__atoms
-    
+
     @property
     def coordinates(self) -> List[np.ndarray]:
         return self.__coordinates
