@@ -1,7 +1,7 @@
 import pytest
 
 from compechem.engines.xtb import XtbInput
-from compechem.systems import System, Ensemble
+from compechem.systems import System
 from os.path import dirname, abspath
 from shutil import rmtree
 

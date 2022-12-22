@@ -1,11 +1,12 @@
 import os, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.systems import System
+from compechem.systems import System, Ensemble
 from compechem.tools import split_multixyz
 from compechem.tools import cyclization_check
 from compechem.tools import add_flag
 from compechem.tools import process_output
+from compechem.core.dependency_finder import locate_crest, locate_executable
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,9 +16,10 @@ def tautomer_search(
     mol: System,
     ncores: int = None,
     maxcore=None,
-    solvation: bool = True,
+    solvent: str = None,
     remove_tdir: bool = True,
     optionals: str = "",
+    CRESTPATH: str = None,
 ):
     """Tautomer search using CREST.
 
@@ -29,21 +31,27 @@ def tautomer_search(
         number of cores, by default all available cores
     maxcore : dummy variable
         dummy variable used for compatibility with Orca calculations
-    solvation : bool, optional
-        if True, enables the ALPB implicit solvation model for water
+    solvent : str, optional
+        ALPB solvent, by default no solvent (vacuum)
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
         optional flags for calculation
+    CRESTPATH: str, optional
+            the path to the crest executable. If set to None (default) the crest executable
+            will be loaded automatically.
 
     Returns
     -------
-    tautomers : list
-        list containing the found tautomers, in order of ascending energy
+    tautomers : Ensemble
+        Ensemble containing the found tautomers, in order of ascending energy
     """
 
     if ncores is None:
         ncores = get_ncores()
+
+    if CRESTPATH is None:
+        CRESTPATH = locate_crest()
 
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST tautomer search")
     logger.debug(f"Running CREST calculation on {ncores} cores")
@@ -54,13 +62,13 @@ def tautomer_search(
 
         mol.geometry.write_xyz("geom.xyz")
 
-        if solvation:
+        if solvent:
             os.system(
-                f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
+                f"{CRESTPATH} geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
             )
         else:
             os.system(
-                f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
+                f"{CRESTPATH} geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
             )
 
         if os.path.exists("tautomers.xyz"):
@@ -85,7 +93,7 @@ def tautomer_search(
             process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
-            return tautomers
+            return Ensemble(tautomers)
 
         else:
             logger.warning(
@@ -95,16 +103,17 @@ def tautomer_search(
             process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
-            return [mol]
+            return Ensemble([mol])
 
 
 def conformer_search(
     mol: System,
     ncores: int = None,
     maxcore=None,
-    solvation: bool = True,
+    solvent: str = None,
     remove_tdir: bool = True,
     optionals: str = "",
+    CRESTPATH: str = None,
 ):
     """Conformer search using CREST.
 
@@ -116,21 +125,27 @@ def conformer_search(
         number of cores, by default all available cores
     maxcore : dummy
         dummy variable used for compatibility with Orca calculations
-    solvation : bool, optional
-        if True, enables the ALPB implicit solvation model for water
+    solvent : str, optional
+        ALPB solvent, by default no solvent (vacuum)
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
         optional flags for calculation
+    CRESTPATH: str, optional
+            the path to the crest executable. If set to None (default) the crest executable
+            will be loaded automatically.
 
     Returns
     -------
-    conformers : list
-        list containing the found conformers, in order of ascending energy
+    conformers : Ensemble
+        Ensemble containing the found conformers, in order of ascending energy
     """
 
     if ncores is None:
         ncores = get_ncores()
+
+    if CRESTPATH is None:
+        CRESTPATH = locate_crest()
 
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST conformer search")
     logger.debug(f"Running CREST calculation on {ncores} cores")
@@ -141,13 +156,13 @@ def conformer_search(
 
         mol.geometry.write_xyz("geom.xyz")
 
-        if solvation:
+        if solvent:
             os.system(
-                f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
+                f"{CRESTPATH} geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
             )
         else:
             os.system(
-                f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
+                f"{CRESTPATH} geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
             )
 
         if os.path.exists("crest_conformers.xyz"):
@@ -174,23 +189,24 @@ def conformer_search(
             process_output(mol, "CREST", "conformers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
-            return conformers
+            return Ensemble(conformers)
 
         else:
             logger.error(
                 f"{mol.name}, charge {mol.charge} spin {mol.spin}, conformer search failed. Reverting to original molecule."
             )
             add_flag(mol, "Conformer search failed.")
-            return [mol]
+            return Ensemble([mol])
 
 
 def deprotonate(
     mol: System,
     ncores: int = None,
     maxcore=None,
-    solvation: bool = True,
+    solvent: str = None,
     remove_tdir: bool = True,
     optionals: str = "",
+    CRESTPATH: str = None,
 ):
     """Deprotomer search using CREST.
 
@@ -202,21 +218,27 @@ def deprotonate(
         number of cores, by default all available cores
     maxcore : dummy
         dummy variable used for compatibility with Orca calculations
-    solvation : bool, optional
-        if True, enables the ALPB implicit solvation model for water
+    solvent : str, optional
+        ALPB solvent, by default no solvent (vacuum)
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
         optional flags for calculation
+    CRESTPATH: str, optional
+            the path to the crest executable. If set to None (default) the crest executable
+            will be loaded automatically.
 
     Returns
     -------
-    deprotomers : list
-        list containing the found deprotomers, in order of ascending energy
+    deprotomers : Ensemble
+        Ensemble containing the found deprotomers, in order of ascending energy
     """
 
     if ncores is None:
         ncores = get_ncores()
+
+    if CRESTPATH is None:
+        CRESTPATH = locate_crest()
 
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST deprotonation")
     logger.debug(f"Running CREST calculation on {ncores} cores")
@@ -226,9 +248,9 @@ def deprotonate(
     with sh.pushd(tdir):
         mol.geometry.write_xyz("geom.xyz")
 
-        if solvation:
+        if solvent:
             os.system(
-                f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+                f"crest geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
             )
         else:
             os.system(
@@ -261,7 +283,7 @@ def deprotonate(
                 shutil.rmtree(tdir)
 
             if deprotomers:
-                return deprotomers
+                return Ensemble(deprotomers)
             else:
                 logger.error(
                     f"{mol.name}, charge {mol.charge} spin {mol.spin}, no suitable deprotomers found."
@@ -281,9 +303,10 @@ def protonate(
     mol: System,
     ncores: int = None,
     maxcore=None,
-    solvation: bool = True,
+    solvent: str = None,
     remove_tdir: bool = True,
     optionals: str = "",
+    CRESTPATH: str = None,
 ):
     """Protomer search using CREST.
 
@@ -295,21 +318,27 @@ def protonate(
         number of cores, by default all available cores
     maxcore : dummy
         dummy variable used for compatibility with Orca calculations
-    solvation : bool, optional
-        if True, enables the ALPB implicit solvation model for water
+    solvent : str, optional
+        ALPB solvent, by default no solvent (vacuum)
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
     optionals : str, optional
         optional flags for calculation
+    CRESTPATH: str, optional
+            the path to the crest executable. If set to None (default) the crest executable
+            will be loaded automatically.
 
     Returns
     -------
-    protomers : list
-        list containing the found protomers, in order of ascending energy
+    protomers : Ensemble
+        Ensemble containing the found protomers, in order of ascending energy
     """
 
     if ncores is None:
         ncores = get_ncores()
+
+    if CRESTPATH is None:
+        CRESTPATH = locate_crest()
 
     logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - CREST protonation")
     logger.debug(f"Running CREST calculation on {ncores} cores")
@@ -320,9 +349,9 @@ def protonate(
 
         mol.geometry.write_xyz("geom.xyz")
 
-        if solvation:
+        if solvent:
             os.system(
-                f"crest geom.xyz --alpb water --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+                f"crest geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
             )
         else:
             os.system(
@@ -355,7 +384,7 @@ def protonate(
                 shutil.rmtree(tdir)
 
             if protomers:
-                return protomers
+                return Ensemble(protomers)
             else:
                 logger.error(
                     f"{mol.name}, charge {mol.charge} spin {mol.spin}, no suitable protomers found."
@@ -379,9 +408,10 @@ def qcg_grow(
     nsolv: int = 0,
     ncores: int = None,
     maxcore=None,
-    solvation: bool = True,
+    alpb_solvent: str = None,
     optionals: str = "",
     remove_tdir: bool = True,
+    CRESTPATH: str = None,
 ):
     """Quantum Cluster Growth using CREST.
 
@@ -406,12 +436,15 @@ def qcg_grow(
         number of cores, by default all available cores
     maxcore : dummy
         dummy variable used for compatibility with Orca calculations
-    solvation : bool, optional
-        if True, enables the ALPB implicit solvation model for water
+    alpb_solvent : str, optional
+        ALPB solvent, by default no solvent (vacuum)
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
+    CRESTPATH: str, optional
+            the path to the crest executable. If set to None (default) the crest executable
+            will be loaded automatically.
 
     Returns
     -------
@@ -419,8 +452,17 @@ def qcg_grow(
         System object containing the explicitly solvated input molecule
     """
 
+    try:
+        locate_executable("xtbiff")
+    except:
+        logger.warning("xtbiff executable not found. Cannot continue with QCG run.")
+        return None
+
     if ncores is None:
         ncores = get_ncores()
+
+    if CRESTPATH is None:
+        CRESTPATH = locate_crest()
 
     if charge is None:
         charge = solute.charge
@@ -439,9 +481,9 @@ def qcg_grow(
         solute.geometry.write_xyz("solute.xyz")
         solvent.geometry.write_xyz("solvent.xyz")
 
-        if solvation:
+        if alpb_solvent:
             os.system(
-                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb {alpb_solvent} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
             )
         else:
             os.system(
@@ -449,7 +491,7 @@ def qcg_grow(
             )
 
         solute.geometry.write_xyz(f"{solute.name}.xyz")
-        cluster = System(f"{solute.name}.xyz", charge, spin)
+        cluster = System(f"{solute.name}.xyz", charge=charge, spin=spin)
 
         try:
             cluster.geometry.load_xyz("grow/cluster.xyz")
@@ -460,7 +502,7 @@ def qcg_grow(
             add_flag(solute, "Cluster growth failed.")
             return None
 
-        process_output(solute, "QCG", "grow", charge, spin)
+        process_output(solute, "QCG", "grow", charge=charge, spin=spin)
         if remove_tdir:
             shutil.rmtree(tdir)
 
@@ -478,9 +520,10 @@ def qcg_ensemble(
     nsolv: int = 0,
     ncores: int = None,
     maxcore=None,
-    solvation: bool = True,
+    alpb_solvent: str = None,
     optionals: str = "",
     remove_tdir: bool = True,
+    CRESTPATH: str = None,
 ):
     """Quantum Cluster Growth + ensemble generation using CREST.
 
@@ -514,24 +557,36 @@ def qcg_ensemble(
         number of cores, by default all available cores
     maxcore : dummy
         dummy variable used for compatibility with Orca calculations
-    solvation : bool, optional
-        if True, enables the ALPB implicit solvation model for water
+    alpb_solvent : str, optional
+        ALPB solvent, by default no solvent (vacuum)
     optionals : str, optional
         optional flags for calculation
     remove_tdir : bool, optional
         temporary work directory will be removed, by default True
+    CRESTPATH: str, optional
+            the path to the crest executable. If set to None (default) the crest executable
+            will be loaded automatically.
 
     Returns
     -------
-    cluster : System object
-        System object containing the explicitly solvated input molecule, with updated energy
+    ensemble : Ensemble
+        Ensemble object containing the explicitly solvated input molecule, with updated energy
         coming from enseble generation (electronic contribution only). The vibronic contribution
         is taken from the input solute molecule (if present), while the electronic contribution
         is taken as the weighted average of all generated ensembles.
     """
 
+    try:
+        locate_executable("xtbiff")
+    except:
+        logger.warning("xtbiff executable not found. Cannot continue with QCG run.")
+        return None
+
     if ncores is None:
         ncores = get_ncores()
+
+    if CRESTPATH is None:
+        CRESTPATH = locate_crest()
 
     if charge is None:
         charge = solute.charge
@@ -550,9 +605,9 @@ def qcg_ensemble(
         solute.geometry.write_xyz("solute.xyz")
         solvent.geometry.write_xyz("solvent.xyz")
 
-        if solvation:
+        if alpb_solvent:
             os.system(
-                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb water --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb {alpb_solvent} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
             )
         else:
             os.system(
@@ -571,8 +626,8 @@ def qcg_ensemble(
             add_flag(solute, "Cluster growth failed.")
             return None
 
-        process_output(solute, "QCG", "ensemble", charge, spin)
+        process_output(solute, "QCG", "ensemble", charge=charge, spin=spin)
         if remove_tdir:
             shutil.rmtree(tdir)
 
-        return ensemble
+        return Ensemble(ensemble)

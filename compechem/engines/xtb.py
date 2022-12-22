@@ -20,7 +20,7 @@ class XtbInput(BaseEngine):
     def __init__(
         self,
         method: str = "gfn2",
-        solvent: str = "water",
+        solvent: str = None,
         optionals: str = "",
         XTBPATH: str = None,
     ) -> None:
@@ -30,7 +30,7 @@ class XtbInput(BaseEngine):
         method : str, optional
             level of theory, by default "gfn2"
         solvent : str, optional
-            ALPB solvent, by default "water"
+            ALPB solvent, by default no solvent (vacuum)
         optionals : str, optional
             optional keywords/flags, by default ""
         XTBPATH: str, optional

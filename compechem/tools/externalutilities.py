@@ -47,7 +47,9 @@ def split_multixyz(
                 for _ in range(molsize + 2):
                     out.write(line)
                     line = f.readline()
-            molecules_list.append(System(f"{mol.name}_{suffix}{num}.xyz", charge, spin))
+            molecules_list.append(
+                System(f"{mol.name}_{suffix}{num}.xyz", charge=charge, spin=spin)
+            )
             num += 1
 
     return molecules_list

@@ -155,3 +155,41 @@ def locate_xtb(version: str = None) -> str:
         )
 
     return path
+
+
+def locate_crest(version: str = None) -> str:
+    """
+    Locate the path to the 'crest' executable from the system PATH.
+    If specified, check that the correct version of crest is loaded.
+
+    Arguments
+    ---------
+    version: str
+        The string defining the desired version of crest. If set to None (default) all
+        version of crest are accepted.
+
+    Returns
+    -------
+    str
+        The path to the crest executable file.
+    """
+    path = locate_executable("crest")
+
+    # Check if the available version of crest matches the requirements
+    crest_version = None
+    output = subprocess.run(["crest", "--version"], capture_output=True, text=True).stdout
+    for line in output.split("\n"):
+
+        if "Version" in line:
+            crest_version: str = line.split()[1]
+            break
+
+    if crest_version is None:
+        raise RuntimeError("Failed to read the version of the crest software.")
+
+    elif version is not None and crest_version != version:
+        raise RuntimeError(
+            f"The required crest version is not available. Version {crest_version} found instead."
+        )
+
+    return path
