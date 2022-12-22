@@ -97,13 +97,13 @@ def calculate_fukui(
     localized_fukui_mulliken = {"f+": [], "f-": [], "f0": []}
     for atom in range(molecule.geometry.atomcount):
         localized_fukui_mulliken["f+"].append(
-            anion.properties.mulliken_charges[atom] - molecule.properties.mulliken_charges[atom]
+            -(anion.properties.mulliken_charges[atom] - molecule.properties.mulliken_charges[atom])
         )
         localized_fukui_mulliken["f-"].append(
-            molecule.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom]
+            -(molecule.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom])
         )
         localized_fukui_mulliken["f0"].append(
-            (anion.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom]) / 2
+            -(anion.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom]) / 2
         )
     
     molecule.properties.set_condensed_fukui_mulliken(localized_fukui_mulliken, orca)
@@ -112,13 +112,13 @@ def calculate_fukui(
     localized_fukui_hirshfeld = {"f+": [], "f-": [], "f0": []}
     for atom in range(molecule.geometry.atomcount):
         localized_fukui_hirshfeld["f+"].append(
-            anion.properties.hirshfeld_charges[atom] - molecule.properties.hirshfeld_charges[atom]
+            -(anion.properties.hirshfeld_charges[atom] - molecule.properties.hirshfeld_charges[atom])
         )
         localized_fukui_hirshfeld["f-"].append(
-            molecule.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom]
+            -(molecule.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom])
         )
         localized_fukui_hirshfeld["f0"].append(
-            (anion.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom]) / 2
+            -(anion.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom]) / 2
         )
     
     molecule.properties.set_condensed_fukui_hirshfeld(localized_fukui_hirshfeld, orca)
