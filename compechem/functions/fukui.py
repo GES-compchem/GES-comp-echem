@@ -134,7 +134,7 @@ def calculate_fukui(
     # Load cubes from the output_densities folder
     cubes: Dict[int, Cube] = {}
     for mol in [cation, molecule, anion]:
-        cubename = f"{mol.name}_{mol.charge}_{mol.spin}_{orca.method}_spe.eldens.cube"
+        cubename = f"{mol.name}_{mol.charge}_{mol.spin}_{orca.output_suffix}_spe.eldens.cube"
         cube = Cube.from_file(join("./output_densities", cubename))
         cubes[mol.charge] = cube
 

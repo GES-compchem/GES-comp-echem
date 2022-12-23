@@ -199,6 +199,7 @@ class System:
             info += "----------------------------------------------\n"
             for idx, (atom, charge, spin) in enumerate(
                 zip(
+                    self.geometry.atoms,
                     self.properties.mulliken_charges,
                     self.properties.mulliken_spin_populations,
                 )
@@ -218,6 +219,7 @@ class System:
             info += "----------------------------------------------\n"
             for idx, (atom, fplus, fminus, fzero) in enumerate(
                 zip(
+                    self.geometry.atoms,
                     self.properties.condensed_fukui_mulliken["f+"],
                     self.properties.condensed_fukui_mulliken["f-"],
                     self.properties.condensed_fukui_mulliken["f0"],
@@ -239,6 +241,7 @@ class System:
             info += "----------------------------------------------\n"
             for idx, (atom, charge, spin) in enumerate(
                 zip(
+                    self.geometry.atoms,
                     self.properties.hirshfeld_charges,
                     self.properties.hirshfeld_spin_populations,
                 )
@@ -258,6 +261,7 @@ class System:
             info += "----------------------------------------------\n"
             for idx, (atom, fplus, fminus, fzero) in enumerate(
                 zip(
+                    self.geometry.atoms,
                     self.properties.condensed_fukui_hirshfeld["f+"],
                     self.properties.condensed_fukui_hirshfeld["f-"],
                     self.properties.condensed_fukui_hirshfeld["f0"],

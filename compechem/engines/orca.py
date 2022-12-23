@@ -748,6 +748,18 @@ class OrcaInput(BaseEngine):
         if hirshfeld_charges != []:
             mol.properties.set_hirshfeld_charges(hirshfeld_charges, self)
             mol.properties.set_hirshfeld_spin_populations(hirshfeld_spins, self)
+    
+    @property
+    def output_suffix(self) -> str:
+        """
+        Suffix used to compose the name of calculation output files
+        
+        Returns
+        -------
+        str
+            The output suffix string
+        """
+        return self.__output_suffix
 
 
 class M06(OrcaInput):
