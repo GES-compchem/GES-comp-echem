@@ -15,6 +15,7 @@ def calculate_fukui(
     orca: OrcaInput,
     spins_states: Union[None, List[int]] = None,
     cube_dim: int = 250,
+    ncores: int = None,
     maxcore: int = 1000,
 ) -> Dict[str, Dict[str, List[float]]]:
     """
@@ -40,6 +41,8 @@ def calculate_fukui(
         electrons removed (+1).
     cube_dim: int
         Resolution for the cube files (default 250)
+    ncores : int, optional
+        The number of cores, by default all available cores (None)
     maxcore: int
         The maximum amount of memory in MB to be allocated for each core.
     """
@@ -52,6 +55,7 @@ def calculate_fukui(
         cube_dim=cube_dim,
         hirshfeld=True,
         inplace=True,
+        ncores=ncores,
         maxcore=maxcore,
     )
 
@@ -70,6 +74,7 @@ def calculate_fukui(
         cube_dim=cube_dim,
         hirshfeld=True,
         inplace=True,
+        ncores=ncores,
         maxcore=maxcore
     )
 
@@ -88,6 +93,7 @@ def calculate_fukui(
         cube_dim=cube_dim,
         hirshfeld=True,
         inplace=True,
+        ncores=ncores,
         maxcore=maxcore
     )
 
