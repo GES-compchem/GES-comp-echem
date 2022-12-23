@@ -8,7 +8,7 @@ XTBPATH = "xtbpath"
 def test_XtbInput___init__():
 
     try:
-        xtb = XtbInput(
+        engine = XtbInput(
             method="gfn2",
             solvent="water",
             XTBPATH=XTBPATH,
@@ -18,5 +18,5 @@ def test_XtbInput___init__():
         assert False, "Unenxpected exception raised during XtbInput class construction"
 
     else:
-        assert xtb.method == "gfn2"
-        assert xtb.level_of_theory == "XtbInput || method: gfn2 | solvent: water"
+        assert engine.method == "gfn2"
+        assert engine.level_of_theory == "XtbInput || method: gfn2 | solvent: water"

@@ -2,11 +2,14 @@ import os, copy, shutil, sh
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.core.base import BaseEngine
-from compechem.systems import System
+from compechem.systems import System, Ensemble
 from compechem.tools import process_output
 from compechem.tools import save_dftb_trajectory
 from compechem.tools import compress_dftb_trajectory
+from compechem.tools import split_multixyz
 from typing import Dict
+from compechem.core.dependency_finder import locate_dftbplus, locate_dftbparamdir
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -34,7 +37,7 @@ class DFTBInput(BaseEngine):
     def __init__(
         self,
         method: str = "DFTB",
-        parameters: str = "3ob/3ob-3-1/",
+        parameters: str = "3ob/3ob-3-1",
         solver: str = None,
         thirdorder: bool = True,
         dispersion: bool = False,
@@ -42,6 +45,8 @@ class DFTBInput(BaseEngine):
         fermi_temp: float = 300.0,
         parallel: str = "mpi",
         verbose: bool = True,
+        DFTBPATH: str = None,
+        DFTBPARAMDIR: str = None,
     ) -> None:
         """
         Parameters
@@ -66,6 +71,12 @@ class DFTBInput(BaseEngine):
             selects either openmpi-parallel version (mpi) or shared memory version (nompi)
         verbose : bool, optional
             if set to True, saves the full DFTB+ output, otherwise, only the smaller files
+        DFTBPATH: str, optional
+            the path to the dftb+ executable. If set to None (default) the dftb+ executable
+            will be loaded automatically.
+        DFTBPARAMDIR: str, optional
+            the path to the DFTBPLUS_PARAM_DIR environment variable, where the Slater-Koster
+            files are located
         """
         super().__init__(method)
 
@@ -81,6 +92,11 @@ class DFTBInput(BaseEngine):
             self.output_path = "output.out"
         else:
             self.output_path = "/dev/null"
+
+        self.level_of_theory += f" | parameters: {self.parameters} | 3rd order: {self.thirdorder} | dispersion: {self.dispersion}"
+
+        self.__DFTBPATH = DFTBPATH if DFTBPATH else locate_dftbplus()
+        self.__DFTBPARAMDIR = DFTBPARAMDIR if DFTBPARAMDIR else locate_dftbparamdir()
 
         self.atom_dict = {
             "Br": "d",
@@ -141,18 +157,18 @@ class DFTBInput(BaseEngine):
         input = "Geometry = GenFormat {\n" f'  <<< "{mol.name}.gen"\n' "}\n\n"
 
         if job_info["type"] == "spe":
-            input += "Driver = GeometryOptimization{\n" "  MaxSteps = 0\n" "}\n\n"
+            input += "Driver = GeometryOptimization {\n" "  MaxSteps = 0\n" "}\n\n"
 
         elif job_info["type"] == "opt":
             input += (
-                "Driver = GeometryOptimization{\n"
+                "Driver = GeometryOptimization {\n"
                 f"  LatticeOpt = {'Yes' if job_info['latticeopt'] else 'No'}\n"
                 "}\n\n"
             )
 
         elif job_info["type"] == "md_nvt":
             input += (
-                "Driver = VelocityVerlet{\n"
+                "Driver = VelocityVerlet {\n"
                 f"  TimeStep [fs] = {job_info['timestep']}\n"
                 "  Thermostat = NoseHoover {\n"
                 f"    Temperature [K] = {job_info['temperature']}\n"
@@ -172,10 +188,10 @@ class DFTBInput(BaseEngine):
 
         elif job_info["type"] == "simulated_annealing":
             input += (
-                "Driver = VelocityVerlet{\n"
+                "Driver = VelocityVerlet {\n"
                 f"  TimeStep [fs] = {job_info['timestep']}\n"
                 "  Thermostat = NoseHoover {\n"
-                "    Temperature [Kelvin] = TemperatureProfile{\n"
+                "    Temperature [Kelvin] = TemperatureProfile {\n"
                 f"      constant 1 {job_info['start_temp']}\n"
                 f"      linear {job_info['ramp_steps']-1} {job_info['target_temp']}\n"
                 f"      constant {job_info['hold_steps']} {job_info['target_temp']}\n"
@@ -228,7 +244,7 @@ class DFTBInput(BaseEngine):
             input += (
                 "  Scc = Yes\n"
                 "  SlaterKosterFiles = Type2FileNames {\n"
-                f'    Prefix = "{self.parameters}"\n'
+                f'    Prefix = "{self.__DFTBPARAMDIR}{self.parameters}/"\n'
                 '    Separator = "-"\n'
                 '    Suffix = ".skf"\n'
                 "  }\n"
@@ -339,10 +355,12 @@ class DFTBInput(BaseEngine):
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
+                os.system(
+                    f"mpirun -np {ncores} {self.__DFTBPATH} > output.out 2>> output.err"
+                )
 
             elif self.parallel == "nompi":
-                os.system(f"dftb+ > output.out 2>> output.err")
+                os.system(f"{self.__DFTBPATH} > output.out 2>> output.err")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -351,7 +369,7 @@ class DFTBInput(BaseEngine):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
 
                 newmol.properties = copy.copy(mol.properties)
                 newmol.properties.set_electronic_energy(electronic_energy, self)
@@ -359,7 +377,7 @@ class DFTBInput(BaseEngine):
             else:
                 mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge=charge, spin=spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -436,10 +454,12 @@ class DFTBInput(BaseEngine):
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
+                os.system(
+                    f"mpirun -np {ncores} {self.__DFTBPATH} > output.out 2>> output.err"
+                )
 
             elif self.parallel == "nompi":
-                os.system(f"dftb+ > output.out 2>> output.err")
+                os.system(f"{self.__DFTBPATH} > output.out 2>> output.err")
 
             with open("output.out", "r") as out:
                 for line in out:
@@ -448,7 +468,7 @@ class DFTBInput(BaseEngine):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
                 newmol.geometry.load_xyz("geo_end.xyz")
                 newmol.geometry.level_of_theory_geometry(self.level_of_theory)
                 newmol.properties.set_electronic_energy(electronic_energy, self)
@@ -456,10 +476,10 @@ class DFTBInput(BaseEngine):
             else:
 
                 mol.geometry.load_xyz("geo_end.xyz")
-                mol.geometry.level_of_theory_geometry(self.level_of_theory)
+                mol.geometry.level_of_theory_geometry = self.level_of_theory
                 mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge=charge, spin=spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -517,7 +537,7 @@ class DFTBInput(BaseEngine):
 
         Returns
         -------
-        trajectory : Ensemble object
+        Ensemble
             Ensemble containing the NVT MD trajectory data
         """
 
@@ -557,10 +577,14 @@ class DFTBInput(BaseEngine):
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > {self.output_path} 2>> output.err")
+                os.system(
+                    f"mpirun -np {ncores} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
-                os.system(f"dftb+ > {self.output_path} 2>> output.err")
+                os.system(f"{self.__DFTBPATH} > {self.output_path} 2>> output.err")
+
+            ensemble = Ensemble(split_multixyz(mol=mol, file="geo_end.xyz"))
 
             import random, string
 
@@ -588,7 +612,7 @@ class DFTBInput(BaseEngine):
         # trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
         ### <--
 
-        return None
+        return ensemble
 
     def simulated_annealing(
         self,
@@ -646,8 +670,8 @@ class DFTBInput(BaseEngine):
 
         Returns
         -------
-        trajectory : Ensemble object
-            Ensemble containing the NVT MD trajectory data
+        System
+            System obtained at the end of the simulated annealing
         """
 
         if ncores is None:
@@ -693,10 +717,23 @@ class DFTBInput(BaseEngine):
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > {self.output_path} 2>> output.err")
+                os.system(
+                    f"mpirun -np {ncores} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
-                os.system(f"dftb+ > {self.output_path} 2>> output.err")
+                os.system(f"{self.__DFTBPATH} > {self.output_path} 2>> output.err")
+
+            if inplace is False:
+
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol.geometry.load_xyz("geo_end.xyz")
+                newmol.geometry.level_of_theory_geometry = self.level_of_theory
+
+            else:
+
+                mol.geometry.load_xyz("geo_end.xyz")
+                mol.geometry.level_of_theory_geometry = self.level_of_theory
 
             import random, string
 
@@ -721,4 +758,5 @@ class DFTBInput(BaseEngine):
         # trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
         ### <--
 
-        return None
+        if inplace is False:
+            return newmol

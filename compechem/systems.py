@@ -19,6 +19,7 @@ class SupportedTypes(Enum):
     The enumeration listing the file types (.xyz and .json) supported by the System class
     constructor.
     """
+
     XYZ = ".xyz"
     JSON = ".json"
 
@@ -68,10 +69,10 @@ class System:
             self.__geometry: MolecularGeometry = MolecularGeometry.from_xyz(filepath)
             self.properties: Properties = Properties()
             self.flags: list = []
-        
+
         elif filetype == SupportedTypes.JSON:
-            
-            with open(filepath, 'r') as jsonfile:
+
+            with open(filepath, "r") as jsonfile:
                 data = json.load(jsonfile)
 
             self.name = data["Name"]
@@ -88,7 +89,7 @@ class System:
     def save_json(self, path: str) -> None:
         """
         Saves a JSON representation of the object that can be stored on disk and loaded (using
-        the class constructor with the option SupportedTypes.JSON) at a later time to 
+        the class constructor with the option SupportedTypes.JSON) at a later time to
         re-generate ad identical System object.
 
         Arguments
@@ -117,7 +118,7 @@ class System:
 
         if type(new_geometry) != MolecularGeometry:
             raise TypeError("The geometry attribute must be of type MolecularGeometry")
-        
+
         elif new_geometry.atomcount == 0:
             raise ValueError("The geometry object cannot be empty or not initialized")
 
@@ -230,7 +231,7 @@ class System:
                     f"{fzero:.5f}",
                 )
             info += "\n"
-        
+
         if self.properties.hirshfeld_charges != []:
 
             info += f"HIRSHFELD ANALYSIS\n"
@@ -249,7 +250,7 @@ class System:
                     f"{spin:.5f}",
                 )
             info += "\n"
-        
+
         if self.properties.condensed_fukui_hirshfeld != {}:
 
             info += f"CONDENSED FUKUI - HIRSHFELD\n"
@@ -309,7 +310,13 @@ class System:
 
             i = 1
             for atom, coordinates in self.geometry:
-                line = f"{atom}\t" + "\t".join(list(coordinates)) + "\n"
+                line = (
+                    f"{atom}\t"
+                    + f"{coordinates[0]}\t"
+                    + f"{coordinates[1]}\t"
+                    + f"{coordinates[2]}\t"
+                    + "\n"
+                )
                 for index, atom_type in enumerate(atom_types):
                     if line.split()[0] == atom_type:
                         file.write(f"{i} {line.replace(atom_type, str(index + 1))}")

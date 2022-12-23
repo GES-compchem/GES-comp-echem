@@ -15,7 +15,7 @@ TEST_DIR = dirname(abspath(__file__))
 def test_OrcaInput___init__():
 
     try:
-        orca = OrcaInput(
+        engine = OrcaInput(
             method="HF", basis_set="def2-SVP", aux_basis="def2/J", solvent="water"
         )
 
@@ -23,9 +23,9 @@ def test_OrcaInput___init__():
         assert False, "Unenxpected exception raised during OrcaInput class construction"
 
     else:
-        assert orca.method == "HF"
+        assert engine.method == "HF"
         assert (
-            orca.level_of_theory
+            engine.level_of_theory
             == "OrcaInput || method: HF | basis: def2-SVP | solvent: water"
         )
 
@@ -33,16 +33,18 @@ def test_OrcaInput___init__():
 # Test the spe() function on a radical cation water molecule in DMSO
 def test_OrcaInput_spe():
 
-    orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO")
+    engine = OrcaInput(
+        method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO"
+    )
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
     try:
-        orca.spe(mol, ncores=4, inplace=True)
+        engine.spe(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised during SPE calculation"
 
     else:
-        assert mol.properties.level_of_theory_electronic == orca.level_of_theory
+        assert mol.properties.level_of_theory_electronic == engine.level_of_theory
         assert_array_almost_equal(
             mol.properties.electronic_energy, -75.942595825106, decimal=6
         )
@@ -64,17 +66,17 @@ def test_OrcaInput_spe():
 # Test the opt() function on a water molecule in vacuum
 def test_OrcaInput_opt():
 
-    orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
     try:
-        orca.opt(mol, ncores=4, inplace=True)
+        engine.opt(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised during geometry optimization"
 
     else:
-        assert mol.properties.level_of_theory_electronic == orca.level_of_theory
-        assert mol.properties.level_of_theory_vibronic == orca.level_of_theory
+        assert mol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
         assert_array_almost_equal(
             mol.properties.electronic_energy, -76.272686998306, decimal=6
@@ -99,17 +101,17 @@ def test_OrcaInput_opt():
 # Test the freq() function on a water molecule in vacuum
 def test_OrcaInput_freq():
 
-    orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
     try:
-        orca.freq(mol, ncores=4, inplace=True)
+        engine.freq(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised during frequency analysis"
 
     else:
-        assert mol.properties.level_of_theory_electronic == orca.level_of_theory
-        assert mol.properties.level_of_theory_vibronic == orca.level_of_theory
+        assert mol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
         assert_array_almost_equal(
             mol.properties.electronic_energy, -76.272562753586, decimal=6
@@ -127,19 +129,19 @@ def test_OrcaInput_freq():
 # Test the nfreq() function on a water molecule in ethanol
 def test_OrcaInput_nfreq():
 
-    orca = OrcaInput(
+    engine = OrcaInput(
         method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="ethanol"
     )
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
     try:
-        orca.freq(mol, ncores=4, inplace=True)
+        engine.freq(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised during numerical frequency analysis"
 
     else:
-        assert mol.properties.level_of_theory_electronic == orca.level_of_theory
-        assert mol.properties.level_of_theory_vibronic == orca.level_of_theory
+        assert mol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
         assert_array_almost_equal(
             mol.properties.electronic_energy, -76.283368184519, decimal=6
@@ -157,11 +159,11 @@ def test_OrcaInput_nfreq():
 # Test the scan() function on a water molecule in vacuum
 def test_OrcaInput_scan():
 
-    orca = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
     try:
-        ensemble: Ensemble = orca.scan(mol, scan="B 0 1 = 0.8, 1.5, 10", ncores=4)
+        ensemble: Ensemble = engine.scan(mol, scan="B 0 1 = 0.8, 1.5, 10", ncores=4)
     except:
         assert False, "Unexpected exception raised during relaxed surface scan"
 

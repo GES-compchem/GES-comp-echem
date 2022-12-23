@@ -1,12 +1,13 @@
 import subprocess
 
 from os.path import abspath
+from os import environ
 from io import BytesIO
 
 
 def locate_executable(name: str) -> str:
     """
-    Locate in the system PATH a given executable. If the program is found the path is
+    Locates a given executable in the system PATH. If the program is found the path is
     returned, else an exception is raised.
 
     Arguments
@@ -48,19 +49,19 @@ def locate_vmd() -> str:
 
 def locate_orca(version: str = None, get_folder: bool = False) -> str:
     """
-    Locate the path to the 'orca' executable from the system PATH. If the executable is
-    located check that the correct version of OpenMPI is exported (explicit reference to
-    the static builds). If specified, check that the correct version of orca is loaded.
+    Locates the path to the 'orca' executable from the system PATH. If the executable is
+    located checks that the correct version of OpenMPI is exported (explicit reference to
+    the static builds). If specified, checks that the correct version of orca is loaded.
 
     Arguments
     ---------
     version: str
-        The string defining the desired version of orca. If set to None (default) all version
-        of orca are accepted.
+        The string defining the desired version of orca. If set to None (default) all
+        versions of orca are accepted.
     get_folder: bool
-        If set to True will return the path of the folder containing the orca executable instead
-        of the default path to the executable itself. Equivalent to applying an `rstrip('/orca')`
-        to the executable path
+        If set to True will return the path of the folder containing the orca executable
+        instead of the default path to the executable itself. Equivalent to applying an
+        `rstrip('/orca')` to the executable path
 
     Returns
     -------
@@ -76,8 +77,6 @@ def locate_orca(version: str = None, get_folder: bool = False) -> str:
 
         if "Program Version" in line:
             orca_version: str = line.split()[2]
-
-        elif orca_version is not None:
             break
 
     if orca_version is None:
@@ -119,14 +118,14 @@ def locate_orca(version: str = None, get_folder: bool = False) -> str:
 
 def locate_xtb(version: str = None) -> str:
     """
-    Locate the path to the 'xtb' executable from the system PATH.
-    If specified, check that the correct version of xtb is loaded.
+    Locates the path to the 'xtb' executable from the system PATH. If specified, checks that
+    the correct version of xtb is loaded.
 
     Arguments
     ---------
     version: str
-        The string defining the desired version of xtb. If set to None (default) all version
-        of xtb are accepted.
+        The string defining the desired version of xtb. If set to None (default) all
+        versions of xtb are accepted.
 
     Returns
     -------
@@ -157,14 +156,14 @@ def locate_xtb(version: str = None) -> str:
 
 def locate_crest(version: str = None) -> str:
     """
-    Locate the path to the 'crest' executable from the system PATH.
-    If specified, check that the correct version of crest is loaded.
+    Locates the path to the 'crest' executable from the system PATH. If specified, checks
+    that the correct version of crest is loaded.
 
     Arguments
     ---------
     version: str
         The string defining the desired version of crest. If set to None (default) all
-        version of crest are accepted.
+        versions of crest are accepted.
 
     Returns
     -------
@@ -189,5 +188,63 @@ def locate_crest(version: str = None) -> str:
         raise RuntimeError(
             f"The required crest version is not available. Version {crest_version} found instead."
         )
+
+    return path
+
+
+def locate_dftbplus(version: str = None) -> str:
+    """
+    Locates the path to the 'dftb+' executable from the system PATH. If specified, checks
+    that the correct version of dftb+ is loaded.
+
+    Arguments
+    ---------
+    version: str
+        The string defining the desired version of dftb+. If set to None (default) all
+        versions of dftb+ are accepted.
+
+    Returns
+    -------
+    str
+        The path to the dftb+ executable file.
+    """
+    path = locate_executable("dftb+")
+
+    # Check if the available version of dftb+ matches the requirements
+    dftbplus_version = None
+    dftbplus_output = subprocess.run(
+        ["dftb+", "--version"], capture_output=True, text=True
+    ).stdout
+    for line in dftbplus_output.split("\n"):
+
+        if "DFTB+ release" in line:
+            dftbplus_version: str = line.split()[3]
+            break
+
+    if dftbplus_version is None:
+        raise RuntimeError("Failed to read the version of the dftb+ software.")
+
+    elif version is not None and dftbplus_version != version:
+        raise RuntimeError(
+            f"The required dftb+ version is not available. Version {dftbplus_version} found instead."
+        )
+
+    return path
+
+
+def locate_dftbparamdir() -> str:
+    """
+    Locates the path to the DFTBPLUS_PARAM_DIR environment variable.
+
+    Returns
+    -------
+    str
+        The path to the DFTBPLUS_PARAM_DIR environment variable.
+    """
+    path = None
+    try:
+        path = environ["DFTBPLUS_PARAM_DIR"]
+    except KeyError:
+        raise RuntimeError("Failed to locate DFTBPLUS_PARAM_DIR environment variable.")
 
     return path

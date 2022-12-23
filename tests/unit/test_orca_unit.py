@@ -8,7 +8,7 @@ ORCADIR = "orcadir"
 def test_OrcaInput___init__():
 
     try:
-        orca = OrcaInput(
+        engine = OrcaInput(
             method="HF",
             basis_set="def2-SVP",
             aux_basis="def2/J",
@@ -20,8 +20,8 @@ def test_OrcaInput___init__():
         assert False, "Unenxpected exception raised during OrcaInput class construction"
 
     else:
-        assert orca.method == "HF"
+        assert engine.method == "HF"
         assert (
-            orca.level_of_theory
+            engine.level_of_theory
             == "OrcaInput || method: HF | basis: def2-SVP | solvent: water"
         )

@@ -15,29 +15,29 @@ TEST_DIR = dirname(abspath(__file__))
 def test_XtbInput___init__():
 
     try:
-        xtb = XtbInput(solvent="water")
+        engine = XtbInput(solvent="water")
 
     except:
         assert False, "Unenxpected exception raised during XtbInput class construction"
 
     else:
-        assert xtb.method == "gfn2"
-        assert xtb.level_of_theory == "XtbInput || method: gfn2 | solvent: water"
+        assert engine.method == "gfn2"
+        assert engine.level_of_theory == "XtbInput || method: gfn2 | solvent: water"
 
 
 # Test the spe() function on a radical cation water molecule in DMSO
 def test_XtbInput_spe():
 
-    xtb = XtbInput(solvent="DMSO")
+    engine = XtbInput(solvent="DMSO")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
     try:
-        xtb.spe(mol, ncores=4, inplace=True)
+        engine.spe(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised during SPE calculation"
 
     else:
-        assert mol.properties.level_of_theory_electronic == xtb.level_of_theory
+        assert mol.properties.level_of_theory_electronic == engine.level_of_theory
         assert_array_almost_equal(
             mol.properties.electronic_energy, -4.547249570099, decimal=6
         )
@@ -64,17 +64,17 @@ def test_XtbInput_spe():
 # Test the opt() function on a urea molecule in vacuum
 def test_XtbInput_opt():
 
-    xtb = XtbInput(solvent=None)
+    engine = XtbInput(solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/urea.xyz")
 
     try:
-        xtb.opt(mol, ncores=4, inplace=True)
+        engine.opt(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised during geometry optimization"
 
     else:
-        assert mol.properties.level_of_theory_electronic == xtb.level_of_theory
-        assert mol.properties.level_of_theory_vibronic == xtb.level_of_theory
+        assert mol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
         assert_array_almost_equal(
             mol.properties.electronic_energy, -14.097142459981, decimal=6
@@ -109,17 +109,17 @@ def test_XtbInput_opt():
 # Test the freq() function on a urea molecule in vacuum
 def test_XtbInput_freq():
 
-    xtb = XtbInput(solvent=None)
+    engine = XtbInput(solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/urea.xyz")
 
     try:
-        xtb.freq(mol, ncores=4, inplace=True)
+        engine.freq(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised during frequency analysis"
 
     else:
-        assert mol.properties.level_of_theory_electronic == xtb.level_of_theory
-        assert mol.properties.level_of_theory_vibronic == xtb.level_of_theory
+        assert mol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
         assert_array_almost_equal(
             mol.properties.electronic_energy, -14.093063923335, decimal=6
