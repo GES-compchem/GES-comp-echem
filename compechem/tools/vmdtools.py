@@ -17,7 +17,7 @@ def render_fukui_cube(
     VMD_PATH: str = None,
 ) -> None:
     """
-    Given the path to a Fukui function cube file saves a `.png` render the volumetric Fukui
+    Given the path to a Fukui function cube file saves a `.bmp` render the volumetric Fukui
     function.
 
     Arguments
@@ -95,7 +95,7 @@ def render_fukui_cube(
             color Display Background white
             color Element C black
             mol modcolor 0 0 Element
-            render Tachyon {root_name}.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res {resolution} {resolution} -o {root_name}.png
+            render Tachyon {root_name}.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format BMP -res {resolution} {resolution} -o {root_name}.bmp
             exit
             """
         )
@@ -113,7 +113,7 @@ def render_condensed_fukui(
     VMD_PATH: str = None,
 ) -> None:
     """
-    Given the path to a Fukui function cube file saves a `.png` render of the condensed Fukui
+    Given the path to a Fukui function cube file saves a `.bmp` render of the condensed Fukui
     functions.
 
     Arguments
@@ -187,7 +187,7 @@ def render_condensed_fukui(
 
         vmd_script.write(
             f"""
-            render Tachyon {root_name}_condensed.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format TARGA -res {resolution} {resolution} -o {root_name}_condensed.png
+            render Tachyon {root_name}_condensed.dat "{tachyon_path}" -fullshade -aasamples 12 %s -format BMP -res {resolution} {resolution} -o {root_name}_condensed.bmp
             exit
             """
         )

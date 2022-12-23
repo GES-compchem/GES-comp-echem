@@ -1,15 +1,15 @@
 (Guide-run)=
 # Running calculations
 
-After creating a `System`, and having initialized a `wrapper`, we can actually start running calculations.
+After creating a `System`, and having initialized a `engines`, we can actually start running calculations.
 
 ---
 
 ## Generic calculations
 
-Generic calculations are implemented as class methods in the various `wrappers`. The available options, the class method name, and the wrappers for which they have been implemented are:
+Generic calculations are implemented as class methods in the various `engines`. The available options, the class method name, and the engines for which they have been implemented are:
 
-|  Calculation type  |  method name  |  Wrappers implemented  |
+|  Calculation type  |  method name  |  Engines implemented  |
 |  :---  |  :---  |  :---  |
 |  Single point energy  |  `spe`  |  xTB, Orca, DFTB+  |
 |  Geometry optimisation + Frequency analysis  |  `opt`  |  xTB, Orca, DFTB+  |
@@ -25,7 +25,7 @@ The only mandatory parameter to be passed is the `System` on which to run the ca
 
 ```python
 from compechem.systems import System
-from compechem.wrappers.xtb import XtbInput
+from compechem.engines.xtb import XtbInput
 
 mol = System("mymol.xyz")
 xtb = XtbInput()
@@ -89,7 +89,7 @@ Alternatively, you can directly update the input `System` with the `inplace` fla
 
 ```python
 from compechem.systems import System
-from compechem.wrappers.xtb import XtbInput
+from compechem.engines.xtb import XtbInput
 
 mol = System("mymol.xyz")
 xtb = XtbInput()

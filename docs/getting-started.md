@@ -85,27 +85,36 @@ print(water)
 ```
 
 ```
-=== System: water === 
+=========================================================
+SYSTEM: water
+=========================================================
 
 Number of atoms: 3
 Charge: 0
-Spin: 1
+Spin multeplicity: 1
 
---- Warnings ---
+********************** GEOMETRY *************************
 
---- Energies (Eh) --- 
+Total system mass: 18.0153 amu
 
-* Method: gfn2
-Electronic: -5.0850212749 Eh
-Vibronic: 0.002042147786 Eh
+----------------------------------------------
+ index  atom    x (Å)      y (Å)      z (Å)   
+----------------------------------------------
+ 0       O    -0.00001   -0.37937    0.00000  
+ 1       H     0.77221    0.18968   -0.00000  
+ 2       H    -0.77221    0.18969    0.00000  
+----------------------------------------------
 
---- Coordinates (Å) --- 
+********************** PROPERTIES *************************
 
-O	0.00002775604206	-0.38112213759546	0.00067921774157
-H	0.77442816294285	0.19054562664968	0.00015769815166
-H	-0.77445591549424	0.19057651269109	0.00016308410676
+Electronic level of theory: XtbInput || method: gfn2 | solvent: None
+Vibronic level of theory: XtbInput || method: gfn2 | solvent: None
 
---- Velocities (Å/ps) --- 
+Electronic energy: -5.070544446446 Eh
+Vibronic energy: 0.002508816182 Eh
+Helmholtz free energy: None Eh
+Gibbs free energy: None Eh
+pKa: None
 ```
 
 Et voilà! You have successfully carried out a geometry optimization for the water molecule using the `GES-comp-echem` library!

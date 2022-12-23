@@ -1,9 +1,9 @@
 (API-wrappers-xtb)=
-# `compechem.wrappers.xtb` sub-module
+# `compechem.engines.xtb` sub-module
 
 ## `XtbInput` class
 
 ```{eval-rst}
-.. autoclass:: compechem.wrappers.xtb.XtbInput
+.. autoclass:: compechem.engines.xtb.XtbInput
     :members:
 ```
