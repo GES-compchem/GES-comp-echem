@@ -1,4 +1,6 @@
 import os, copy, shutil, sh
+
+from os.path import join
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.core.base import BaseEngine
@@ -244,7 +246,7 @@ class DFTBInput(BaseEngine):
             input += (
                 "  Scc = Yes\n"
                 "  SlaterKosterFiles = Type2FileNames {\n"
-                f'    Prefix = "{self.__DFTBPARAMDIR}{self.parameters}/"\n'
+                f'    Prefix = "{join(self.__DFTBPARAMDIR, self.parameters)}/"\n'
                 '    Separator = "-"\n'
                 '    Suffix = ".skf"\n'
                 "  }\n"
