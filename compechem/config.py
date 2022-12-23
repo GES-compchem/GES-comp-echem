@@ -3,6 +3,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+global STRICT_MODE
+STRICT_MODE = True
 
 def get_ncores():
     try:

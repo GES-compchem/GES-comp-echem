@@ -26,3 +26,4 @@ chapters:
     - file: API/tools
 
 - file: contributor-guide
+- file: release-notes

@@ -1,18 +1,23 @@
 import os, copy, shutil, sh
+
+from os.path import join
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.systems import System, Energies
-from compechem.systems import MDTrajectory
+from compechem.core.base import BaseEngine
+from compechem.systems import System, Ensemble
 from compechem.tools import process_output
 from compechem.tools import save_dftb_trajectory
 from compechem.tools import compress_dftb_trajectory
+from compechem.tools import split_multixyz
 from typing import Dict
+from compechem.core.dependency_finder import locate_dftbplus, locate_dftbparamdir
+
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class DFTBInput:
+class DFTBInput(BaseEngine):
     """Interface for running DFTB+ calculations
 
     Attributes
@@ -34,7 +39,7 @@ class DFTBInput:
     def __init__(
         self,
         method: str = "DFTB",
-        parameters: str = "3ob/3ob-3-1/",
+        parameters: str = "3ob/3ob-3-1",
         solver: str = None,
         thirdorder: bool = True,
         dispersion: bool = False,
@@ -42,6 +47,8 @@ class DFTBInput:
         fermi_temp: float = 300.0,
         parallel: str = "mpi",
         verbose: bool = True,
+        DFTBPATH: str = None,
+        DFTBPARAMDIR: str = None,
     ) -> None:
         """
         Parameters
@@ -66,9 +73,15 @@ class DFTBInput:
             selects either openmpi-parallel version (mpi) or shared memory version (nompi)
         verbose : bool, optional
             if set to True, saves the full DFTB+ output, otherwise, only the smaller files
+        DFTBPATH: str, optional
+            the path to the dftb+ executable. If set to None (default) the dftb+ executable
+            will be loaded automatically.
+        DFTBPARAMDIR: str, optional
+            the path to the DFTBPLUS_PARAM_DIR environment variable, where the Slater-Koster
+            files are located
         """
+        super().__init__(method)
 
-        self.method = method
         self.parameters = parameters
         self.solver = solver
         self.thirdorder = thirdorder
@@ -81,6 +94,11 @@ class DFTBInput:
             self.output_path = "output.out"
         else:
             self.output_path = "/dev/null"
+
+        self.level_of_theory += f" | parameters: {self.parameters} | 3rd order: {self.thirdorder} | dispersion: {self.dispersion}"
+
+        self.__DFTBPATH = DFTBPATH if DFTBPATH else locate_dftbplus()
+        self.__DFTBPARAMDIR = DFTBPARAMDIR if DFTBPARAMDIR else locate_dftbparamdir()
 
         self.atom_dict = {
             "Br": "d",
@@ -141,18 +159,18 @@ class DFTBInput:
         input = "Geometry = GenFormat {\n" f'  <<< "{mol.name}.gen"\n' "}\n\n"
 
         if job_info["type"] == "spe":
-            input += "Driver = GeometryOptimization{\n" "  MaxSteps = 0\n" "}\n\n"
+            input += "Driver = GeometryOptimization {\n" "  MaxSteps = 0\n" "}\n\n"
 
         elif job_info["type"] == "opt":
             input += (
-                "Driver = GeometryOptimization{\n"
+                "Driver = GeometryOptimization {\n"
                 f"  LatticeOpt = {'Yes' if job_info['latticeopt'] else 'No'}\n"
                 "}\n\n"
             )
 
         elif job_info["type"] == "md_nvt":
             input += (
-                "Driver = VelocityVerlet{\n"
+                "Driver = VelocityVerlet {\n"
                 f"  TimeStep [fs] = {job_info['timestep']}\n"
                 "  Thermostat = NoseHoover {\n"
                 f"    Temperature [K] = {job_info['temperature']}\n"
@@ -161,18 +179,21 @@ class DFTBInput:
                 f"  Steps = {job_info['steps']}\n"
                 "  MovedAtoms = 1:-1\n"
                 f"  MDRestartFrequency = {job_info['mdrestartfreq']}\n"
-                "  Velocities [AA/ps] {\n"
             )
-            for velocity in mol.velocities:
-                input += f"    {velocity[1:]}"
-            input += "  }\n" "}\n\n"
+            ### --> VELOCITIES HAVE BEEN REMOVED IN THE LATEST VERSION
+            # input += "  Velocities [AA/ps] {\n"
+            # for velocity in mol.velocities:
+            #     input += f"    {velocity[1:]}"
+            # input += "  }\n"
+            ### <--
+            input += "}\n\n"
 
         elif job_info["type"] == "simulated_annealing":
             input += (
-                "Driver = VelocityVerlet{\n"
+                "Driver = VelocityVerlet {\n"
                 f"  TimeStep [fs] = {job_info['timestep']}\n"
                 "  Thermostat = NoseHoover {\n"
-                "    Temperature [Kelvin] = TemperatureProfile{\n"
+                "    Temperature [Kelvin] = TemperatureProfile {\n"
                 f"      constant 1 {job_info['start_temp']}\n"
                 f"      linear {job_info['ramp_steps']-1} {job_info['target_temp']}\n"
                 f"      constant {job_info['hold_steps']} {job_info['target_temp']}\n"
@@ -182,11 +203,14 @@ class DFTBInput:
                 "  }\n"
                 "  MovedAtoms = 1:-1\n"
                 f"  MDRestartFrequency = {job_info['mdrestartfreq']}\n"
-                "    Velocities [AA/ps] {\n"
             )
-            for velocity in mol.velocities:
-                input += f"    {velocity[1:]}"
-            input += "  }\n" "}\n" "\n"
+            ### --> VELOCITIES HAVE BEEN REMOVED IN THE LATEST VERSION
+            # input += "  Velocities [AA/ps] {\n"
+            # for velocity in mol.velocities:
+            #     input += f"    {velocity[1:]}"
+            # input += "  }\n"
+            ### <--
+            input += "}\n" "\n"
 
         input += (
             f"Hamiltonian = {self.method} {{\n"
@@ -222,7 +246,7 @@ class DFTBInput:
             input += (
                 "  Scc = Yes\n"
                 "  SlaterKosterFiles = Type2FileNames {\n"
-                f'    Prefix = "{self.parameters}"\n'
+                f'    Prefix = "{join(self.__DFTBPARAMDIR, self.parameters)}/"\n'
                 '    Separator = "-"\n'
                 '    Suffix = ".skf"\n'
                 "  }\n"
@@ -231,7 +255,7 @@ class DFTBInput:
             for atom in atom_types:
                 input += f'    {atom} = "{self.atom_dict[atom]}"\n'
             input += "  }\n"
-            if mol.periodic:
+            if mol.is_periodic:
                 input += "  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n"
             if self.thirdorder:
                 input += "  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n"
@@ -256,7 +280,7 @@ class DFTBInput:
                 input += f"  Solver = {self.solver} {{}}\n"
             self.parameters = "gfn2"
             input += '  Method = "GFN2-xTB"\n'
-            if mol.periodic:
+            if mol.is_periodic:
                 input += "  kPointsAndWeights = { 0.0 0.0 0.0 1.0 }\n"
             input += "}\n"
 
@@ -333,43 +357,29 @@ class DFTBInput:
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
+                os.system(
+                    f"mpirun -np {ncores} {self.__DFTBPATH} > output.out 2>> output.err"
+                )
 
             elif self.parallel == "nompi":
-                os.system(f"dftb+ > output.out 2>> output.err")
+                os.system(f"{self.__DFTBPATH} > output.out 2>> output.err")
 
             with open("output.out", "r") as out:
                 for line in out:
                     if "Total Energy" in line:
                         electronic_energy = float(line.split()[2])
 
-            vibronic_energy = None
-
-            if self.method in mol.energies:
-                vibronic_energy = mol.energies[self.method].vibronic
-
             if inplace is False:
 
-                mol.write_xyz(f"{mol.name}.xyz")
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
 
-                newmol = System(f"{mol.name}.xyz", charge, spin, mol.box_side)
-
-                newmol.energies = copy.copy(mol.energies)
-
-                newmol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                newmol.properties = copy.copy(mol.properties)
+                newmol.properties.set_electronic_energy(electronic_energy, self)
 
             else:
-                mol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge=charge, spin=spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -446,46 +456,32 @@ class DFTBInput:
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > output.out 2>> output.err")
+                os.system(
+                    f"mpirun -np {ncores} {self.__DFTBPATH} > output.out 2>> output.err"
+                )
 
             elif self.parallel == "nompi":
-                os.system(f"dftb+ > output.out 2>> output.err")
+                os.system(f"{self.__DFTBPATH} > output.out 2>> output.err")
 
             with open("output.out", "r") as out:
                 for line in out:
                     if "Total Energy" in line:
                         electronic_energy = float(line.split()[2])
 
-            vibronic_energy = None
-
-            if self.method in mol.energies:
-                vibronic_energy = mol.energies[self.method].vibronic
-
             if inplace is False:
 
-                mol.write_xyz(f"{mol.name}.xyz")
-                newmol = System(f"{mol.name}.xyz", charge, spin, mol.box_side)
-
-                newmol.energies = copy.copy(mol.energies)
-
-                newmol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
-
-                newmol.update_geometry("geo_end.xyz")
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol.geometry.load_xyz("geo_end.xyz")
+                newmol.geometry.level_of_theory_geometry(self.level_of_theory)
+                newmol.properties.set_electronic_energy(electronic_energy, self)
 
             else:
-                mol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
 
-                mol.update_geometry("geo_end.xyz")
+                mol.geometry.load_xyz("geo_end.xyz")
+                mol.geometry.level_of_theory_geometry = self.level_of_theory
+                mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge=charge, spin=spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -543,7 +539,7 @@ class DFTBInput:
 
         Returns
         -------
-        trajectory : Ensemble object
+        Ensemble
             Ensemble containing the NVT MD trajectory data
         """
 
@@ -583,19 +579,16 @@ class DFTBInput:
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > {self.output_path} 2>> output.err")
+                os.system(
+                    f"mpirun -np {ncores} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
-                os.system(f"dftb+ > {self.output_path} 2>> output.err")
+                os.system(f"{self.__DFTBPATH} > {self.output_path} 2>> output.err")
+
+            ensemble = Ensemble(split_multixyz(mol=mol, file="geo_end.xyz"))
 
             import random, string
-
-            if inplace is False:
-                newmol = System("geo_end.xyz", charge, spin, mol.box_side)
-                newmol.energies = copy.copy(mol.energies)
-
-            else:
-                mol.update_geometry("geo_end.xyz")
 
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
 
@@ -609,7 +602,7 @@ class DFTBInput:
 
             save_dftb_trajectory(f"{mol.name}_{charge}_{spin}_{suffix}")
 
-            if mol.periodic:
+            if mol.is_periodic:
                 with open(f"../MD_data/{mol.name}_{charge}_{spin}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
@@ -617,9 +610,11 @@ class DFTBInput:
             if remove_tdir:
                 shutil.rmtree(tdir)
 
-        trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
+        ### --> CURRENTLY NOT WORKING, REFACTORING NEEDED
+        # trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
+        ### <--
 
-        return trajectory
+        return ensemble
 
     def simulated_annealing(
         self,
@@ -677,8 +672,8 @@ class DFTBInput:
 
         Returns
         -------
-        trajectory : Ensemble object
-            Ensemble containing the NVT MD trajectory data
+        System
+            System obtained at the end of the simulated annealing
         """
 
         if ncores is None:
@@ -724,19 +719,25 @@ class DFTBInput:
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
-                os.system(f"mpirun -np {ncores} dftb+ > {self.output_path} 2>> output.err")
+                os.system(
+                    f"mpirun -np {ncores} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
-                os.system(f"dftb+ > {self.output_path} 2>> output.err")
-
-            import random, string
+                os.system(f"{self.__DFTBPATH} > {self.output_path} 2>> output.err")
 
             if inplace is False:
-                newmol = System("geo_end.xyz", charge, spin, mol.box_side)
-                newmol.energies = copy.copy(mol.energies)
+
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol.geometry.load_xyz("geo_end.xyz")
+                newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
             else:
-                mol.update_geometry("geo_end.xyz")
+
+                mol.geometry.load_xyz("geo_end.xyz")
+                mol.geometry.level_of_theory_geometry = self.level_of_theory
+
+            import random, string
 
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
 
@@ -747,7 +748,7 @@ class DFTBInput:
 
             save_dftb_trajectory(f"{mol.name}_{suffix}")
 
-            if mol.periodic:
+            if mol.is_periodic:
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
@@ -755,6 +756,9 @@ class DFTBInput:
             if remove_tdir:
                 shutil.rmtree(tdir)
 
-        trajectory = MDTrajectory(f"{mol.name}_{suffix}", self.method)
+        ### --> CURRENTLY NOT WORKING, REFACTORING NEEDED
+        # trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
+        ### <--
 
-        return trajectory
+        if inplace is False:
+            return newmol

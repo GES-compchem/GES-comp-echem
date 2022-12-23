@@ -1,43 +1,49 @@
 import os, copy, sh, shutil
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.systems import System, Energies
+from compechem.core.base import BaseEngine
+from compechem.systems import System
 from compechem.tools import process_output
 from compechem.tools import add_flag
 from compechem.tools import dissociation_check
 from compechem.tools import cyclization_check
+from compechem.core.dependency_finder import locate_xtb
+
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class XtbInput:
+class XtbInput(BaseEngine):
     """Interface for running xTB calculations"""
 
     def __init__(
         self,
         method: str = "gfn2",
-        solvation: bool = True,
-        solvent: str = "water",
+        solvent: str = None,
         optionals: str = "",
+        XTBPATH: str = None,
     ) -> None:
         """
         Parameters
         ----------
         method : str, optional
             level of theory, by default "gfn2"
-        solvation : bool, optional
-            ALPB implicit solvation model, by default True
         solvent : str, optional
-            ALPB solvent, by default "water"
+            ALPB solvent, by default no solvent (vacuum)
         optionals : str, optional
             optional keywords/flags, by default ""
+        XTBPATH: str, optional
+            the path to the xtb executable. If set to None (default) the xtb executable will
+            be loaded automatically.
         """
 
-        self.method = method
-        self.solvation = solvation
+        super().__init__(method)
+        self.level_of_theory += f" | solvent: {solvent}"
+
         self.solvent = solvent
         self.optionals = optionals
+        self.__XTBPATH = XTBPATH if XTBPATH else locate_xtb()
 
     def spe(
         self,
@@ -94,16 +100,16 @@ class XtbInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
+            mol.geometry.write_xyz(f"{mol.name}.xyz")
 
-            if self.solvation is True:
+            if self.solvent:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             with open("output.out", "r") as out:
@@ -111,29 +117,15 @@ class XtbInput:
                     if "TOTAL ENERGY" in line:
                         electronic_energy = float(line.split()[-3])
 
-            vibronic_energy = None
-
-            if self.method in mol.energies:
-                vibronic_energy = mol.energies[self.method].vibronic
-
             if inplace is False:
 
                 newmol = System(f"{mol.name}.xyz", charge, spin)
 
-                newmol.energies = copy.copy(mol.energies)
-
-                newmol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                newmol.properties = copy.copy(mol.properties)
+                newmol.properties.set_electronic_energy(electronic_energy, self)
 
             else:
-                mol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                mol.properties.set_electronic_energy(electronic_energy, self)
 
             process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
@@ -200,16 +192,16 @@ class XtbInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
+            mol.geometry.write_xyz(f"{mol.name}.xyz")
 
-            if self.solvation is True:
+            if self.solvent:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             if dissociation_check() is True:
@@ -237,25 +229,18 @@ class XtbInput:
                 if inplace is False:
 
                     newmol = System(f"{mol.name}.xyz", charge, spin)
+                    newmol.geometry.load_xyz("xtbopt.xyz")
+                    newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
-                    newmol.energies = copy.copy(mol.energies)
-
-                    newmol.energies[self.method] = Energies(
-                        method=self.method,
-                        electronic=electronic_energy,
-                        vibronic=vibronic_energy,
-                    )
-
-                    newmol.update_geometry("xtbopt.xyz")
+                    newmol.properties.set_electronic_energy(electronic_energy, self)
+                    newmol.properties.set_vibronic_energy(vibronic_energy, self)
 
                 else:
-                    mol.energies[self.method] = Energies(
-                        method=self.method,
-                        electronic=electronic_energy,
-                        vibronic=vibronic_energy,
-                    )
+                    mol.geometry.load_xyz("xtbopt.xyz")
+                    mol.geometry.level_of_theory_geometry = self.level_of_theory
 
-                    mol.update_geometry("xtbopt.xyz")
+                    mol.properties.set_electronic_energy(electronic_energy, self)
+                    mol.properties.set_vibronic_energy(vibronic_energy, self)
 
                 process_output(mol, self.method, "opt", charge, spin)
                 if remove_tdir:
@@ -319,16 +304,16 @@ class XtbInput:
 
         with sh.pushd(tdir):
 
-            mol.write_xyz(f"{mol.name}.xyz")
+            mol.geometry.write_xyz(f"{mol.name}.xyz")
 
-            if self.solvation is True:
+            if self.solvent:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"xtb {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             with open("output.out", "r") as out:
@@ -342,20 +327,15 @@ class XtbInput:
 
                 newmol = System(f"{mol.name}.xyz", charge, spin)
 
-                newmol.energies = copy.copy(mol.energies)
+                newmol.properties = copy.copy(mol.properties)
 
-                newmol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+                newmol.properties.set_electronic_energy(electronic_energy, self)
+                newmol.properties.set_vibronic_energy(vibronic_energy, self)
 
             else:
-                mol.energies[self.method] = Energies(
-                    method=self.method,
-                    electronic=electronic_energy,
-                    vibronic=vibronic_energy,
-                )
+
+                mol.properties.set_electronic_energy(electronic_energy, self)
+                mol.properties.set_vibronic_energy(vibronic_energy, self)
 
             process_output(mol, self.method, "freq", charge, spin)
             if remove_tdir:

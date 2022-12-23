@@ -1,9 +1,9 @@
 (API-wrappers-orca)=
-# `compechem.wrappers.orca` sub-module
+# `compechem.engines.orca` sub-module
 
 ## `OrcaInput` class
 
 ```{eval-rst}
-.. autoclass:: compechem.wrappers.orca.OrcaInput
+.. autoclass:: compechem.engines.orca.OrcaInput
     :members:
 ```
