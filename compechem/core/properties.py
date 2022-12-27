@@ -4,7 +4,7 @@ import logging, warnings
 import compechem.config
 
 from typing import Dict, List
-from compechem.core.base import BaseEngine
+from compechem.core.base import Engine
 
 
 logger = logging.getLogger(__name__)
@@ -51,11 +51,11 @@ class Properties:
         self.__gibbs_free_energy = None
         self.__pka = None
 
-    def __check_engine(self, engine: BaseEngine) -> None:
-        if not isinstance(engine, BaseEngine):
-            raise TypeError("The engine argument must be derived from `BaseEngine`")
+    def __check_engine(self, engine: Engine) -> None:
+        if not isinstance(engine, Engine):
+            raise TypeError("The engine argument must be derived from `Engine`")
 
-    def __validate_electronic(self, engine: BaseEngine) -> None:
+    def __validate_electronic(self, engine: Engine) -> None:
 
         self.__check_engine(engine)
 
@@ -75,7 +75,7 @@ class Properties:
                 warnings.warn(msg)
                 self.__level_of_theory_electronic = "Undefined"
 
-    def __validate_vibronic(self, engine: BaseEngine) -> None:
+    def __validate_vibronic(self, engine: Engine) -> None:
 
         self.__check_engine(engine)
 
@@ -175,7 +175,7 @@ class Properties:
     def electronic_energy(self) -> float:
         return self.__electronic_energy
 
-    def set_electronic_energy(self, value: float, electronic_engine: BaseEngine) -> None:
+    def set_electronic_energy(self, value: float, electronic_engine: Engine) -> None:
         self.__validate_electronic(electronic_engine)
         self.__electronic_energy = value
 
@@ -183,7 +183,7 @@ class Properties:
     def vibronic_energy(self) -> float:
         return self.__vibronic_energy
 
-    def set_vibronic_energy(self, value: float, vibronic_engine: BaseEngine) -> None:
+    def set_vibronic_energy(self, value: float, vibronic_engine: Engine) -> None:
         self.__validate_vibronic(vibronic_engine)
         self.__vibronic_energy = value
 
@@ -192,7 +192,7 @@ class Properties:
         return self.__helmholtz_free_energy
 
     def set_helmholtz_free_energy(
-        self, value: float, electronic_engine: BaseEngine, vibronic_engine: BaseEngine
+        self, value: float, electronic_engine: Engine, vibronic_engine: Engine
     ) -> float:
         self.__validate_electronic(electronic_engine)
         self.__validate_vibronic(vibronic_engine)
@@ -203,7 +203,7 @@ class Properties:
         return self.__gibbs_free_energy
 
     def set_gibbs_free_energy(
-        self, value: float, electronic_engine: BaseEngine, vibronic_engine: BaseEngine
+        self, value: float, electronic_engine: Engine, vibronic_engine: Engine
     ) -> float:
         self.__validate_electronic(electronic_engine)
         self.__validate_vibronic(vibronic_engine)
@@ -216,8 +216,8 @@ class Properties:
     def set_pka(
         self,
         value: float,
-        electronic_engine: BaseEngine,
-        vibronic_engine: BaseEngine = None,
+        electronic_engine: Engine,
+        vibronic_engine: Engine = None,
     ) -> float:
         self.__validate_electronic(electronic_engine)
         if vibronic_engine is not None:
@@ -229,7 +229,7 @@ class Properties:
         return self.__mulliken_charges
 
     def set_mulliken_charges(
-        self, value: List[float], electronic_engine: BaseEngine
+        self, value: List[float], electronic_engine: Engine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__mulliken_charges = value
@@ -239,7 +239,7 @@ class Properties:
         return self.__mulliken_spin_populations
 
     def set_mulliken_spin_populations(
-        self, value: List[float], electronic_engine: BaseEngine
+        self, value: List[float], electronic_engine: Engine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__mulliken_spin_populations = value
@@ -249,7 +249,7 @@ class Properties:
         return self.__condensed_fukui_mulliken
 
     def set_condensed_fukui_mulliken(
-        self, value: Dict[str, List[float]], electronic_engine: BaseEngine
+        self, value: Dict[str, List[float]], electronic_engine: Engine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__condensed_fukui_mulliken = value
@@ -259,7 +259,7 @@ class Properties:
         return self.__hirshfeld_charges
 
     def set_hirshfeld_charges(
-        self, value: List[float], electronic_engine: BaseEngine
+        self, value: List[float], electronic_engine: Engine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__hirshfeld_charges = value
@@ -269,7 +269,7 @@ class Properties:
         return self.__hirshfeld_spin_populations
 
     def set_hirshfeld_spin_populations(
-        self, value: List[float], electronic_engine: BaseEngine
+        self, value: List[float], electronic_engine: Engine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__hirshfeld_spin_populations = value
@@ -279,7 +279,7 @@ class Properties:
         return self.__condensed_fukui_hirshfeld
 
     def set_condensed_fukui_hirshfeld(
-        self, value: Dict[str, List[float]], electronic_engine: BaseEngine
+        self, value: Dict[str, List[float]], electronic_engine: Engine
     ) -> None:
         self.__validate_electronic(electronic_engine)
         self.__condensed_fukui_hirshfeld = value

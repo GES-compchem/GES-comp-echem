@@ -1,7 +1,7 @@
 import os, copy, sh, shutil
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.core.base import BaseEngine
+from compechem.core.base import Engine
 from compechem.systems import System
 from compechem.tools import process_output
 from compechem.tools import add_flag
@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class XtbInput(BaseEngine):
+class XtbInput(Engine):
     """Interface for running xTB calculations"""
 
     def __init__(

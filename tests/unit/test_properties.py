@@ -2,7 +2,7 @@ import pytest
 from numpy.testing import assert_array_almost_equal
 
 import compechem.config as cc
-from compechem.core.base import BaseEngine
+from compechem.core.base import Engine
 from compechem.core.properties import Properties
 
 def test_Properties___init__():
@@ -35,9 +35,9 @@ def test_Properties_properties():
     assert p.hirshfeld_charges == []
     assert p.hirshfeld_spin_populations == []
 
-    # Define a BaseEngine instance to be used in setting the level of theory
-    el_engine = BaseEngine("ElMethod")
-    vib_engine = BaseEngine("VibMethod")
+    # Define a Engine instance to be used in setting the level of theory
+    el_engine = Engine("ElMethod")
+    vib_engine = Engine("VibMethod")
 
     # Set all properties
     p.set_electronic_energy(1, el_engine)
@@ -71,8 +71,8 @@ def test_strict_mode_conflict_electronic():
     cc.STRICT_MODE = True
 
     p = Properties()
-    first = BaseEngine("FirstMethod")
-    second = BaseEngine("SecondMethod")
+    first = Engine("FirstMethod")
+    second = Engine("SecondMethod")
 
     assert first.level_of_theory != second.level_of_theory
 
@@ -91,8 +91,8 @@ def test_not_strict_mode_conflict_electronic():
     cc.STRICT_MODE = False
 
     p = Properties()
-    first = BaseEngine("FirstMethod")
-    second = BaseEngine("SecondMethod")
+    first = Engine("FirstMethod")
+    second = Engine("SecondMethod")
 
     assert first.level_of_theory != second.level_of_theory
 
@@ -110,8 +110,8 @@ def test_strict_mode_conflict_vibronic():
     cc.STRICT_MODE = True
 
     p = Properties()
-    first = BaseEngine("FirstMethod")
-    second = BaseEngine("SecondMethod")
+    first = Engine("FirstMethod")
+    second = Engine("SecondMethod")
 
     assert first.level_of_theory != second.level_of_theory
 
@@ -130,8 +130,8 @@ def test_not_strict_mode_conflict_vibronic():
     cc.STRICT_MODE = False
 
     p = Properties()
-    first = BaseEngine("FirstMethod")
-    second = BaseEngine("SecondMethod")
+    first = Engine("FirstMethod")
+    second = Engine("SecondMethod")
 
     assert first.level_of_theory != second.level_of_theory
 
@@ -149,8 +149,8 @@ def test_pka_vibronic_addition_strict():
     cc.STRICT_MODE = True
 
     p = Properties()
-    first = BaseEngine("FirstMethod")
-    second = BaseEngine("SecondMethod")
+    first = Engine("FirstMethod")
+    second = Engine("SecondMethod")
 
     assert first.level_of_theory != second.level_of_theory
 
@@ -175,8 +175,8 @@ def test_pka_vibronic_addition_not_strict():
     cc.STRICT_MODE = False
 
     p = Properties()
-    first = BaseEngine("FirstMethod")
-    second = BaseEngine("SecondMethod")
+    first = Engine("FirstMethod")
+    second = Engine("SecondMethod")
 
     assert first.level_of_theory != second.level_of_theory
 

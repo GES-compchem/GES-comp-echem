@@ -1,4 +1,4 @@
-class BaseEngine:
+class Engine:
     """
     Simple base class for the definition of a software engine. The class sets the `level_of_theory`
     and `method` attributes.
