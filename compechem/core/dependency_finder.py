@@ -2,7 +2,6 @@ import subprocess
 
 from os.path import abspath
 from os import environ
-from io import BytesIO
 
 
 def locate_executable(name: str) -> str:

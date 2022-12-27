@@ -13,21 +13,6 @@ logger = logging.getLogger(__name__)
 class Properties:
     """
     Class containing the properties associated to a system using a given level of theory.
-
-    Attributes
-    ----------
-    electronic_energy: float
-        Electronic energy in Hartree.
-    vibronic_energy: float
-        Vibronic contribution to the total energy in Hartree.
-    pka: float
-        The computed value of the pKa.
-    mulliken_charges: List[float]
-        The list of Mulliken charges.
-    mulliken_spin_populations: List[float]
-        The list of Mulliken spin populations.
-    condensed_fukui_mulliken: List[float]
-        The list of Fukui condensed functions computed from the Mulliken charges.
     """
 
     def __init__(self):
