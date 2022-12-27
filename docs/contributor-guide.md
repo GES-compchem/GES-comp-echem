@@ -40,7 +40,7 @@
         git checkout -b the_name_of_the_branch
         ```
 
-    * Commit locally as you progress (`git add` and `git commit`) Use a properly formatted commit message. If possible, write tests that fail before your change and pass afterward, run all the tests locally (use `tox` to verify the compatibility with all the supported version of python). Be sure to document any changed behavior in docstrings, keeping to the [NumPy docstring standard](https://numpydoc.readthedocs.io/en/latest/format.html). Sphinx annotation are very welcome. If brand new functionality are added to the package make sure to update the documentation as well.
+    * Commit locally as you progress (`git add` and `git commit`) Use a properly formatted commit message. If possible, write tests that fail before your change and pass afterward, run all the tests locally. Be aware that the whole suite of tests can be run using `pytest --cov`. Before the commit use `tox` to verify the compatibility with all the supported version of python (`tox` will run only unit tests if executed using the provided `tox.ini` configuration file). Be sure to document any changed behavior in docstrings, keeping to the [NumPy docstring standard](https://numpydoc.readthedocs.io/en/latest/format.html). Sphinx annotation are very welcome. If brand new functionality are added to the package make sure to update the documentation as well.
 
 * To submit your contribution:
 

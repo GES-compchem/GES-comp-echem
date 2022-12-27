@@ -1,6 +1,8 @@
 import os, shutil, sh
 import logging
 from tempfile import mkdtemp
+
+from compechem.constants import atomic_masses, avogadro
 from compechem.systems import System
 from compechem.tools import process_output
 
@@ -37,21 +39,6 @@ def packmol_cube(
     Returns a System object
     """
 
-    avogadro = 6.0221408e23
-
-    mol_weights = {
-        "H": 1.00797,
-        "B": 10.81,
-        "C": 12.011,
-        "N": 14.0067,
-        "O": 15.9994,
-        "F": 18.998403,
-        "S": 32.06,
-        "Cl": 35.453,
-        "Br": 79.904,
-        "I": 126.9045,
-    }
-
     if nsolv and target_dens and cube_side:
         logger.error(
             "At least one of ( nsolv | target_dens | cube_side ) must be left out."
@@ -61,10 +48,10 @@ def packmol_cube(
     elif nsolv and target_dens:
 
         solvent_grams = (
-            sum([mol_weights[atom[0]] for atom in solvent.geometry]) * nsolv / avogadro
+            sum([atomic_masses[atom] for atom, _ in solvent.geometry]) * nsolv / avogadro
         )  # g
         solute_grams = (
-            sum([mol_weights[atom[0]] for atom in solute.geometry]) / avogadro
+            sum([atomic_masses[atom] for atom, _ in solute.geometry]) / avogadro
         )  # g
 
         target_volume = (solvent_grams + solute_grams) / target_dens  # L
@@ -74,10 +61,10 @@ def packmol_cube(
     elif nsolv and cube_side:
 
         solvent_grams = (
-            sum([mol_weights[atom[0]] for atom in solvent.geometry]) * nsolv / avogadro
+            sum([atomic_masses[atom] for atom, _ in solvent.geometry]) * nsolv / avogadro
         )  # g
         solute_grams = (
-            sum([mol_weights[atom[0]] for atom in solute.geometry]) / avogadro
+            sum([atomic_masses[atom] for atom, _ in solute.geometry]) / avogadro
         )  # g
 
         volume = (cube_side**3) * 1e-27  # L
@@ -89,7 +76,7 @@ def packmol_cube(
         volume = (cube_side**3) * 1e-27  # L
 
         solute_grams = (
-            sum([mol_weights[atom[0]] for atom in solute.geometry]) / avogadro
+            sum([atomic_masses[atom] for atom, _ in solute.geometry]) / avogadro
         )  # g
 
         target_solv_weight = (target_dens * volume) - solute_grams  # g
@@ -97,11 +84,11 @@ def packmol_cube(
         nsolv = round(
             target_solv_weight
             * avogadro
-            / sum([mol_weights[atom[0]] for atom in solvent.geometry])
+            / sum([atomic_masses[atom] for atom, _ in solvent.geometry])
         )  # n° of molecules
 
         solvent_grams = (
-            sum([mol_weights[atom[0]] for atom in solvent.geometry]) * nsolv / avogadro
+            sum([atomic_masses[atom] for atom, _ in solvent.geometry]) * nsolv / avogadro
         )  # g
 
         # recalculating density with actual number of solvent molecules
@@ -127,8 +114,8 @@ def packmol_cube(
 
     with sh.pushd(tdir):
 
-        solute.write_xyz(f"{solute.name}.xyz")
-        solvent.write_xyz(f"{solvent.name}.xyz")
+        solute.geometry.write_xyz(f"{solute.name}.xyz")
+        solvent.geometry.write_xyz(f"{solvent.name}.xyz")
 
         os.system(f"obabel {solute.name}.xyz -O {solute.name}.pdb")
         os.system(f"obabel {solvent.name}.xyz -O {solvent.name}.pdb")
