@@ -159,6 +159,16 @@ const thebe_selector_output = ".output, .cell_output"
   </label>
   <ul>
    <li class="toctree-l2">
+    <a class="reference internal" href="API/core.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.core
+      </span>
+     </code>
+     module
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="API/systems.html">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -168,72 +178,15 @@ const thebe_selector_output = ".output, .cell_output"
      sub-module
     </a>
    </li>
-   <li class="toctree-l2 has-children">
+   <li class="toctree-l2">
     <a class="reference internal" href="API/wrappers.html">
      <code class="docutils literal notranslate">
       <span class="pre">
-       compechem.wrappers
+       compechem.engines
       </span>
      </code>
      sub-module
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-    <label for="toctree-checkbox-3">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/xtb.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.xtb
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/crest.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.crest
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/orca.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.orca
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/dftbplus.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.dftbplus
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/packmol.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.packmol
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-    </ul>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="API/functions.html">
@@ -260,6 +213,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="contributor-guide.html">
    Contributor’s guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="release-notes.html">
+   Release notes
   </a>
  </li>
 </ul>
@@ -335,7 +293,7 @@ title="Fullscreen mode"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem"
+        <a href="https://github.com/GES-compchem/GES-comp-echem"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -352,7 +310,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2Fgenindex.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/GES-compchem/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2Fgenindex.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -399,311 +357,8 @@ title="Open an issue"
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#A"><strong>A</strong></a>
- | <a href="#B"><strong>B</strong></a>
- | <a href="#C"><strong>C</strong></a>
- | <a href="#D"><strong>D</strong></a>
- | <a href="#E"><strong>E</strong></a>
- | <a href="#F"><strong>F</strong></a>
- | <a href="#G"><strong>G</strong></a>
- | <a href="#M"><strong>M</strong></a>
- | <a href="#N"><strong>N</strong></a>
- | <a href="#O"><strong>O</strong></a>
- | <a href="#P"><strong>P</strong></a>
- | <a href="#Q"><strong>Q</strong></a>
- | <a href="#R"><strong>R</strong></a>
- | <a href="#S"><strong>S</strong></a>
- | <a href="#T"><strong>T</strong></a>
- | <a href="#U"><strong>U</strong></a>
- | <a href="#V"><strong>V</strong></a>
- | <a href="#W"><strong>W</strong></a>
- | <a href="#X"><strong>X</strong></a>
  
 </div>
-<h2 id="A">A</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.Ensemble.add">add() (compechem.systems.Ensemble method)</a>
-</li>
-      <li><a href="API/tools.html#compechem.tools.add_flag">add_flag() (in module compechem.tools)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.Ensemble.atomcount">atomcount (compechem.systems.Ensemble attribute)</a>
-
-      <ul>
-        <li><a href="API/systems.html#compechem.systems.System.atomcount">(compechem.systems.System attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="B">B</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.Ensemble.boltzmann_average">boltzmann_average() (compechem.systems.Ensemble method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.System.box_side">box_side (compechem.systems.System attribute)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="C">C</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/functions.html#compechem.functions.calculate_fukui">calculate_fukui() (in module compechem.functions)</a>
-</li>
-      <li><a href="API/functions.html#compechem.functions.calculate_pka">calculate_pka() (in module compechem.functions)</a>
-</li>
-      <li><a href="API/functions.html#compechem.functions.calculate_potential">calculate_potential() (in module compechem.functions)</a>
-</li>
-      <li><a href="API/systems.html#compechem.systems.System.charge">charge (compechem.systems.System attribute)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/tools.html#compechem.tools.compress_dftb_trajectory">compress_dftb_trajectory() (in module compechem.tools)</a>
-</li>
-      <li><a href="API/wrappers/crest.html#compechem.wrappers.crest.conformer_search">conformer_search() (in module compechem.wrappers.crest)</a>
-</li>
-      <li><a href="API/systems.html#compechem.systems.Ensemble.container">container (compechem.systems.Ensemble attribute)</a>
-</li>
-      <li><a href="API/tools.html#compechem.tools.cyclization_check">cyclization_check() (in module compechem.tools)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="D">D</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/crest.html#compechem.wrappers.crest.deprotonate">deprotonate() (in module compechem.wrappers.crest)</a>
-</li>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput">DFTBInput (class in compechem.wrappers.dftbplus)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.dispersion">dispersion (compechem.wrappers.dftbplus.DFTBInput attribute)</a>
-</li>
-      <li><a href="API/tools.html#compechem.tools.dissociation_check">dissociation_check() (in module compechem.tools)</a>
-</li>
-      <li><a href="API/tools.html#compechem.tools.dump">dump() (in module compechem.tools)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="E">E</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.Energies">Energies (class in compechem.systems)</a>
-</li>
-      <li><a href="API/systems.html#compechem.systems.Ensemble.energies">energies (compechem.systems.Ensemble attribute)</a>
-
-      <ul>
-        <li><a href="API/systems.html#compechem.systems.System.energies">(compechem.systems.System attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.Ensemble">Ensemble (class in compechem.systems)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="F">F</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.System.flags">flags (compechem.systems.System attribute)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/orca.html#compechem.wrappers.orca.OrcaInput.freq">freq() (compechem.wrappers.orca.OrcaInput method)</a>
-
-      <ul>
-        <li><a href="API/wrappers/xtb.html#compechem.wrappers.xtb.XtbInput.freq">(compechem.wrappers.xtb.XtbInput method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="G">G</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.System.geometry">geometry (compechem.systems.System attribute)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="M">M</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/tools.html#compechem.tools.maxdist">maxdist() (in module compechem.tools)</a>
-</li>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.md_nvt">md_nvt() (compechem.wrappers.dftbplus.DFTBInput method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.MDTrajectory">MDTrajectory (class in compechem.systems)</a>
-</li>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.method">method (compechem.wrappers.dftbplus.DFTBInput attribute)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="N">N</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.Ensemble.name">name (compechem.systems.Ensemble attribute)</a>
-
-      <ul>
-        <li><a href="API/systems.html#compechem.systems.System.name">(compechem.systems.System attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/orca.html#compechem.wrappers.orca.OrcaInput.nfreq">nfreq() (compechem.wrappers.orca.OrcaInput method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="O">O</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.opt">opt() (compechem.wrappers.dftbplus.DFTBInput method)</a>
-
-      <ul>
-        <li><a href="API/wrappers/orca.html#compechem.wrappers.orca.OrcaInput.opt">(compechem.wrappers.orca.OrcaInput method)</a>
-</li>
-        <li><a href="API/wrappers/xtb.html#compechem.wrappers.xtb.XtbInput.opt">(compechem.wrappers.xtb.XtbInput method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/orca.html#compechem.wrappers.orca.OrcaInput">OrcaInput (class in compechem.wrappers.orca)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="P">P</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/packmol.html#compechem.wrappers.packmol.packmol_cube">packmol_cube() (in module compechem.wrappers.packmol)</a>
-</li>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.parallel">parallel (compechem.wrappers.dftbplus.DFTBInput attribute)</a>
-</li>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.parameters">parameters (compechem.wrappers.dftbplus.DFTBInput attribute)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/tools.html#compechem.tools.process_output">process_output() (in module compechem.tools)</a>
-</li>
-      <li><a href="API/systems.html#compechem.systems.Properties">Properties (class in compechem.systems)</a>
-</li>
-      <li><a href="API/systems.html#compechem.systems.System.properties">properties (compechem.systems.System attribute)</a>
-</li>
-      <li><a href="API/wrappers/crest.html#compechem.wrappers.crest.protonate">protonate() (in module compechem.wrappers.crest)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="Q">Q</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/crest.html#compechem.wrappers.crest.qcg_ensemble">qcg_ensemble() (in module compechem.wrappers.crest)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/crest.html#compechem.wrappers.crest.qcg_grow">qcg_grow() (in module compechem.wrappers.crest)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="R">R</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.Ensemble.read_energies">read_energies() (compechem.systems.Ensemble method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/tools.html#compechem.tools.reorder_energies">reorder_energies() (in module compechem.tools)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="S">S</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/tools.html#compechem.tools.save_dftb_trajectory">save_dftb_trajectory() (in module compechem.tools)</a>
-</li>
-      <li><a href="API/wrappers/orca.html#compechem.wrappers.orca.OrcaInput.scan">scan() (compechem.wrappers.orca.OrcaInput method)</a>
-</li>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.simulated_annealing">simulated_annealing() (compechem.wrappers.dftbplus.DFTBInput method)</a>
-</li>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.solver">solver (compechem.wrappers.dftbplus.DFTBInput attribute)</a>
-</li>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.spe">spe() (compechem.wrappers.dftbplus.DFTBInput method)</a>
-
-      <ul>
-        <li><a href="API/wrappers/orca.html#compechem.wrappers.orca.OrcaInput.spe">(compechem.wrappers.orca.OrcaInput method)</a>
-</li>
-        <li><a href="API/wrappers/xtb.html#compechem.wrappers.xtb.XtbInput.spe">(compechem.wrappers.xtb.XtbInput method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.System.spin">spin (compechem.systems.System attribute)</a>
-</li>
-      <li><a href="API/tools.html#compechem.tools.split_multixyz">split_multixyz() (in module compechem.tools)</a>
-</li>
-      <li><a href="API/systems.html#compechem.systems.System">System (class in compechem.systems)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="T">T</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/crest.html#compechem.wrappers.crest.tautomer_search">tautomer_search() (in module compechem.wrappers.crest)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="U">U</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.System.update_geometry">update_geometry() (compechem.systems.System method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="V">V</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/dftbplus.html#compechem.wrappers.dftbplus.DFTBInput.verbose">verbose (compechem.wrappers.dftbplus.DFTBInput attribute)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="W">W</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.System.write_gen">write_gen() (compechem.systems.System method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/systems.html#compechem.systems.System.write_xyz">write_xyz() (compechem.systems.System method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="X">X</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/wrappers/xtb.html#compechem.wrappers.xtb.XtbInput">XtbInput (class in compechem.wrappers.xtb)</a>
-</li>
-  </ul></td>
-</tr></table>
-
 
 
               </div>
@@ -720,7 +375,7 @@ title="Open an issue"
     <div class="footer-content row">
         <footer class="col footer"><p>
   
-    By Luca Babetto<br/>
+    By Luca Babetto, Pierpaolo Pravatto<br/>
   
       &copy; Copyright 2022.<br/>
 </p>

@@ -162,6 +162,16 @@ const thebe_selector_output = ".output, .cell_output"
   </label>
   <ul>
    <li class="toctree-l2">
+    <a class="reference internal" href="../API/core.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.core
+      </span>
+     </code>
+     module
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="../API/systems.html">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -171,72 +181,15 @@ const thebe_selector_output = ".output, .cell_output"
      sub-module
     </a>
    </li>
-   <li class="toctree-l2 has-children">
+   <li class="toctree-l2">
     <a class="reference internal" href="../API/wrappers.html">
      <code class="docutils literal notranslate">
       <span class="pre">
-       compechem.wrappers
+       compechem.engines
       </span>
      </code>
      sub-module
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-    <label for="toctree-checkbox-3">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../API/wrappers/xtb.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.xtb
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../API/wrappers/crest.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.crest
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../API/wrappers/orca.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.orca
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../API/wrappers/dftbplus.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.dftbplus
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../API/wrappers/packmol.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.packmol
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-    </ul>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../API/functions.html">
@@ -263,6 +216,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../contributor-guide.html">
    Contributor’s guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../release-notes.html">
+   Release notes
   </a>
  </li>
 </ul>
@@ -338,7 +296,7 @@ title="Fullscreen mode"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem"
+        <a href="https://github.com/GES-compchem/GES-comp-echem"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -355,7 +313,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2FGuide/setup.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/GES-compchem/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2FGuide/setup.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -446,8 +404,8 @@ title="Print to PDF"
                 
   <section class="tex2jax_ignore mathjax_ignore" id="setting-up-calculations">
 <span id="guide-setup"></span><h1>Setting up calculations<a class="headerlink" href="#setting-up-calculations" title="Permalink to this headline">#</a></h1>
-<p>After creating a <code class="docutils literal notranslate"><span class="pre">System</span></code>, you need to set up the calculation to which you wish to subject it. This is done with the <code class="docutils literal notranslate"><span class="pre">compechem.wrappers</span></code> submodule.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">compechem.wrappers</span></code> submodule contains a series of program-specific submodules for interfacing with external code. The currently supported programs are:</p>
+<p>After creating a <code class="docutils literal notranslate"><span class="pre">System</span></code>, you need to set up the calculation to which you wish to subject it. This is done with the <code class="docutils literal notranslate"><span class="pre">compechem.engines</span></code> submodule.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">compechem.engines</span></code> submodule contains a series of program-specific submodules for interfacing with external code. The currently supported programs are:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/grimme-lab/xtb">xTB</a></p></li>
 <li><p><a class="reference external" href="https://orcaforum.kofo.mpg.de/index.php?sid=3c6c78cae3dd0cfffa26a293953422e3">Orca</a></p></li>
@@ -458,10 +416,10 @@ title="Print to PDF"
 <p class="admonition-title">Note</p>
 <p>To function with the library, the external programs need to be already installed and available to the system from command line!</p>
 </div>
-<p>These general-purpose wrappers are implemented as <code class="docutils literal notranslate"><span class="pre">&lt;Program&gt;Input</span></code> classes in the corresponding submodules. To initialise a wrapper, you need to import it from its submodule and then create an instance of it:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem.wrappers.xtb</span> <span class="kn">import</span> <span class="n">XtbInput</span>
-<span class="kn">from</span> <span class="nn">compechem.wrappers.dftbplus</span> <span class="kn">import</span> <span class="n">DFTBInput</span>
-<span class="kn">from</span> <span class="nn">compechem.wrappers.orca</span> <span class="kn">import</span> <span class="n">OrcaInput</span>
+<p>These general-purpose engines are implemented as <code class="docutils literal notranslate"><span class="pre">&lt;Program&gt;Input</span></code> classes in the corresponding submodules. To initialise a wrapper, you need to import it from its submodule and then create an instance of it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem.engines.xtb</span> <span class="kn">import</span> <span class="n">XtbInput</span>
+<span class="kn">from</span> <span class="nn">compechem.engines.dftbplus</span> <span class="kn">import</span> <span class="n">DFTBInput</span>
+<span class="kn">from</span> <span class="nn">compechem.engines.orca</span> <span class="kn">import</span> <span class="n">OrcaInput</span>
 
 <span class="n">xtb</span> <span class="o">=</span> <span class="n">XtbInput</span><span class="p">()</span>
 <span class="n">dftb</span> <span class="o">=</span> <span class="n">DFTBInput</span><span class="p">()</span>
@@ -470,13 +428,12 @@ title="Print to PDF"
 </div>
 <p>If you do not specify anything, some default options are chosen automatically for level of theory, basis set, solvation, etc. Please refer to the <a class="reference internal" href="../API/wrappers.html#api-wrappers"><span class="std std-ref">API</span></a> section for a complete list of options and default values.</p>
 <p>As an example, let us set up a calculation with Orca, using the B3LYP functional, with the def2-TZVP basis set and def2/J auxiliary basis set, using the SMD implicit solvation model for water, and including Grimme’s D3BJ dispersion corrections:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem.wrappers.orca</span> <span class="kn">import</span> <span class="n">OrcaInput</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem.engines.orca</span> <span class="kn">import</span> <span class="n">OrcaInput</span>
 
 <span class="n">b3lyp</span> <span class="o">=</span> <span class="n">OrcaInput</span><span class="p">(</span>
     <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;B3LYP&quot;</span><span class="p">,</span>
     <span class="n">basis_set</span> <span class="o">=</span> <span class="s2">&quot;def2-TZVP&quot;</span><span class="p">,</span>
     <span class="n">aux_basis</span> <span class="o">=</span> <span class="s2">&quot;def2/J&quot;</span><span class="p">,</span>
-    <span class="n">solvation</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">solvent</span> <span class="o">=</span> <span class="s2">&quot;water&quot;</span><span class="p">,</span>
     <span class="n">optionals</span> <span class="o">=</span> <span class="s2">&quot;D3BJ&quot;</span><span class="p">,</span>
 <span class="p">)</span>
@@ -532,7 +489,7 @@ title="Print to PDF"
     <div class="footer-content row">
         <footer class="col footer"><p>
   
-    By Luca Babetto<br/>
+    By Luca Babetto, Pierpaolo Pravatto<br/>
   
       &copy; Copyright 2022.<br/>
 </p>

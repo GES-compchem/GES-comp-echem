@@ -162,6 +162,16 @@ const thebe_selector_output = ".output, .cell_output"
   </label>
   <ul>
    <li class="toctree-l2">
+    <a class="reference internal" href="API/core.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.core
+      </span>
+     </code>
+     module
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="API/systems.html">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -171,72 +181,15 @@ const thebe_selector_output = ".output, .cell_output"
      sub-module
     </a>
    </li>
-   <li class="toctree-l2 has-children">
+   <li class="toctree-l2">
     <a class="reference internal" href="API/wrappers.html">
      <code class="docutils literal notranslate">
       <span class="pre">
-       compechem.wrappers
+       compechem.engines
       </span>
      </code>
      sub-module
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-    <label for="toctree-checkbox-3">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/xtb.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.xtb
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/crest.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.crest
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/orca.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.orca
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/dftbplus.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.dftbplus
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="API/wrappers/packmol.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.packmol
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-    </ul>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="API/functions.html">
@@ -263,6 +216,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="contributor-guide.html">
    Contributor’s guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="release-notes.html">
+   Release notes
   </a>
  </li>
 </ul>
@@ -338,7 +296,7 @@ title="Fullscreen mode"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem"
+        <a href="https://github.com/GES-compchem/GES-comp-echem"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -355,7 +313,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2Fgetting-started.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/GES-compchem/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2Fgetting-started.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -613,27 +571,36 @@ title="Print to PDF"
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">water</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">===</span> <span class="n">System</span><span class="p">:</span> <span class="n">water</span> <span class="o">===</span> 
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">=========================================================</span>
+<span class="n">SYSTEM</span><span class="p">:</span> <span class="n">water</span>
+<span class="o">=========================================================</span>
 
 <span class="n">Number</span> <span class="n">of</span> <span class="n">atoms</span><span class="p">:</span> <span class="mi">3</span>
 <span class="n">Charge</span><span class="p">:</span> <span class="mi">0</span>
-<span class="n">Spin</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">Spin</span> <span class="n">multeplicity</span><span class="p">:</span> <span class="mi">1</span>
 
-<span class="o">---</span> <span class="n">Warnings</span> <span class="o">---</span>
+<span class="o">**********************</span> <span class="n">GEOMETRY</span> <span class="o">*************************</span>
 
-<span class="o">---</span> <span class="n">Energies</span> <span class="p">(</span><span class="n">Eh</span><span class="p">)</span> <span class="o">---</span> 
+<span class="n">Total</span> <span class="n">system</span> <span class="n">mass</span><span class="p">:</span> <span class="mf">18.0153</span> <span class="n">amu</span>
 
-<span class="o">*</span> <span class="n">Method</span><span class="p">:</span> <span class="n">gfn2</span>
-<span class="n">Electronic</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.0850212749</span> <span class="n">Eh</span>
-<span class="n">Vibronic</span><span class="p">:</span> <span class="mf">0.002042147786</span> <span class="n">Eh</span>
+<span class="o">----------------------------------------------</span>
+ <span class="n">index</span>  <span class="n">atom</span>    <span class="n">x</span> <span class="p">(</span><span class="n">Å</span><span class="p">)</span>      <span class="n">y</span> <span class="p">(</span><span class="n">Å</span><span class="p">)</span>      <span class="n">z</span> <span class="p">(</span><span class="n">Å</span><span class="p">)</span>   
+<span class="o">----------------------------------------------</span>
+ <span class="mi">0</span>       <span class="n">O</span>    <span class="o">-</span><span class="mf">0.00001</span>   <span class="o">-</span><span class="mf">0.37937</span>    <span class="mf">0.00000</span>  
+ <span class="mi">1</span>       <span class="n">H</span>     <span class="mf">0.77221</span>    <span class="mf">0.18968</span>   <span class="o">-</span><span class="mf">0.00000</span>  
+ <span class="mi">2</span>       <span class="n">H</span>    <span class="o">-</span><span class="mf">0.77221</span>    <span class="mf">0.18969</span>    <span class="mf">0.00000</span>  
+<span class="o">----------------------------------------------</span>
 
-<span class="o">---</span> <span class="n">Coordinates</span> <span class="p">(</span><span class="n">Å</span><span class="p">)</span> <span class="o">---</span> 
+<span class="o">**********************</span> <span class="n">PROPERTIES</span> <span class="o">*************************</span>
 
-<span class="n">O</span>	<span class="mf">0.00002775604206</span>	<span class="o">-</span><span class="mf">0.38112213759546</span>	<span class="mf">0.00067921774157</span>
-<span class="n">H</span>	<span class="mf">0.77442816294285</span>	<span class="mf">0.19054562664968</span>	<span class="mf">0.00015769815166</span>
-<span class="n">H</span>	<span class="o">-</span><span class="mf">0.77445591549424</span>	<span class="mf">0.19057651269109</span>	<span class="mf">0.00016308410676</span>
+<span class="n">Electronic</span> <span class="n">level</span> <span class="n">of</span> <span class="n">theory</span><span class="p">:</span> <span class="n">XtbInput</span> <span class="o">||</span> <span class="n">method</span><span class="p">:</span> <span class="n">gfn2</span> <span class="o">|</span> <span class="n">solvent</span><span class="p">:</span> <span class="kc">None</span>
+<span class="n">Vibronic</span> <span class="n">level</span> <span class="n">of</span> <span class="n">theory</span><span class="p">:</span> <span class="n">XtbInput</span> <span class="o">||</span> <span class="n">method</span><span class="p">:</span> <span class="n">gfn2</span> <span class="o">|</span> <span class="n">solvent</span><span class="p">:</span> <span class="kc">None</span>
 
-<span class="o">---</span> <span class="n">Velocities</span> <span class="p">(</span><span class="n">Å</span><span class="o">/</span><span class="n">ps</span><span class="p">)</span> <span class="o">---</span> 
+<span class="n">Electronic</span> <span class="n">energy</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.070544446446</span> <span class="n">Eh</span>
+<span class="n">Vibronic</span> <span class="n">energy</span><span class="p">:</span> <span class="mf">0.002508816182</span> <span class="n">Eh</span>
+<span class="n">Helmholtz</span> <span class="n">free</span> <span class="n">energy</span><span class="p">:</span> <span class="kc">None</span> <span class="n">Eh</span>
+<span class="n">Gibbs</span> <span class="n">free</span> <span class="n">energy</span><span class="p">:</span> <span class="kc">None</span> <span class="n">Eh</span>
+<span class="n">pKa</span><span class="p">:</span> <span class="kc">None</span>
 </pre></div>
 </div>
 <p>Et voilà! You have successfully carried out a geometry optimization for the water molecule using the <code class="docutils literal notranslate"><span class="pre">GES-comp-echem</span></code> library!</p>
@@ -689,7 +656,7 @@ title="Print to PDF"
     <div class="footer-content row">
         <footer class="col footer"><p>
   
-    By Luca Babetto<br/>
+    By Luca Babetto, Pierpaolo Pravatto<br/>
   
       &copy; Copyright 2022.<br/>
 </p>

@@ -52,8 +52,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="compechem.wrappers.orca sub-module" href="orca.html" />
-    <link rel="prev" title="compechem.wrappers.xtb sub-module" href="xtb.html" />
+    <link rel="next" title="compechem.engines.orca sub-module" href="orca.html" />
+    <link rel="prev" title="compechem.engines.xtb sub-module" href="xtb.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -162,6 +162,16 @@ const thebe_selector_output = ".output, .cell_output"
   </label>
   <ul class="current">
    <li class="toctree-l2">
+    <a class="reference internal" href="../core.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       compechem.core
+      </span>
+     </code>
+     module
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="../systems.html">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -171,72 +181,15 @@ const thebe_selector_output = ".output, .cell_output"
      sub-module
     </a>
    </li>
-   <li class="toctree-l2 current active has-children">
+   <li class="toctree-l2">
     <a class="reference internal" href="../wrappers.html">
      <code class="docutils literal notranslate">
       <span class="pre">
-       compechem.wrappers
+       compechem.engines
       </span>
      </code>
      sub-module
     </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-    <label for="toctree-checkbox-3">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul class="current">
-     <li class="toctree-l3">
-      <a class="reference internal" href="xtb.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.xtb
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3 current active">
-      <a class="current reference internal" href="#">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.crest
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="orca.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.orca
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="dftbplus.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.dftbplus
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="packmol.html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         compechem.wrappers.packmol
-        </span>
-       </code>
-       sub-module
-      </a>
-     </li>
-    </ul>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../functions.html">
@@ -263,6 +216,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../../contributor-guide.html">
    Contributor’s guide
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../release-notes.html">
+   Release notes
   </a>
  </li>
 </ul>
@@ -338,7 +296,7 @@ title="Fullscreen mode"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem"
+        <a href="https://github.com/GES-compchem/GES-comp-echem"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -355,7 +313,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/GES-lbabetto/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2FAPI/wrappers/crest.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/GES-compchem/GES-comp-echem/issues/new?title=Issue%20on%20page%20%2FAPI/wrappers/crest.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -595,196 +553,26 @@ title="Print to PDF"
 <span id="api-wrappers-crest"></span><h1><code class="docutils literal notranslate"><span class="pre">compechem.wrappers.crest</span></code> sub-module<a class="headerlink" href="#compechem-wrappers-crest-sub-module" title="Permalink to this headline">#</a></h1>
 <section id="tautomer-search-class">
 <h2><code class="docutils literal notranslate"><span class="pre">tautomer_search</span></code> class<a class="headerlink" href="#tautomer-search-class" title="Permalink to this headline">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="compechem.wrappers.crest.tautomer_search">
-<span class="sig-prename descclassname"><span class="pre">compechem.wrappers.crest.</span></span><span class="sig-name descname"><span class="pre">tautomer_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_tdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optionals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.wrappers.crest.tautomer_search" title="Permalink to this definition">#</a></dt>
-<dd><p>Tautomer search using CREST.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mol</strong> (<em>System object</em>) – input molecule to use in the calculation</p></li>
-<li><p><strong>ncores</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cores, by default all available cores</p></li>
-<li><p><strong>maxcore</strong> (<em>dummy variable</em>) – dummy variable used for compatibility with Orca calculations</p></li>
-<li><p><strong>solvation</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, enables the ALPB implicit solvation model for water</p></li>
-<li><p><strong>remove_tdir</strong> (<em>bool</em><em>, </em><em>optional</em>) – temporary work directory will be removed, by default True</p></li>
-<li><p><strong>optionals</strong> (<em>str</em><em>, </em><em>optional</em>) – optional flags for calculation</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>tautomers</strong> – list containing the found tautomers, in order of ascending energy</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="conformer-search-class">
 <h2><code class="docutils literal notranslate"><span class="pre">conformer_search</span></code> class<a class="headerlink" href="#conformer-search-class" title="Permalink to this headline">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="compechem.wrappers.crest.conformer_search">
-<span class="sig-prename descclassname"><span class="pre">compechem.wrappers.crest.</span></span><span class="sig-name descname"><span class="pre">conformer_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_tdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optionals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.wrappers.crest.conformer_search" title="Permalink to this definition">#</a></dt>
-<dd><p>Conformer search using CREST.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mol</strong> (<em>System object</em>) – input molecule to use in the calculation</p></li>
-<li><p><strong>ncores</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cores, by default all available cores</p></li>
-<li><p><strong>maxcore</strong> (<em>dummy</em>) – dummy variable used for compatibility with Orca calculations</p></li>
-<li><p><strong>solvation</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, enables the ALPB implicit solvation model for water</p></li>
-<li><p><strong>remove_tdir</strong> (<em>bool</em><em>, </em><em>optional</em>) – temporary work directory will be removed, by default True</p></li>
-<li><p><strong>optionals</strong> (<em>str</em><em>, </em><em>optional</em>) – optional flags for calculation</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>conformers</strong> – list containing the found conformers, in order of ascending energy</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="deprotonate-class">
 <h2><code class="docutils literal notranslate"><span class="pre">deprotonate</span></code> class<a class="headerlink" href="#deprotonate-class" title="Permalink to this headline">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="compechem.wrappers.crest.deprotonate">
-<span class="sig-prename descclassname"><span class="pre">compechem.wrappers.crest.</span></span><span class="sig-name descname"><span class="pre">deprotonate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_tdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optionals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.wrappers.crest.deprotonate" title="Permalink to this definition">#</a></dt>
-<dd><p>Deprotomer search using CREST.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mol</strong> (<em>System object</em>) – input molecule to use in the calculation</p></li>
-<li><p><strong>ncores</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cores, by default all available cores</p></li>
-<li><p><strong>maxcore</strong> (<em>dummy</em>) – dummy variable used for compatibility with Orca calculations</p></li>
-<li><p><strong>solvation</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, enables the ALPB implicit solvation model for water</p></li>
-<li><p><strong>remove_tdir</strong> (<em>bool</em><em>, </em><em>optional</em>) – temporary work directory will be removed, by default True</p></li>
-<li><p><strong>optionals</strong> (<em>str</em><em>, </em><em>optional</em>) – optional flags for calculation</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>deprotomers</strong> – list containing the found deprotomers, in order of ascending energy</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="protonate-class">
 <h2><code class="docutils literal notranslate"><span class="pre">protonate</span></code> class<a class="headerlink" href="#protonate-class" title="Permalink to this headline">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="compechem.wrappers.crest.protonate">
-<span class="sig-prename descclassname"><span class="pre">compechem.wrappers.crest.</span></span><span class="sig-name descname"><span class="pre">protonate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_tdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optionals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.wrappers.crest.protonate" title="Permalink to this definition">#</a></dt>
-<dd><p>Protomer search using CREST.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mol</strong> (<em>System object</em>) – input molecule to use in the calculation</p></li>
-<li><p><strong>ncores</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cores, by default all available cores</p></li>
-<li><p><strong>maxcore</strong> (<em>dummy</em>) – dummy variable used for compatibility with Orca calculations</p></li>
-<li><p><strong>solvation</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, enables the ALPB implicit solvation model for water</p></li>
-<li><p><strong>remove_tdir</strong> (<em>bool</em><em>, </em><em>optional</em>) – temporary work directory will be removed, by default True</p></li>
-<li><p><strong>optionals</strong> (<em>str</em><em>, </em><em>optional</em>) – optional flags for calculation</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>protomers</strong> – list containing the found protomers, in order of ascending energy</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="qcg-grow-class">
 <h2><code class="docutils literal notranslate"><span class="pre">qcg_grow</span></code> class<a class="headerlink" href="#qcg-grow-class" title="Permalink to this headline">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="compechem.wrappers.crest.qcg_grow">
-<span class="sig-prename descclassname"><span class="pre">compechem.wrappers.crest.</span></span><span class="sig-name descname"><span class="pre">qcg_grow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gfn2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsolv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optionals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_tdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.wrappers.crest.qcg_grow" title="Permalink to this definition">#</a></dt>
-<dd><p>Quantum Cluster Growth using CREST.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>solute</strong> (<em>System object</em>) – solute molecule to use in the calculation</p></li>
-<li><p><strong>solvent</strong> (<em>System object</em>) – solvent molecule to use in the calculation</p></li>
-<li><p><strong>charge</strong> (<em>int</em><em>, </em><em>optional</em>) – total charge of the system. Default is taken from the solute molecule.</p></li>
-<li><p><strong>spin</strong> (<em>int</em><em>, </em><em>optional</em>) – total spin of the system. Default is taken from the solute molecule.</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – method for the geometry optimizations, by default gfn2
-Alternative options: gfn1, gfnff</p></li>
-<li><p><strong>nsolv</strong> (<em>int</em>) – number of solvent molecules to add to the cluster, by default 0 (unconstrained).
-If a number is not specified, the program will keep adding solvent
-molecules until convergence is reached, or 150 molecules are added.</p></li>
-<li><p><strong>ncores</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cores, by default all available cores</p></li>
-<li><p><strong>maxcore</strong> (<em>dummy</em>) – dummy variable used for compatibility with Orca calculations</p></li>
-<li><p><strong>solvation</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, enables the ALPB implicit solvation model for water</p></li>
-<li><p><strong>optionals</strong> (<em>str</em><em>, </em><em>optional</em>) – optional flags for calculation</p></li>
-<li><p><strong>remove_tdir</strong> (<em>bool</em><em>, </em><em>optional</em>) – temporary work directory will be removed, by default True</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>cluster</strong> – System object containing the explicitly solvated input molecule</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>System object</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <hr class="docutils" />
 <section id="qcg-ensemble-class">
 <h2><code class="docutils literal notranslate"><span class="pre">qcg_ensemble</span></code> class<a class="headerlink" href="#qcg-ensemble-class" title="Permalink to this headline">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="compechem.wrappers.crest.qcg_ensemble">
-<span class="sig-prename descclassname"><span class="pre">compechem.wrappers.crest.</span></span><span class="sig-name descname"><span class="pre">qcg_ensemble</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../systems.html#compechem.systems.System" title="compechem.systems.System"><span class="pre">compechem.systems.System</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gfn2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enslvl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gfn2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_choice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'full_ensemble'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsolv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optionals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_tdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#compechem.wrappers.crest.qcg_ensemble" title="Permalink to this definition">#</a></dt>
-<dd><p>Quantum Cluster Growth + ensemble generation using CREST.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>solute</strong> (<em>System object</em>) – solute molecule to use in the calculation</p></li>
-<li><p><strong>solvent</strong> (<em>System object</em>) – solvent molecule to use in the calculation</p></li>
-<li><p><strong>charge</strong> (<em>int</em><em>, </em><em>optional</em>) – total charge of the molecule. Default is taken from the solute molecule.</p></li>
-<li><p><strong>spin</strong> (<em>int</em><em>, </em><em>optional</em>) – total spin of the molecule. Default is taken from the solute molecule.</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – method for the geometry optimizations, by default gfn2
-Alternative options: gfn1, gfnff</p></li>
-<li><p><strong>enslvl</strong> (<em>str</em>) – method for the ensemble optimization, by default gfn2
-Alternative options: gfn1, gfnff</p></li>
-<li><p><strong>ensemble_choice</strong> (<em>str</em>) – file containing the chosen ensemble after generation, by default “full_ensemble”. Available
-options are:
-- “full_ensemble”
-- “final_ensemble”
-- “crest_best”</p></li>
-<li><p><strong>nsolv</strong> (<em>int</em>) – number of solvent molecules to add to the cluster, by default 0 (unconstrained).
-If a number is not specified, the program will keep adding solvent
-molecules until convergence is reached, or 150 molecules are added.</p></li>
-<li><p><strong>ncores</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cores, by default all available cores</p></li>
-<li><p><strong>maxcore</strong> (<em>dummy</em>) – dummy variable used for compatibility with Orca calculations</p></li>
-<li><p><strong>solvation</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, enables the ALPB implicit solvation model for water</p></li>
-<li><p><strong>optionals</strong> (<em>str</em><em>, </em><em>optional</em>) – optional flags for calculation</p></li>
-<li><p><strong>remove_tdir</strong> (<em>bool</em><em>, </em><em>optional</em>) – temporary work directory will be removed, by default True</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>cluster</strong> – System object containing the explicitly solvated input molecule, with updated energy
-coming from enseble generation (electronic contribution only). The vibronic contribution
-is taken from the input solute molecule (if present), while the electronic contribution
-is taken as the weighted average of all generated ensembles.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>System object</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 </section>
 
@@ -819,13 +607,13 @@ is taken as the weighted average of all generated ensembles.</p>
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.wrappers.xtb</span></code> sub-module</p>
+            <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.engines.xtb</span></code> sub-module</p>
         </div>
     </a>
     <a class='right-next' id="next-link" href="orca.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.wrappers.orca</span></code> sub-module</p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">compechem.engines.orca</span></code> sub-module</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
@@ -836,7 +624,7 @@ is taken as the weighted average of all generated ensembles.</p>
     <div class="footer-content row">
         <footer class="col footer"><p>
   
-    By Luca Babetto<br/>
+    By Luca Babetto, Pierpaolo Pravatto<br/>
   
       &copy; Copyright 2022.<br/>
 </p>
