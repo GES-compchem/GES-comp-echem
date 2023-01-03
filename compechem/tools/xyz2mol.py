@@ -740,9 +740,10 @@ def xyz2mol(atoms, coordinates, charge=0, allow_charged_fragments=True,
 
     return new_mols
 
+from compechem.systems import System
 
 def maxdist(
-    inputmol, 
+    inputmol: System, 
     charge=None, 
     output_format=None, 
     no_charged_fragments=True, 
@@ -758,7 +759,7 @@ def maxdist(
 
     with sh.pushd(tdir):
 
-        inputmol.write_xyz(f"{inputmol.name}.xyz")
+        inputmol.geometry.write_xyz(f"{inputmol.name}.xyz")
 
         # read xyz file
         filename = f"{inputmol.name}.xyz"
