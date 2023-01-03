@@ -63,7 +63,7 @@ def render_fukui_cube(
             mol material Opaque
 
             mol addrep 0
-            mol modcolor 1 0 Volume 0
+            mol modcolor 1 0 ColorID 1
             mol modstyle 1 0 Isosurface {isovalue} 0 0 0 1 1
             mol modmaterial 1 0 Translucent
             mol scaleminmax 0 1 0.000000 1.000000
@@ -76,7 +76,7 @@ def render_fukui_cube(
             vmd_script.write(
                 f"""
                 mol addrep 0
-                mol modcolor 2 0 Volume 0
+                mol modcolor 2 0 ColorID 0
                 mol modstyle 2 0 Isosurface {-isovalue} 0 0 0 1 1
                 mol modmaterial 2 0 Translucent
                 mol scaleminmax 0 2 -1.000000 0.000000
@@ -158,6 +158,7 @@ def render_condensed_fukui(
             mol material Opaque
             mol modrep 0 0
             color Display Background white
+            color scale method BWR
             display cuemode Linear
             axes location Off
 
