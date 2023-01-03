@@ -5,7 +5,7 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.systems import Ensemble, System
 from compechem.tools import process_output
-from compechem.core.base import BaseEngine
+from compechem.core.base import Engine
 from compechem.core.dependency_finder import locate_orca
 
 import logging
@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class OrcaInput(BaseEngine):
+class OrcaInput(Engine):
     """Interface for running Orca calculations."""
 
     def __init__(

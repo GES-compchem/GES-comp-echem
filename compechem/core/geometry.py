@@ -11,6 +11,11 @@ class MolecularGeometry:
     """
     The `MolecularGeometry` class implements all the functions required to operate on the
     geometric properties of a given molecule or molecular aggregate.
+
+    Attributes
+    ----------
+    level_of_theory_geometry: str
+        The level of theory at which the geometry has been obtained.
     """
 
     def __init__(self) -> None:
@@ -254,10 +259,27 @@ class MolecularGeometry:
 
     @property
     def atoms(self) -> List[str]:
+        """
+        The list of atoms/elements in the molecule
+
+        Returns
+        -------
+        List[str]
+            The list of strings representing, in order, the symbols of the atoms in the molecule
+        """
         return self.__atoms
 
     @property
     def coordinates(self) -> List[np.ndarray]:
+        """
+        The list of coordinates of the atoms in the molecule
+
+        Returns
+        -------
+        List[np.ndarray]
+            The list of numpy arrays representing, in order, the 3D position of each atom
+            in the molecule
+        """
         return self.__coordinates
 
     @property

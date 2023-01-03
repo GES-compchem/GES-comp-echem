@@ -1,13 +1,12 @@
-class BaseEngine:
+class Engine:
     """
-    Simple base class for the definition of a software engine. The class sets the 
-    `level_of_theory` and `method`attributes.
+    Simple base class for the definition of a software engine. The class sets the `level_of_theory`
+    and `method` attributes.
 
     Arguments
     ---------
     method: str
         The string indicating the method to be used in the calculation.
-    
     """
     def __init__(self, method: str) -> None:
         self.method = method

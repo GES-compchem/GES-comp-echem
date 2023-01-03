@@ -4,7 +4,7 @@ from numpy.testing import assert_array_almost_equal
 from os.path import abspath, dirname, join
 
 from compechem.systems import System, SupportedTypes
-from compechem.core.base import BaseEngine
+from compechem.core.base import Engine
 from compechem.core.geometry import MolecularGeometry
 
 # Get the path of the tests directory
@@ -128,7 +128,7 @@ def test_System_geometry_property():
         [-3.4892, -1.24911, 0.63429],
     ]
 
-    mol.properties.set_electronic_energy(1.5, BaseEngine("Dummy"))
+    mol.properties.set_electronic_energy(1.5, Engine("Dummy"))
 
     assert mol.properties.electronic_energy == 1.5
     for i, (_, coord) in enumerate(mol.geometry):
@@ -168,7 +168,7 @@ def test_System_charge_property():
     xyzfile = join(TEST_DIR, "utils/xyz_examples/with_comment.xyz")
     mol = System(xyzfile)
 
-    mol.properties.set_electronic_energy(1.5, BaseEngine("Dummy"))
+    mol.properties.set_electronic_energy(1.5, Engine("Dummy"))
 
     assert mol.charge == 0
     assert mol.properties.electronic_energy == 1.5
@@ -184,7 +184,7 @@ def test_System_spin_property():
     xyzfile = join(TEST_DIR, "utils/xyz_examples/with_comment.xyz")
     mol = System(xyzfile)
 
-    mol.properties.set_electronic_energy(1.5, BaseEngine("Dummy"))
+    mol.properties.set_electronic_energy(1.5, Engine("Dummy"))
 
     assert mol.spin == 1
     assert mol.properties.electronic_energy == 1.5
@@ -200,7 +200,7 @@ def test_System_box_side_property():
     xyzfile = join(TEST_DIR, "utils/xyz_examples/with_comment.xyz")
     mol = System(xyzfile)
 
-    mol.properties.set_electronic_energy(1.5, BaseEngine("Dummy"))
+    mol.properties.set_electronic_energy(1.5, Engine("Dummy"))
 
     assert mol.box_side == None
     assert mol.is_periodic == False

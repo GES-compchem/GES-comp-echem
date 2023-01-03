@@ -3,7 +3,7 @@ import os, copy, shutil, sh
 from os.path import join
 from tempfile import mkdtemp
 from compechem.config import get_ncores
-from compechem.core.base import BaseEngine
+from compechem.core.base import Engine
 from compechem.systems import System, Ensemble
 from compechem.tools import process_output
 from compechem.tools import save_dftb_trajectory
@@ -17,7 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class DFTBInput(BaseEngine):
+class DFTBInput(Engine):
     """Interface for running DFTB+ calculations
 
     Attributes

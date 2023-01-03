@@ -1,25 +1,25 @@
 import pytest
 
-from compechem.core.base import BaseEngine
+from compechem.core.base import Engine
 
-# Test the BaseEngine class constructor
-def test_BaseEngine___init__():
+# Test the Engine class constructor
+def test_Engine___init__():
 
     try:
-        obj = BaseEngine("DummyMethod")
+        obj = Engine("DummyMethod")
     
     except:
-        assert False, "Unenxpected exception raised during BaseEngine class construction"
+        assert False, "Unenxpected exception raised during Engine class construction"
     
     else:    
         assert obj.method == "DummyMethod"
-        assert obj.level_of_theory == "BaseEngine || method: DummyMethod"
+        assert obj.level_of_theory == "Engine || method: DummyMethod"
 
 
-# Test that, when inheriting form BaseEngine, the expected behavior is obtained
-def test_BaseEngine_inheritance():
+# Test that, when inheriting form Engine, the expected behavior is obtained
+def test_Engine_inheritance():
 
-    class DerivedEngine(BaseEngine):
+    class DerivedEngine(Engine):
 
         def __init__(self, method: str) -> None:
             super().__init__(method)
@@ -28,7 +28,7 @@ def test_BaseEngine_inheritance():
         dobj = DerivedEngine("DerivedMethod")
     
     except:
-        assert False, "Unenxpected exception raised during inheritance from BaseEngine"
+        assert False, "Unenxpected exception raised during inheritance from Engine"
     
     else:    
         assert dobj.method == "DerivedMethod"
