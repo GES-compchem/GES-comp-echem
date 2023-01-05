@@ -131,7 +131,7 @@ class XtbInput(Engine):
             else:
                 mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.__output_suffix, "spe", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -246,7 +246,7 @@ class XtbInput(Engine):
                     mol.properties.set_electronic_energy(electronic_energy, self)
                     mol.properties.set_vibronic_energy(vibronic_energy, self)
 
-                process_output(mol, self.method, "opt", charge, spin)
+                process_output(mol, self.__output_suffix, "opt", charge, spin)
                 if remove_tdir:
                     shutil.rmtree(tdir)
 
@@ -341,7 +341,7 @@ class XtbInput(Engine):
                 mol.properties.set_electronic_energy(electronic_energy, self)
                 mol.properties.set_vibronic_energy(vibronic_energy, self)
 
-            process_output(mol, self.method, "freq", charge, spin)
+            process_output(mol, self.__output_suffix, "freq", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 

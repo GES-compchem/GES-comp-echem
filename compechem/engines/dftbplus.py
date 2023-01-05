@@ -383,7 +383,7 @@ class DFTBInput(Engine):
             else:
                 mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge=charge, spin=spin)
+            process_output(mol, self.__output_suffix, "spe", charge=charge, spin=spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -485,7 +485,7 @@ class DFTBInput(Engine):
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
                 mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge=charge, spin=spin)
+            process_output(mol, self.__output_suffix, "spe", charge=charge, spin=spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -610,7 +610,7 @@ class DFTBInput(Engine):
                 with open(f"../MD_data/{mol.name}_{charge}_{spin}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.method, "md_nvt", charge, spin)
+            process_output(mol, self.__output_suffix, "md_nvt", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -756,7 +756,7 @@ class DFTBInput(Engine):
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.method, "anneal", charge, spin)
+            process_output(mol, self.__output_suffix, "anneal", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
