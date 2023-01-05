@@ -95,10 +95,14 @@ class DFTBInput(Engine):
         else:
             self.output_path = "/dev/null"
 
-        self.level_of_theory += f" | parameters: {self.parameters} | 3rd order: {self.thirdorder} | dispersion: {self.dispersion}"
-
         self.__DFTBPATH = DFTBPATH if DFTBPATH else locate_dftbplus()
         self.__DFTBPARAMDIR = DFTBPARAMDIR if DFTBPARAMDIR else locate_dftbparamdir()
+
+        self.level_of_theory += f" | parameters: {parameters} | 3rd order: {thirdorder} | dispersion: {dispersion}"
+
+        self.__output_suffix = "DFTB"
+        self.__output_suffix += "3" if thirdorder else ""
+        self.__output_suffix += "-D3" if dispersion else ""
 
         self.atom_dict = {
             "Br": "d",
@@ -379,7 +383,7 @@ class DFTBInput(Engine):
             else:
                 mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge=charge, spin=spin)
+            process_output(mol, self.__output_suffix, "spe", charge=charge, spin=spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -481,7 +485,7 @@ class DFTBInput(Engine):
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
                 mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge=charge, spin=spin)
+            process_output(mol, self.__output_suffix, "spe", charge=charge, spin=spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -606,7 +610,7 @@ class DFTBInput(Engine):
                 with open(f"../MD_data/{mol.name}_{charge}_{spin}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.method, "md_nvt", charge, spin)
+            process_output(mol, self.__output_suffix, "md_nvt", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -752,7 +756,7 @@ class DFTBInput(Engine):
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.method, "anneal", charge, spin)
+            process_output(mol, self.__output_suffix, "anneal", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 

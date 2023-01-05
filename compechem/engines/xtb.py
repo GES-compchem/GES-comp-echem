@@ -39,11 +39,15 @@ class XtbInput(Engine):
         """
 
         super().__init__(method)
-        self.level_of_theory += f" | solvent: {solvent}"
 
         self.solvent = solvent
         self.optionals = optionals
         self.__XTBPATH = XTBPATH if XTBPATH else locate_xtb()
+
+        self.level_of_theory += f" | solvent: {solvent}"
+
+        self.__output_suffix = f"xTB_{method}"
+        self.__output_suffix += f"_{solvent}" if solvent else "_vacuum"
 
     def spe(
         self,
@@ -127,7 +131,7 @@ class XtbInput(Engine):
             else:
                 mol.properties.set_electronic_energy(electronic_energy, self)
 
-            process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.__output_suffix, "spe", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -242,7 +246,7 @@ class XtbInput(Engine):
                     mol.properties.set_electronic_energy(electronic_energy, self)
                     mol.properties.set_vibronic_energy(vibronic_energy, self)
 
-                process_output(mol, self.method, "opt", charge, spin)
+                process_output(mol, self.__output_suffix, "opt", charge, spin)
                 if remove_tdir:
                     shutil.rmtree(tdir)
 
@@ -337,7 +341,7 @@ class XtbInput(Engine):
                 mol.properties.set_electronic_energy(electronic_energy, self)
                 mol.properties.set_vibronic_energy(vibronic_energy, self)
 
-            process_output(mol, self.method, "freq", charge, spin)
+            process_output(mol, self.__output_suffix, "freq", charge, spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
