@@ -58,7 +58,7 @@ class OrcaInput(Engine):
         self.level_of_theory += f" | basis: {self.basis_set} | solvent: {self.solvent}"
 
         self.__output_suffix = f"orca_{self.method}_{self.basis_set}_"
-        self.__output_suffix = "vacuum" if solvent is None else f"{self.solvent}"
+        self.__output_suffix += "vacuum" if solvent is None else f"{self.solvent}"
 
     def write_input(
         self,
