@@ -95,10 +95,14 @@ class DFTBInput(Engine):
         else:
             self.output_path = "/dev/null"
 
-        self.level_of_theory += f" | parameters: {self.parameters} | 3rd order: {self.thirdorder} | dispersion: {self.dispersion}"
-
         self.__DFTBPATH = DFTBPATH if DFTBPATH else locate_dftbplus()
         self.__DFTBPARAMDIR = DFTBPARAMDIR if DFTBPARAMDIR else locate_dftbparamdir()
+
+        self.level_of_theory += f" | parameters: {parameters} | 3rd order: {thirdorder} | dispersion: {dispersion}"
+
+        self.__output_suffix = "DFTB"
+        self.__output_suffix += "3" if thirdorder else ""
+        self.__output_suffix += "-D3" if dispersion else ""
 
         self.atom_dict = {
             "Br": "d",

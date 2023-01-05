@@ -39,11 +39,15 @@ class XtbInput(Engine):
         """
 
         super().__init__(method)
-        self.level_of_theory += f" | solvent: {solvent}"
 
         self.solvent = solvent
         self.optionals = optionals
         self.__XTBPATH = XTBPATH if XTBPATH else locate_xtb()
+        
+        self.level_of_theory += f" | solvent: {solvent}"
+        
+        self.__output_suffix = f"xTB_{method}"
+        self.__output_suffix += f"{solvent}" if solvent else "_vacuum"
 
     def spe(
         self,
