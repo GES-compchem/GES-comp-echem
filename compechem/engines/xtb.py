@@ -1,4 +1,5 @@
 import os, copy, sh, shutil
+from typing import Dict
 from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.core.base import Engine
@@ -45,6 +46,29 @@ class XtbInput(Engine):
         self.optionals = optionals
         self.__XTBPATH = XTBPATH if XTBPATH else locate_xtb()
 
+    def write_input(
+        self,
+        job_info: Dict,
+    ) -> None:
+
+        input = f"$chrg {job_info['charge']}\n"
+        input += f"$spin {job_info['spin']-1}\n"
+
+        input += "$write\n"
+        input += "   spin population=true"
+        if job_info["save_cubes"]:
+            input += "   density=true"
+            input += "   spin density=true"
+            input += "$cube\n"
+            input += f"   step={job_info['cube_step']}"
+
+        input += "$end"
+
+        with open("input.inp", "w") as inp:
+            inp.writelines(input)
+
+        return
+
     def spe(
         self,
         mol: System,
@@ -52,6 +76,8 @@ class XtbInput(Engine):
         maxcore=None,
         charge: int = None,
         spin: int = None,
+        save_cubes: bool = False,
+        cube_step: float = 0.1,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -69,6 +95,11 @@ class XtbInput(Engine):
             total charge of the system. Default is taken from the input system.
         spin : int, optional
             total spin of the system. Default is taken from the input system.
+        save_cubes: bool, optional
+            if set to True, will save a cube file containing electronic and spin densities,
+            by default False.
+        cube_step: int, optional
+            grid spacing for cube files, in Bohrs (default 0.4)
         inplace : bool, optional
             updates info for the input system instead of outputting a new system object,
             by default False
@@ -100,16 +131,25 @@ class XtbInput(Engine):
 
         with sh.pushd(tdir):
 
+            self.write_input(
+                job_info={
+                    "charge": charge,
+                    "spin": spin,
+                    "save_cubes": save_cubes,
+                    "cube_step": cube_step,
+                },
+            )
+
             mol.geometry.write_xyz(f"{mol.name}.xyz")
 
             if self.solvent:
                 os.system(
-                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             with open("output.out", "r") as out:
@@ -141,6 +181,8 @@ class XtbInput(Engine):
         maxcore=None,
         charge: int = None,
         spin: int = None,
+        save_cubes: bool = False,
+        cube_step: float = 0.1,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -158,6 +200,11 @@ class XtbInput(Engine):
             Total charge of the system. Default is taken from the input system.
         spin : int, optional
             Total spin of the system. Default is taken from the input system.
+        save_cubes: bool, optional
+            if set to True, will save a cube file containing electronic and spin densities,
+            by default False.
+        cube_step: int, optional
+            grid spacing for cube files, in Bohrs (default 0.4)
         inplace : bool, optional
             updates info for the input system instead of outputting a new system object,
             by default False
@@ -192,16 +239,25 @@ class XtbInput(Engine):
 
         with sh.pushd(tdir):
 
+            self.write_input(
+                job_info={
+                    "charge": charge,
+                    "spin": spin,
+                    "save_cubes": save_cubes,
+                    "cube_step": cube_step,
+                },
+            )
+
             mol.geometry.write_xyz(f"{mol.name}.xyz")
 
             if self.solvent:
                 os.system(
-                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             if dissociation_check() is True:
@@ -256,6 +312,8 @@ class XtbInput(Engine):
         maxcore=None,
         charge: int = None,
         spin: int = None,
+        save_cubes: bool = False,
+        cube_step: float = 0.1,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -273,6 +331,11 @@ class XtbInput(Engine):
             Total charge of the system. Default is taken from the input system.
         spin : int, optional
             Total spin of the system. Default is taken from the input system.
+        save_cubes: bool, optional
+            if set to True, will save a cube file containing electronic and spin densities,
+            by default False.
+        cube_step: int, optional
+            grid spacing for cube files, in Bohrs (default 0.4)
         inplace : bool, optional
             updates info for the input system instead of outputting a new system object,
             by default False
@@ -304,16 +367,25 @@ class XtbInput(Engine):
 
         with sh.pushd(tdir):
 
+            self.write_input(
+                job_info={
+                    "charge": charge,
+                    "spin": spin,
+                    "save_cubes": save_cubes,
+                    "cube_step": cube_step,
+                },
+            )
+
             mol.geometry.write_xyz(f"{mol.name}.xyz")
 
             if self.solvent:
                 os.system(
-                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --alpb {self.solvent} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             else:
                 os.system(
-                    f"{self.__XTBPATH} {mol.name}.xyz --{self.method} --chrg {charge} --uhf {spin-1} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
             with open("output.out", "r") as out:

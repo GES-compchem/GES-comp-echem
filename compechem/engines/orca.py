@@ -1,5 +1,5 @@
 import os, copy, shutil, sh
-from typing import Dict, Tuple
+from typing import Dict
 from tempfile import mkdtemp
 
 from compechem.config import get_ncores
@@ -748,12 +748,12 @@ class OrcaInput(Engine):
         if hirshfeld_charges != []:
             mol.properties.set_hirshfeld_charges(hirshfeld_charges, self)
             mol.properties.set_hirshfeld_spin_populations(hirshfeld_spins, self)
-    
+
     @property
     def output_suffix(self) -> str:
         """
         Suffix used to compose the name of calculation output files
-        
+
         Returns
         -------
         str
