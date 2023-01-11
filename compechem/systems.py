@@ -27,7 +27,7 @@ class SupportedTypes(Enum):
 class System:
     """
     The System object describes a generic molecular system described at a given level of
-    theory. A system is defined based on a molecular geometry, a charge, a spin multeplicity
+    theory. A system is defined based on a molecular geometry, a charge, a spin multiplicity
     and, one a level of theory is selected, by a set of computed properties.
 
     Parameters
@@ -39,7 +39,7 @@ class System:
     charge : int, optional
         The total charge of the system. (Default: 0 neutral)
     spin : int, optional
-        The total spin multeplicity of the system. (Default: 1 singlet)
+        The total spin multiplicity of the system. (Default: 1 singlet)
     box_side : float, optional
         For periodic systems, defines the length (in Å) of the box side
 
@@ -162,7 +162,7 @@ class System:
         info += "=========================================================\n\n"
         info += f"Number of atoms: {self.geometry.atomcount}\n"
         info += f"Charge: {self.charge}\n"
-        info += f"Spin multeplicity: {self.spin}\n"
+        info += f"Spin multiplicity: {self.spin}\n"
 
         if self.box_side:
             info += f"Periodic system with box size: {self.box_side:.4f} Å\n"

@@ -634,8 +634,8 @@ class OrcaInput(Engine):
 
         Parameters
         ----------
-        mol: str
-            The system to which the properties must be written to.
+        mol: System
+            The System to which the properties must be written to.
 
         Raises
         ------

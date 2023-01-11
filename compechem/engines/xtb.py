@@ -55,14 +55,14 @@ class XtbInput(Engine):
         input += f"$spin {job_info['spin']-1}\n"
 
         input += "$write\n"
-        input += "   spin population=true"
+        input += "   spin population=true\n"
         if job_info["save_cubes"]:
-            input += "   density=true"
-            input += "   spin density=true"
+            input += "   density=true\n"
+            input += "   spin density=true\n"
             input += "$cube\n"
-            input += f"   step={job_info['cube_step']}"
+            input += f"   step={job_info['cube_step']}\n"
 
-        input += "$end"
+        input += "$end\n"
 
         with open("input.inp", "w") as inp:
             inp.writelines(input)
@@ -160,12 +160,11 @@ class XtbInput(Engine):
             if inplace is False:
 
                 newmol = System(f"{mol.name}.xyz", charge, spin)
-
                 newmol.properties = copy.copy(mol.properties)
-                newmol.properties.set_electronic_energy(electronic_energy, self)
+                self.parse_output(newmol)
 
             else:
-                mol.properties.set_electronic_energy(electronic_energy, self)
+                self.parse_output(mol)
 
             process_output(mol, self.method, "spe", charge, spin)
             if remove_tdir:
@@ -288,15 +287,13 @@ class XtbInput(Engine):
                     newmol.geometry.load_xyz("xtbopt.xyz")
                     newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
-                    newmol.properties.set_electronic_energy(electronic_energy, self)
-                    newmol.properties.set_vibronic_energy(vibronic_energy, self)
+                    self.parse_output(newmol)
 
                 else:
                     mol.geometry.load_xyz("xtbopt.xyz")
                     mol.geometry.level_of_theory_geometry = self.level_of_theory
 
-                    mol.properties.set_electronic_energy(electronic_energy, self)
-                    mol.properties.set_vibronic_energy(vibronic_energy, self)
+                    self.parse_output(mol)
 
                 process_output(mol, self.method, "opt", charge, spin)
                 if remove_tdir:
@@ -401,13 +398,10 @@ class XtbInput(Engine):
 
                 newmol.properties = copy.copy(mol.properties)
 
-                newmol.properties.set_electronic_energy(electronic_energy, self)
-                newmol.properties.set_vibronic_energy(vibronic_energy, self)
+                self.parse_output(newmol)
 
             else:
-
-                mol.properties.set_electronic_energy(electronic_energy, self)
-                mol.properties.set_vibronic_energy(vibronic_energy, self)
+                self.parse_output(mol)
 
             process_output(mol, self.method, "freq", charge, spin)
             if remove_tdir:
@@ -415,3 +409,74 @@ class XtbInput(Engine):
 
         if inplace is False:
             return newmol
+
+    def parse_output(self, mol: System) -> None:
+        """
+        The function will parse an xTB output file automatically looking for all the
+        relevant numerical properties derived form a calculation. All the properties of the
+        given molecule will be set or updated.
+
+        Parameters
+        ----------
+        mol: System
+            The System to which the properties must be written to.
+
+        Raises
+        ------
+        RuntimeError
+            Exception raised if the given path to the output file is not valid.
+        """
+
+        if not os.path.isfile("output.out"):
+            raise RuntimeError("Cannot parse output, the `output.out` file does not exist.")
+
+        # Parse the final single point energy and the vibronic energy
+        # ----------------------------------------------------------------------------------
+        with open("output.out", "r") as out:
+            for line in out:
+                if "TOTAL ENERGY" in line:
+                    electronic_energy = float(line.split()[-3])
+                    mol.properties.set_electronic_energy(electronic_energy, self)
+                if "G(RRHO) contrib." in line:
+                    vibronic_energy = float(line.split()[-3])
+                    mol.properties.set_vibronic_energy(vibronic_energy, self)
+
+        # Parse the Mulliken atomic charges and spin populations
+        # ----------------------------------------------------------------------------------
+        mulliken_charges, mulliken_spins = [], []
+        spin_available = False
+        with open("output.out", "r") as file:
+
+            for line in file:
+
+                # read the file until the charges section is reached
+                if "#   Z          covCN" in line:
+                    # Iterate over the whole section reading line by line
+                    while True:
+                        buffer = file.readline()
+                        if len(buffer.split()) == 0:
+                            break
+                        else:
+                            data = buffer.split()
+                            mulliken_charges.append(float(data[4]))
+
+                # Check if the section contains also the "(R)spin-density population" line
+                if "Mulliken population" in line:
+
+                    spin_available = True
+
+                    # Iterate over the whole section reading line by line
+                    while True:
+                        buffer = file.readline()
+                        if len(buffer.split()) == 0:
+                            break
+                        else:
+                            data = buffer.split()
+                            mulliken_spins.append(float(data[1]))
+
+            if not spin_available:
+                mulliken_spins = [0.0] * len(mulliken_charges)
+
+        if mulliken_charges != []:
+            mol.properties.set_mulliken_charges(mulliken_charges, self)
+            mol.properties.set_mulliken_spin_populations(mulliken_spins, self)
