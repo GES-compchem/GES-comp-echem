@@ -166,7 +166,7 @@ class XtbInput(Engine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "spe", charge, spin)
+            process_output(mol, self.method, "spe", charge, spin, save_cubes=save_cubes)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -295,7 +295,7 @@ class XtbInput(Engine):
 
                     self.parse_output(mol)
 
-                process_output(mol, self.method, "opt", charge, spin)
+                process_output(mol, self.method, "opt", charge, spin, save_cubes=save_cubes)
                 if remove_tdir:
                     shutil.rmtree(tdir)
 
@@ -403,7 +403,7 @@ class XtbInput(Engine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "freq", charge, spin)
+            process_output(mol, self.method, "freq", charge, spin, save_cubes=save_cubes)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
