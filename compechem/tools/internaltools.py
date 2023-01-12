@@ -157,16 +157,28 @@ def process_output(
     if save_cubes:
 
         os.makedirs("../output_densities", exist_ok=True)
-        
+
         if os.path.exists("eldens.cube"):
             shutil.copy(
                 "eldens.cube",
                 f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.eldens.cube",
             )
 
+        if os.path.exists("density.cub"):
+            shutil.copy(
+                "density.cub",
+                f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.eldens.cube",
+            )
+
         if os.path.exists("spindens.cube"):
             shutil.copy(
                 "spindens.cube",
+                f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.spindens.cube",
+            )
+
+        if os.path.exists("spindensity.cub"):
+            shutil.copy(
+                "spindensity.cub",
                 f"../output_densities/{mol.name}_{charge}_{spin}_{method}_{calc}.spindens.cube",
             )
 

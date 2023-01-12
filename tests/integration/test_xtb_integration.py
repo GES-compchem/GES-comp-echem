@@ -43,19 +43,15 @@ def test_XtbInput_spe():
         )
 
         expected_mulliken_charges = np.array([-0.121, 0.560, 0.560])
-        # --> mulliken charges not yet implemented
-        # assert_array_almost_equal(
-        #     expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
-        # )
-        # <--
-        # --> mulliken spin populations not yet implemented
-        # expected_mulliken_spin_populations = np.array([1.044851, -0.022422, -0.022429])
-        # assert_array_almost_equal(
-        #     expected_mulliken_spin_populations,
-        #     mol.properties.mulliken_spin_populations,
-        #     decimal=4,
-        # )
-        # <--
+        assert_array_almost_equal(
+            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
+        )
+        expected_mulliken_spin_populations = np.array([1.00, 0.00, 0.00])
+        assert_array_almost_equal(
+            expected_mulliken_spin_populations,
+            mol.properties.mulliken_spin_populations,
+            decimal=4,
+        )
 
         rmtree("output_files")
         rmtree("error_files")
@@ -84,11 +80,10 @@ def test_XtbInput_opt():
         expected_mulliken_charges = np.array(
             [0.345, -0.301, 0.192, 0.170, -0.300, 0.170, 0.192, -0.470]
         )
-        # --> mulliken charges not yet implemented
-        # assert_array_almost_equal(
-        #     expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
-        # )
-        # <--
+
+        assert_array_almost_equal(
+            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
+        )
 
         expected_geometry = [
             np.array([0.38572247721477, 4.16024211476103, 3.49696517842814]),
@@ -129,11 +124,9 @@ def test_XtbInput_freq():
         expected_mulliken_charges = np.array(
             [0.334, -0.301, 0.191, 0.169, -0.301, 0.169, 0.191, -0.452]
         )
-        # --> mulliken charges not yet implemented
-        # assert_array_almost_equal(
-        #     expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
-        # )
-        # <--
+        assert_array_almost_equal(
+            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=3
+        )
 
         rmtree("output_files")
         rmtree("error_files")

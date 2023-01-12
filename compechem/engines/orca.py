@@ -1,5 +1,5 @@
 import os, copy, shutil, sh
-from typing import Dict, Tuple
+from typing import Dict
 from tempfile import mkdtemp
 
 from compechem.config import get_ncores
@@ -635,8 +635,8 @@ class OrcaInput(Engine):
 
         Parameters
         ----------
-        mol: str
-            The system to which the properties must be written to.
+        mol: System
+            The System to which the properties must be written to.
 
         Raises
         ------
