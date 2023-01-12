@@ -46,6 +46,9 @@ class XtbInput(Engine):
         self.optionals = optionals
         self.__XTBPATH = XTBPATH if XTBPATH else locate_xtb()
 
+        self.__output_suffix = f"xtb_{self.method}_"
+        self.__output_suffix += "vacuum" if solvent is None else f"{self.solvent}"
+
     def write_input(
         self,
         job_info: Dict,
@@ -166,7 +169,9 @@ class XtbInput(Engine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "spe", charge, spin, save_cubes=save_cubes)
+            process_output(
+                mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes
+            )
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -295,7 +300,9 @@ class XtbInput(Engine):
 
                     self.parse_output(mol)
 
-                process_output(mol, self.method, "opt", charge, spin, save_cubes=save_cubes)
+                process_output(
+                    mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes
+                )
                 if remove_tdir:
                     shutil.rmtree(tdir)
 
@@ -403,7 +410,9 @@ class XtbInput(Engine):
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.method, "freq", charge, spin, save_cubes=save_cubes)
+            process_output(
+                mol, self.__output_suffix, "freq", charge, spin, save_cubes=save_cubes
+            )
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -480,3 +489,15 @@ class XtbInput(Engine):
         if mulliken_charges != []:
             mol.properties.set_mulliken_charges(mulliken_charges, self)
             mol.properties.set_mulliken_spin_populations(mulliken_spins, self)
+    
+    @property
+    def output_suffix(self) -> str:
+        """
+        Suffix used to compose the name of calculation output files
+
+        Returns
+        -------
+        str
+            The output suffix string
+        """
+        return self.__output_suffix

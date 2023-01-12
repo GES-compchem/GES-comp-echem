@@ -1,20 +1,32 @@
 from os.path import join
 from copy import deepcopy
 from typing import List, Dict, Union
+from enum import Enum
 
 from compechem.systems import System
 from compechem.engines.orca import OrcaInput
+from compechem.engines.xtb import XtbInput
 from compechem.tools.cubetools import Cube
 
 
 FUKUI_CUBE_WARNING = "Fukui function cube file, the atomic charges column contains the localized Mulliken-charge-based fukui values"
 
+class CubeGrids(Enum):
+    """
+    Grids to be used by the engines in generating cubes. The first value represents the
+    homogeneous spacing used by orca while the second the grid step used by xTB.
+    """
+    ULTRAFINE = [400, 0.1]
+    FINE = [200, 0.2]
+    NORMAL = [100, 0.4]
+    COARSE = [50, 0.8]
+
 
 def calculate_fukui(
     molecule: System,
-    orca: OrcaInput,
+    engine: Union[OrcaInput, XtbInput],
     spins_states: Union[None, List[int]] = None,
-    cube_dim: int = 250,
+    cube_grid: CubeGrids = CubeGrids.NORMAL,
     ncores: int = None,
     maxcore: int = 1000,
 ) -> Dict[str, Dict[str, List[float]]]:
@@ -30,8 +42,8 @@ def calculate_fukui(
     molecule: System
         The System object containing the geometry of the selected molecule (if the geometry
         has not been optimized, please enable the optimize option)
-    orca: OrcaInput
-        The orca input wrapper object that defines the protocol to be used in the calculation.
+    orca: Engine
+        The engine object that defines the protocol to be used in the calculation.
     spin_states: Union[None, List[int]]
         If set to None, when adding or subtracting electrons will automatically switch the
         spin state from singlet to doublet and vice versa (Maximum one unpaired electrons).
@@ -39,25 +51,40 @@ def calculate_fukui(
         user specified values. The order of the spin multiplicity values is: molecule with
         one electron added (-1), the molecule as it is (0) and the molecule  with one of its
         electrons removed (+1).
-    cube_dim: int
-        Resolution for the cube files (default 250)
+    cube_grid: CubeGrids
+        Resolution for the cube files (default Normal)
     ncores : int, optional
         The number of cores, by default all available cores (None)
     maxcore: int
         The maximum amount of memory in MB to be allocated for each core.
     """
+
+    if type(engine) not in [OrcaInput, XtbInput]:
+        raise TypeError("calculate_fukui currently only supports xTB and Orca")
+    
+    
     # RUN ALL THE REQUIRED CALCULATIONS
     # --------------------------------------------------------------------------------------
     # Compute a single point for the molecule
-    orca.spe(
-        molecule,
-        save_cubes=True,
-        cube_dim=cube_dim,
-        hirshfeld=True,
-        inplace=True,
-        ncores=ncores,
-        maxcore=maxcore,
-    )
+    if type(engine) == OrcaInput:
+        engine.spe(
+            molecule,
+            save_cubes=True,
+            cube_dim=cube_grid.value[0],
+            hirshfeld=True,
+            inplace=True,
+            ncores=ncores,
+            maxcore=maxcore,
+        )
+
+    elif type(engine) == XtbInput:
+        engine.spe(
+            molecule,
+            save_cubes=True,
+            cube_step=cube_grid.value[1],
+            inplace=True,
+            ncores=ncores,
+        )
 
     # Compute a single point for the molecule with the addition of one electron.
     cation = deepcopy(molecule)
@@ -68,15 +95,25 @@ def calculate_fukui(
     else:
         cation.spin = 1 if molecule.spin == 2 else 2
 
-    orca.spe(
-        cation,
-        save_cubes=True,
-        cube_dim=cube_dim,
-        hirshfeld=True,
-        inplace=True,
-        ncores=ncores,
-        maxcore=maxcore
-    )
+    if type(engine) == OrcaInput:
+        engine.spe(
+            cation,
+            save_cubes=True,
+            cube_dim=cube_grid.value[0],
+            hirshfeld=True,
+            inplace=True,
+            ncores=ncores,
+            maxcore=maxcore
+        )
+
+    elif type(engine) == XtbInput:
+        engine.spe(
+            cation,
+            save_cubes=True,
+            cube_step=cube_grid.value[1],
+            inplace=True,
+            ncores=ncores,
+        )
 
     # Compute a single point for the molecule with the subtraction of one electron.
     anion = deepcopy(molecule)
@@ -87,15 +124,25 @@ def calculate_fukui(
     else:
         anion.spin = 1 if molecule.spin == 2 else 2
 
-    orca.spe(
-        anion,
-        save_cubes=True,
-        cube_dim=cube_dim,
-        hirshfeld=True,
-        inplace=True,
-        ncores=ncores,
-        maxcore=maxcore
-    )
+    if type(engine) == OrcaInput:
+        engine.spe(
+            anion,
+            save_cubes=True,
+            cube_dim=cube_grid.value[0],
+            hirshfeld=True,
+            inplace=True,
+            ncores=ncores,
+            maxcore=maxcore
+        )
+
+    elif type(engine) == XtbInput:
+        engine.spe(
+            anion,
+            save_cubes=True,
+            cube_step=cube_grid.value[1],
+            inplace=True,
+            ncores=ncores,
+        )
 
     # COMPUTE CONDENSED FUKUI FUNCTIONS
     #---------------------------------------------------------------------------------------
@@ -112,29 +159,32 @@ def calculate_fukui(
             -(anion.properties.mulliken_charges[atom] - cation.properties.mulliken_charges[atom]) / 2
         )
     
-    molecule.properties.set_condensed_fukui_mulliken(localized_fukui_mulliken, orca)
+    molecule.properties.set_condensed_fukui_mulliken(localized_fukui_mulliken, engine)
 
-    # Compute the localized fukui function values from the Hirshfeld charges
-    localized_fukui_hirshfeld = {"f+": [], "f-": [], "f0": []}
-    for atom in range(molecule.geometry.atomcount):
-        localized_fukui_hirshfeld["f+"].append(
-            -(anion.properties.hirshfeld_charges[atom] - molecule.properties.hirshfeld_charges[atom])
-        )
-        localized_fukui_hirshfeld["f-"].append(
-            -(molecule.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom])
-        )
-        localized_fukui_hirshfeld["f0"].append(
-            -(anion.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom]) / 2
-        )
-    
-    molecule.properties.set_condensed_fukui_hirshfeld(localized_fukui_hirshfeld, orca)
+    # Compute the localized fukui function values from the Hirshfeld charges (orca only)
+    if type(engine) == OrcaInput:
+
+        localized_fukui_hirshfeld = {"f+": [], "f-": [], "f0": []}
+
+        for atom in range(molecule.geometry.atomcount):
+            localized_fukui_hirshfeld["f+"].append(
+                -(anion.properties.hirshfeld_charges[atom] - molecule.properties.hirshfeld_charges[atom])
+            )
+            localized_fukui_hirshfeld["f-"].append(
+                -(molecule.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom])
+            )
+            localized_fukui_hirshfeld["f0"].append(
+                -(anion.properties.hirshfeld_charges[atom] - cation.properties.hirshfeld_charges[atom]) / 2
+            )
+        
+        molecule.properties.set_condensed_fukui_hirshfeld(localized_fukui_hirshfeld, engine)
 
     # LOAD THE VOLUMETRIC FILES AND COMPUTE THE FUKUI FUNCTIONS
     # --------------------------------------------------------------------------------------
     # Load cubes from the output_densities folder
     cubes: Dict[int, Cube] = {}
     for mol in [cation, molecule, anion]:
-        cubename = f"{mol.name}_{mol.charge}_{mol.spin}_{orca.output_suffix}_spe.eldens.cube"
+        cubename = f"{mol.name}_{mol.charge}_{mol.spin}_{engine.output_suffix}_spe.eldens.cube"
         cube = Cube.from_file(join("./output_densities", cubename))
         cubes[mol.charge] = cube
 
