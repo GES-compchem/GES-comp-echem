@@ -196,7 +196,7 @@ def calculate_fukui(
     f_plus = cubes[anion.charge] - cubes[molecule.charge]
     f_plus.charges = localized_fukui_mulliken["f+"]
     f_plus.save(
-        join("./output_densities", f"{molecule.name}_Fukui_plus.fukui.cube"),
+        join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_plus.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
         comment_2nd="Fukui f+",
     )
@@ -205,7 +205,7 @@ def calculate_fukui(
     f_minus = cubes[molecule.charge] - cubes[cation.charge]
     f_minus.charges = localized_fukui_mulliken["f-"]
     f_minus.save(
-        join("./output_densities", f"{molecule.name}_Fukui_minus.fukui.cube"),
+        join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_minus.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
         comment_2nd="Fukui f-",
     )
@@ -214,7 +214,7 @@ def calculate_fukui(
     f_zero = (cubes[anion.charge] - cubes[cation.charge]).scale(0.5)
     f_zero.charges = localized_fukui_mulliken["f0"]
     f_zero.save(
-        join("./output_densities", f"{molecule.name}_Fukui_zero.fukui.cube"),
+        join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_zero.fukui.cube"),
         comment_1st=FUKUI_CUBE_WARNING,
         comment_2nd="Fukui f0",
     )
