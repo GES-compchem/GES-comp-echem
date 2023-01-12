@@ -48,17 +48,18 @@ class OrcaInput(Engine):
         """
         super().__init__(method)
 
-        self.basis_set = basis_set
+        self.basis_set = basis_set if basis_set else ""
         self.aux_basis = aux_basis
         self.solvent = solvent
         self.optionals = optionals
         self.__MPI_FLAGS = MPI_FLAGS
         self.__ORCADIR = ORCADIR if ORCADIR else locate_orca(get_folder=True)
 
-        self.level_of_theory += f" | basis: {self.basis_set} | solvent: {self.solvent}"
+        self.level_of_theory += f" | basis: {basis_set} | solvent: {solvent}"
 
-        self.__output_suffix = f"orca_{self.method}_{self.basis_set}_"
-        self.__output_suffix += "vacuum" if solvent is None else f"{self.solvent}"
+        self.__output_suffix = f"orca_{method}"
+        self.__output_suffix += f"_{basis_set}" if basis_set else ""
+        self.__output_suffix += f"_{solvent}" if solvent else "_vacuum"
 
     def write_input(
         self,

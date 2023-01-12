@@ -40,12 +40,12 @@ class XtbInput(Engine):
         """
 
         super().__init__(method)
-        self.level_of_theory += f" | solvent: {solvent}"
 
         self.solvent = solvent
         self.optionals = optionals
         self.__XTBPATH = XTBPATH if XTBPATH else locate_xtb()
 
+        self.level_of_theory += f" | solvent: {solvent}"
         self.__output_suffix = f"xtb_{self.method}_"
         self.__output_suffix += "vacuum" if solvent is None else f"{self.solvent}"
 
@@ -69,8 +69,6 @@ class XtbInput(Engine):
 
         with open("input.inp", "w") as inp:
             inp.writelines(input)
-
-        return
 
     def spe(
         self,
@@ -155,11 +153,6 @@ class XtbInput(Engine):
                     f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "TOTAL ENERGY" in line:
-                        electronic_energy = float(line.split()[-3])
-
             if inplace is False:
 
                 newmol = System(f"{mol.name}.xyz", charge, spin)
@@ -172,6 +165,7 @@ class XtbInput(Engine):
             process_output(
                 mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes
             )
+
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -279,13 +273,7 @@ class XtbInput(Engine):
                 )
                 return None
             else:
-                with open("output.out", "r") as out:
-                    for line in out:
-                        if "TOTAL ENERGY" in line:
-                            electronic_energy = float(line.split()[-3])
-                        if "G(RRHO) contrib." in line:
-                            vibronic_energy = float(line.split()[-3])
-
+            
                 if inplace is False:
 
                     newmol = System(f"{mol.name}.xyz", charge, spin)
@@ -303,6 +291,7 @@ class XtbInput(Engine):
                 process_output(
                     mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes
                 )
+
                 if remove_tdir:
                     shutil.rmtree(tdir)
 
@@ -392,13 +381,6 @@ class XtbInput(Engine):
                     f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
                 )
 
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "TOTAL ENERGY" in line:
-                        electronic_energy = float(line.split()[-3])
-                    if "G(RRHO) contrib." in line:
-                        vibronic_energy = float(line.split()[-3])
-
             if inplace is False:
 
                 newmol = System(f"{mol.name}.xyz", charge, spin)
@@ -413,6 +395,7 @@ class XtbInput(Engine):
             process_output(
                 mol, self.__output_suffix, "freq", charge, spin, save_cubes=save_cubes
             )
+            
             if remove_tdir:
                 shutil.rmtree(tdir)
 
