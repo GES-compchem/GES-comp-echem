@@ -72,17 +72,20 @@ class Cube:
                 obj.__coordinates.append(np.array([float(value) for value in data[2::]]))
 
             # Read the whole cube section
-            buffer, x = None, []
+            buffer = []
+            for line in file.readlines():
+                sline = line.strip("\n").split()
+                for element in sline:
+                    buffer.append(float(element))
+            
+            x = []
             for i in range(obj.__nvoxels[0]):
                 y = []
                 for j in range(obj.__nvoxels[1]):
                     z = []
                     for k in range(obj.__nvoxels[2]):
-                        col = k % 6
-                        if col == 0:
-                            buffer = [float(value) for value in file.readline().split()]
-
-                        z.append(buffer[col])
+                        index = i*obj.__nvoxels[1]*obj.__nvoxels[2] + j*obj.__nvoxels[2] + k
+                        z.append(buffer[index])
                     y.append(np.array(z))
                 x.append(np.array(y))
 
