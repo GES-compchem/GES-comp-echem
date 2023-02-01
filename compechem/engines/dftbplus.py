@@ -5,10 +5,14 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.core.base import Engine
 from compechem.systems import System, Ensemble
-from compechem.tools import process_output
-from compechem.tools import save_dftb_trajectory
-from compechem.tools import compress_dftb_trajectory
-from compechem.tools import split_multixyz
+from compechem.tools import (
+    process_output,
+    save_dftb_trajectory,
+    compress_dftb_trajectory,
+    split_multixyz,
+)
+from compechem.tools.internaltools import clean_suffix
+
 from typing import Dict
 from compechem.core.dependency_finder import locate_dftbplus, locate_dftbparamdir
 
@@ -103,6 +107,7 @@ class DFTBInput(Engine):
         self.__output_suffix = "DFTB"
         self.__output_suffix += "3" if thirdorder else ""
         self.__output_suffix += "-D3" if dispersion else ""
+        self.__output_suffix = clean_suffix(self.__output_suffix)
 
         self.atom_dict = {
             "Br": "d",
@@ -344,7 +349,7 @@ class DFTBInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_spe",
+            suffix=f"_{self.__output_suffix}_spe",
             dir=os.getcwd(),
         )
 
@@ -442,7 +447,7 @@ class DFTBInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_opt",
+            suffix=f"_{self.__output_suffix}_opt",
             dir=os.getcwd(),
         )
 
@@ -562,7 +567,7 @@ class DFTBInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_md_nvt",
+            suffix=f"_{self.__output_suffix}_md_nvt",
             dir=os.getcwd(),
         )
 
@@ -700,7 +705,7 @@ class DFTBInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_anneal",
+            suffix=f"_{self.__output_suffix}_anneal",
             dir=os.getcwd(),
         )
 

@@ -2,7 +2,7 @@ import pytest
 
 from compechem.engines.orca import OrcaInput
 from compechem.systems import System, Ensemble
-from os.path import dirname, abspath
+from os.path import dirname, abspath, isfile
 from shutil import rmtree
 
 import numpy as np
@@ -61,6 +61,97 @@ def test_OrcaInput_spe():
         )
 
         rmtree("output_files")
+
+
+# Test the spe() function on a radical cation water molecule in DMSO without the inplace option
+def test_OrcaInput_spe_no_inplace():
+
+    engine = OrcaInput(
+        method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO"
+    )
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
+
+    try:
+        newmol = engine.spe(mol, ncores=4)
+    except:
+        assert False, "Unexpected exception raised during SPE calculation"
+
+    else:
+        assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
+        
+        assert_array_almost_equal(
+            newmol.properties.electronic_energy, -75.942595825106, decimal=6
+        )
+
+        expected_mulliken_charges = np.array([0.377902, 0.311149, 0.310950])
+        assert_array_almost_equal(
+            expected_mulliken_charges,
+            newmol.properties.mulliken_charges,
+            decimal=4,
+        )
+
+        expected_mulliken_spin_populations = np.array([1.044851, -0.022422, -0.022429])
+        assert_array_almost_equal(
+            expected_mulliken_spin_populations,
+            newmol.properties.mulliken_spin_populations,
+            decimal=4,
+        )
+
+        rmtree("output_files")
+
+
+# Test the spe() function on a radical cation water molecule in DMSO without the inplace option
+def test_OrcaInput_spe_CCSD():
+
+    engine = OrcaInput(
+        method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="AutoAux"
+    )
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
+
+    try:
+        newmol = engine.spe(mol, ncores=4)
+    except:
+        assert False, "Unexpected exception raised during SPE calculation"
+
+    else:
+        assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
+        
+        assert_array_almost_equal(
+            newmol.properties.electronic_energy, -75.731114338261, decimal=6
+        )
+
+        expected_mulliken_charges = np.array([0.391458, 0.304269, 0.304274])
+        assert_array_almost_equal(
+            expected_mulliken_charges,
+            newmol.properties.mulliken_charges,
+            decimal=4,
+        )
+
+        expected_mulliken_spin_populations = np.array([1.061085, -0.030540, -0.030544])
+        assert_array_almost_equal(
+            expected_mulliken_spin_populations,
+            newmol.properties.mulliken_spin_populations,
+            decimal=4,
+        )
+
+        rmtree("output_files")
+
+
+# Test that the correct suffix is generated when forbidden symbol is used
+def test_OrcaInput_forbidden():
+
+    engine = OrcaInput(
+        method="DLPNO-CCSD(T)", basis_set="6-311++G**", aux_basis="AutoAux"
+    )
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
+
+    try:
+        engine.spe(mol, ncores=4, inplace=True)
+    except:
+        assert False, "Unexpected exception raised"
+    
+    assert isfile("./output_files/water_1_2_orca_DLPNO-CCSD-T-_6-311++G--_vacuum_spe.out") == True, "Output file not found"
+
 
 
 # Test the opt() function on a water molecule in vacuum

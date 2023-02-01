@@ -2,6 +2,7 @@ import os
 import shutil
 import pickle
 from rdkit import Chem
+from copy import deepcopy
 from compechem.systems import System
 import logging
 
@@ -197,3 +198,13 @@ def save_dftb_trajectory(output_prefix):
 
     shutil.move("md.out", f"../MD_data/{output_prefix}_md.out")
     shutil.move("geo_end.xyz", f"../MD_data/{output_prefix}_geo_end.xyz")
+
+
+def clean_suffix(source: str) -> str:
+
+    string = deepcopy(source)
+
+    for char in ["\\", "/", ",", "*", "(", ")", "[", "]"]:
+        string = string.replace(char, "-")
+
+    return string
