@@ -682,8 +682,8 @@ class OrcaInput(Engine):
                 # proceed with the file parsing else continue
                 if counter == sections:
 
-                    # Check if the section contains also the "SPIN POPULATIONS" column
-                    if "SPIN POPULATIONS" in line:
+                    # Check if the section contains also the "SPIN" column (either "SPIN POPULATIONS" or "SPIN DENSITIES")
+                    if "SPIN" in line:
                         spin_available = True
 
                     _ = file.readline()  # Skip the table line
