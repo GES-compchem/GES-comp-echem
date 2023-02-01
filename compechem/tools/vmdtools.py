@@ -137,7 +137,7 @@ def render_condensed_fukui(
     vmd_root = VMD_PATH if VMD_PATH is not None else locate_vmd()
     tachyon_path = join(vmd_root, "lib/vmd/tachyon_LINUXAMD64")
 
-    root_name = basename(cubfile).strip(".fukui.cube")
+    root_name = basename(cubfile).rstrip(".fukui.cube")
 
     with tmp(mode="w+") as vmd_script:
 
@@ -232,7 +232,7 @@ def render_spin_density_cube(
     vmd_root = VMD_PATH if VMD_PATH is not None else locate_vmd()
     tachyon_path = join(vmd_root, "lib/vmd/tachyon_LINUXAMD64")
 
-    root_name = basename(cubfile).strip(".fukui.cube")
+    root_name = basename(cubfile).rstrip(".fukui.cube")
 
     with tmp(mode="w+") as vmd_script:
 
