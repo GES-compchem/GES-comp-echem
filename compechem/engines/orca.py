@@ -216,7 +216,7 @@ class OrcaInput(Engine):
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
             if inplace is False:
-                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
 
@@ -407,7 +407,7 @@ class OrcaInput(Engine):
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
             if inplace is False:
-                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
 
@@ -493,7 +493,7 @@ class OrcaInput(Engine):
             os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
 
             if inplace is False:
-                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
 

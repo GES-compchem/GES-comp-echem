@@ -155,7 +155,7 @@ class XtbInput(Engine):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
 
@@ -276,7 +276,7 @@ class XtbInput(Engine):
             
                 if inplace is False:
 
-                    newmol = System(f"{mol.name}.xyz", charge, spin)
+                    newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
                     newmol.geometry.load_xyz("xtbopt.xyz")
                     newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
@@ -383,7 +383,7 @@ class XtbInput(Engine):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge, spin)
+                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
 
                 newmol.properties = copy.copy(mol.properties)
 
