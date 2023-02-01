@@ -7,6 +7,7 @@ from compechem.systems import Ensemble, System
 from compechem.tools import process_output
 from compechem.core.base import Engine
 from compechem.core.dependency_finder import locate_orca
+from compechem.tools.internaltools import clean_suffix
 
 import logging
 
@@ -49,17 +50,18 @@ class OrcaInput(Engine):
         super().__init__(method)
 
         self.basis_set = basis_set if basis_set else ""
-        self.aux_basis = aux_basis
+        self.aux_basis = aux_basis if aux_basis else ""
         self.solvent = solvent
         self.optionals = optionals
         self.__MPI_FLAGS = MPI_FLAGS
         self.__ORCADIR = ORCADIR if ORCADIR else locate_orca(get_folder=True)
 
-        self.level_of_theory += f" | basis: {basis_set} | solvent: {solvent}"
+        self.level_of_theory += f""" | basis: {basis_set} | solvent: {solvent}"""
 
         self.__output_suffix = f"orca_{method}"
         self.__output_suffix += f"_{basis_set}" if basis_set else ""
         self.__output_suffix += f"_{solvent}" if solvent else "_vacuum"
+        self.__output_suffix = clean_suffix(self.__output_suffix)
 
     def write_input(
         self,
@@ -193,7 +195,7 @@ class OrcaInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_spe",
+            suffix=f"_{self.__output_suffix}_spe",
             dir=os.getcwd(),
         )
 
@@ -292,7 +294,7 @@ class OrcaInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_opt",
+            suffix=f"_{self.__output_suffix}_opt",
             dir=os.getcwd(),
         )
 
@@ -384,7 +386,7 @@ class OrcaInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_freq",
+            suffix=f"_{self.__output_suffix}_freq",
             dir=os.getcwd(),
         )
 
@@ -471,7 +473,7 @@ class OrcaInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_nfreq",
+            suffix=f"_{self.__output_suffix}_nfreq",
             dir=os.getcwd(),
         )
 
@@ -561,7 +563,7 @@ class OrcaInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_scan",
+            suffix=f"_{self.__output_suffix}_scan",
             dir=os.getcwd(),
         )
 

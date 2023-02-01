@@ -4,10 +4,8 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.core.base import Engine
 from compechem.systems import System
-from compechem.tools import process_output
-from compechem.tools import add_flag
-from compechem.tools import dissociation_check
-from compechem.tools import cyclization_check
+from compechem.tools import process_output, add_flag, dissociation_check, cyclization_check
+from compechem.tools.internaltools import clean_suffix
 from compechem.core.dependency_finder import locate_xtb
 
 import logging
@@ -48,6 +46,7 @@ class XtbInput(Engine):
         self.level_of_theory += f" | solvent: {solvent}"
         self.__output_suffix = f"xtb_{self.method}_"
         self.__output_suffix += "vacuum" if solvent is None else f"{self.solvent}"
+        self.__output_suffix = clean_suffix(self.__output_suffix)
 
     def write_input(
         self,
@@ -126,7 +125,7 @@ class XtbInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_spe",
+            suffix=f"_{self.__output_suffix}_spe",
             dir=os.getcwd(),
         )
 
@@ -231,7 +230,7 @@ class XtbInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_opt",
+            suffix=f"_{self.__output_suffix}_opt",
             dir=os.getcwd(),
         )
 
@@ -273,7 +272,7 @@ class XtbInput(Engine):
                 )
                 return None
             else:
-            
+
                 if inplace is False:
 
                     newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -354,7 +353,7 @@ class XtbInput(Engine):
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
-            suffix=f"_{self.method.split()[0]}_freq",
+            suffix=f"_{self.__output_suffix}_freq",
             dir=os.getcwd(),
         )
 
@@ -395,7 +394,7 @@ class XtbInput(Engine):
             process_output(
                 mol, self.__output_suffix, "freq", charge, spin, save_cubes=save_cubes
             )
-            
+
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -472,7 +471,7 @@ class XtbInput(Engine):
         if mulliken_charges != []:
             mol.properties.set_mulliken_charges(mulliken_charges, self)
             mol.properties.set_mulliken_spin_populations(mulliken_spins, self)
-    
+
     @property
     def output_suffix(self) -> str:
         """
