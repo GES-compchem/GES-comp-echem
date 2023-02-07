@@ -58,15 +58,12 @@ def reorder_energies(
 
         method_opt.opt(system, ncores=ncores, maxcore=maxcore, inplace=True)
 
-        if method_el.level_of_theory == system.properties.level_of_theory_electronic:
-            pass
-        else:
+        if method_el.level_of_theory != system.properties.level_of_theory_electronic:
             method_el.spe(system, ncores=ncores, maxcore=maxcore, inplace=True)
 
-        if method_vib.level_of_theory == system.properties.level_of_theory_vibronic:
-            pass
-        else:
-            method_vib.freq(system, ncores=ncores, maxcore=maxcore, inplace=True)
+        if method_vib.level_of_theory != system.properties.level_of_theory_vibronic:
+            dummy = method_vib.freq(system, ncores=ncores, maxcore=maxcore)
+            system.properties.set_vibronic_energy(dummy.properties.vibronic_energy, method_vib)
 
     system_list.sort(key=get_total_energy)
 
