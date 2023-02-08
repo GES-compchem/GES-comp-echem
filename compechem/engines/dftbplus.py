@@ -51,6 +51,7 @@ class DFTBInput(Engine):
         fermi_temp: float = 300.0,
         parallel: str = "mpi",
         verbose: bool = True,
+        MPI_FLAGS: str = "",
         DFTBPATH: str = None,
         DFTBPARAMDIR: str = None,
     ) -> None:
@@ -77,6 +78,9 @@ class DFTBInput(Engine):
             selects either openmpi-parallel version (mpi) or shared memory version (nompi)
         verbose : bool, optional
             if set to True, saves the full DFTB+ output, otherwise, only the smaller files
+        MPI_FLAGS: str, optional
+            string containing optional flags to be passed to MPI when launching a DFTB+ job.
+            (e.g. `--bind-to none` or `--use-hwthread-cpus`), by default ""
         DFTBPATH: str, optional
             the path to the dftb+ executable. If set to None (default) the dftb+ executable
             will be loaded automatically.
@@ -99,6 +103,7 @@ class DFTBInput(Engine):
         else:
             self.output_path = "/dev/null"
 
+        self.__MPI_FLAGS = MPI_FLAGS
         self.__DFTBPATH = DFTBPATH if DFTBPATH else locate_dftbplus()
         self.__DFTBPARAMDIR = DFTBPARAMDIR if DFTBPARAMDIR else locate_dftbparamdir()
 
@@ -153,11 +158,7 @@ class DFTBInput(Engine):
             "S": [-0.021, -0.017, 0.000, -0.017, -0.016, 0.000, 0.000, 0.000, -0.080],
         }
 
-    def write_input(
-        self,
-        mol: System,
-        job_info: Dict,
-    ) -> None:
+    def write_input(self, mol: System, job_info: Dict,) -> None:
 
         mol.write_gen(f"{mol.name}.gen")
 
@@ -348,26 +349,19 @@ class DFTBInput(Engine):
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_",
-            suffix=f"_{self.__output_suffix}_spe",
-            dir=os.getcwd(),
+            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_spe", dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
 
             self.write_input(
-                mol=mol,
-                job_info={
-                    "type": "spe",
-                    "charge": charge,
-                    "spin": spin,
-                },
+                mol=mol, job_info={"type": "spe", "charge": charge, "spin": spin,},
             )
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {self.__DFTBPATH} > output.out 2>> output.err"
+                    f"mpirun -np {ncores} {self.__MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
                 )
 
             elif self.parallel == "nompi":
@@ -446,9 +440,7 @@ class DFTBInput(Engine):
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_",
-            suffix=f"_{self.__output_suffix}_opt",
-            dir=os.getcwd(),
+            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_opt", dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -466,7 +458,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {self.__DFTBPATH} > output.out 2>> output.err"
+                    f"mpirun -np {ncores} {self.__MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
                 )
 
             elif self.parallel == "nompi":
@@ -589,7 +581,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                    f"mpirun -np {ncores} {self.__MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
                 )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
@@ -729,7 +721,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                    f"mpirun -np {ncores} {self.__MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
                 )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
