@@ -5,6 +5,7 @@ from compechem.engines.orca import OrcaInput
 from compechem.systems import System, Ensemble
 from compechem.functions.pka import calculate_pka, auto_calculate_pka
 from os.path import dirname, abspath
+from shutil import rmtree
 
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -30,6 +31,10 @@ def test_calculate_pka_xtb():
 
     assert_almost_equal(pka, 8.388911127439894, decimal=6)
 
+    rmtree("output_files")
+    rmtree("error_files")
+
+
 
 def test_auto_calculate_pka_xtb():
 
@@ -50,3 +55,7 @@ def test_auto_calculate_pka_xtb():
         assert False, "Unexpected exception raised during pka calculation"
 
     assert_almost_equal(pka, 8.219089610928382, decimal=6)
+    assert_almost_equal(protonated.properties.pka, 8.219089610928382, decimal=6)
+
+    rmtree("output_files")
+    rmtree("error_files")

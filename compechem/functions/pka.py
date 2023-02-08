@@ -50,10 +50,14 @@ def calculate_pka(protonated: System, deprotonated: System):
     if protonated.geometry.atomcount - deprotonated.geometry.atomcount != 1:
         logger.error(f"{protonated.name} deprotomer differs for more than 1 atom.")
         raise RuntimeError(f"{protonated.name} deprotomer differs for more than 1 atom.")
-    
+
     if deprotonated.charge - protonated.charge != -1:
-        logger.error(f"{protonated.name} deprotomer differs for more than 1 unit of charge.")
-        raise RuntimeError(f"{protonated.name} deprotomer differs for more than 1 unit of charge.")
+        logger.error(
+            f"{protonated.name} deprotomer differs for more than 1 unit of charge."
+        )
+        raise RuntimeError(
+            f"{protonated.name} deprotomer differs for more than 1 unit of charge."
+        )
 
     if (
         protonated.properties.electronic_energy is None
@@ -84,7 +88,7 @@ def calculate_pka(protonated: System, deprotonated: System):
 
     if "gfn2" in protonated.properties.level_of_theory_electronic:
         proton_self_energy = 164.22  # kcal/mol
-    
+
     pka = (
         (
             deprotonated_energy
@@ -108,7 +112,7 @@ def auto_calculate_pka(
     Automatically calculates the pKa of a given `protonated` molecule. The routine computes
     all the deprotomers of the molecule using CREST, orders the deprotomers according to
     their energy computed with a user-defined level of theory and calculates the pKa.
-    
+
     Arguments
     ---------
     protonated: System
@@ -167,7 +171,8 @@ def auto_calculate_pka(
 
     pka = calculate_pka(protonated, lowest_deprotomer)
 
-    protonated.properties.set_pka(pka, method_el, method_vib)
+    protonated.properties.set_pka(
+        pka, method_el, method_vib
+    )
 
     return pka, lowest_deprotomer
-
