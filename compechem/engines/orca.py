@@ -367,6 +367,9 @@ class OrcaInput(Engine):
         newmol : System object
             Output molecule containing the new energies.
         """
+        
+        if ncores is None:
+            ncores = get_ncores()
 
         if charge is None:
             charge = mol.charge
