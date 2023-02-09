@@ -201,6 +201,19 @@ def save_dftb_trajectory(output_prefix):
 
 
 def clean_suffix(source: str) -> str:
+    """
+    Removes characters not compatible with a file name from the given string
+
+    Arguments
+    ---------
+    source: str
+        The string to be parsed for cleanup
+    
+    Returns
+    -------
+    str
+        The cleaned up string
+    """
 
     string = deepcopy(source)
 

@@ -6,6 +6,9 @@ logger = logging.getLogger(__name__)
 global STRICT_MODE
 STRICT_MODE = True
 
+global MPI_FLAGS
+MPI_FLAGS = "--bind-to none"
+
 def get_ncores():
     try:
         ncores = int(os.environ["OMP_NUM_THREADS"])

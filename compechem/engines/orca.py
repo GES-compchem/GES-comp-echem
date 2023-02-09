@@ -2,7 +2,7 @@ import os, copy, shutil, sh
 from typing import Dict
 from tempfile import mkdtemp
 
-from compechem.config import get_ncores
+from compechem.config import get_ncores, MPI_FLAGS
 from compechem.systems import Ensemble, System
 from compechem.tools import process_output
 from compechem.core.base import Engine
@@ -24,7 +24,6 @@ class OrcaInput(Engine):
         aux_basis: str = "def2/J",
         solvent: str = None,
         optionals: str = "",
-        MPI_FLAGS: str = "",
         ORCADIR: str = None,
     ) -> None:
         """
@@ -40,9 +39,6 @@ class OrcaInput(Engine):
             SMD solvent, by default None
         optionals : str, optional
             optional keywords, by default ""
-        MPI_FLAGS: str, optional
-            string containing optional flags to be passed to MPI when launching an orca job.
-            (e.g. `--bind-to none` or `--use-hwthread-cpus`), by default ""
         ORCADIR: str, optional
             the path or environment variable containing the path to the ORCA folder. If set
             to None (default) the orca executable will be loaded automatically.
@@ -53,7 +49,6 @@ class OrcaInput(Engine):
         self.aux_basis = aux_basis if aux_basis else ""
         self.solvent = solvent
         self.optionals = optionals
-        self.__MPI_FLAGS = MPI_FLAGS
         self.__ORCADIR = ORCADIR if ORCADIR else locate_orca(get_folder=True)
 
         self.level_of_theory += f""" | basis: {basis_set} | solvent: {solvent}"""
@@ -209,7 +204,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -306,7 +301,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System("input.xyz", charge, spin)
@@ -399,7 +394,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -483,7 +478,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -575,7 +570,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             xyz_list = [
                 xyz

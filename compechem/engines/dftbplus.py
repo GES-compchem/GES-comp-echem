@@ -2,7 +2,7 @@ import os, copy, shutil, sh
 
 from os.path import join
 from tempfile import mkdtemp
-from compechem.config import get_ncores
+from compechem.config import get_ncores, MPI_FLAGS
 from compechem.core.base import Engine
 from compechem.systems import System, Ensemble
 from compechem.tools import (
@@ -22,21 +22,51 @@ logger = logging.getLogger(__name__)
 
 
 class DFTBInput(Engine):
-    """Interface for running DFTB+ calculations
+    """
+    Interface for running DFTB+ calculations
+
+    Parameters
+    ----------
+    method : str
+        level of theory, by default "DFTB". "xTB" also supported.
+    parameters : str
+        parameters to be used for the DFTB Hamiltonian (by default 3ob)
+    solver : str
+        LAPACK eigensolver method (check manual for available options)
+    thirdorder : bool
+        activates the 3rd order terms in the DFTB Hamiltonian
+    dispersion : bool
+        activates D3 dispersion corrections (off by default)
+    fermi: bool
+        Fills the single particle levels according to a Fermi distribution (off by
+        default).
+    fermi_temp: float
+        Electronic temperature in Kelvin units. Note, this is ignored for thermostated
+        simulations. By default, 300 K.
+    parallel : str
+        selects either openmpi-parallel version (mpi) or shared memory version (nompi)
+    verbose : bool
+        if set to True, saves the full DFTB+ output, otherwise, only the smaller files
+    DFTBPATH: str
+        the path to the dftb+ executable. If set to None (default) the dftb+ executable
+        will be loaded automatically.
+    DFTBPARAMDIR: str
+        the path to the DFTBPLUS_PARAM_DIR environment variable, where the Slater-Koster
+        files are located
 
     Attributes
     ----------
-    method : str, optional
+    method : str
         level of theory, by default "DFTB". "xTB" also supported.
-    parameters : str, optional
+    parameters : str
         parameters to be used for the DFTB Hamiltonian (by default 3ob)
-    solver : str, optional
+    solver : str
         LAPACK eigensolver method (check manual for available options)
-    dispersion : bool, optional
+    dispersion : bool
         activates D3 dispersion corrections (off by default)
-    parallel : str, optional
+    parallel : str
         selects either openmpi-parallel version (mpi) or shared memory version (nompi)
-    verbose : bool, optional
+    verbose : bool
         if set to True, saves the full DFTB+ output, otherwise, only the smaller files
     """
 
@@ -51,43 +81,9 @@ class DFTBInput(Engine):
         fermi_temp: float = 300.0,
         parallel: str = "mpi",
         verbose: bool = True,
-        MPI_FLAGS: str = "",
         DFTBPATH: str = None,
         DFTBPARAMDIR: str = None,
     ) -> None:
-        """
-        Parameters
-        ----------
-        method : str, optional
-            level of theory, by default "DFTB". "xTB" also supported.
-        parameters : str, optional
-            parameters to be used for the DFTB Hamiltonian (by default 3ob)
-        solver : str, optional
-            LAPACK eigensolver method (check manual for available options)
-        thirdorder : bool, optional
-            activates the 3rd order terms in the DFTB Hamiltonian
-        dispersion : bool, optional
-            activates D3 dispersion corrections (off by default)
-        fermi: bool, optional
-            Fills the single particle levels according to a Fermi distribution (off by
-            default).
-        fermi_temp: float, optional
-            Electronic temperature in Kelvin units. Note, this is ignored for thermostated
-            simulations. By default, 300 K.
-        parallel : str, optional
-            selects either openmpi-parallel version (mpi) or shared memory version (nompi)
-        verbose : bool, optional
-            if set to True, saves the full DFTB+ output, otherwise, only the smaller files
-        MPI_FLAGS: str, optional
-            string containing optional flags to be passed to MPI when launching a DFTB+ job.
-            (e.g. `--bind-to none` or `--use-hwthread-cpus`), by default ""
-        DFTBPATH: str, optional
-            the path to the dftb+ executable. If set to None (default) the dftb+ executable
-            will be loaded automatically.
-        DFTBPARAMDIR: str, optional
-            the path to the DFTBPLUS_PARAM_DIR environment variable, where the Slater-Koster
-            files are located
-        """
         super().__init__(method)
 
         self.parameters = parameters
@@ -103,7 +99,6 @@ class DFTBInput(Engine):
         else:
             self.output_path = "/dev/null"
 
-        self.__MPI_FLAGS = MPI_FLAGS
         self.__DFTBPATH = DFTBPATH if DFTBPATH else locate_dftbplus()
         self.__DFTBPARAMDIR = DFTBPARAMDIR if DFTBPARAMDIR else locate_dftbparamdir()
 
@@ -158,7 +153,11 @@ class DFTBInput(Engine):
             "S": [-0.021, -0.017, 0.000, -0.017, -0.016, 0.000, 0.000, 0.000, -0.080],
         }
 
-    def write_input(self, mol: System, job_info: Dict,) -> None:
+    def write_input(
+        self,
+        mol: System,
+        job_info: Dict,
+    ) -> None:
 
         mol.write_gen(f"{mol.name}.gen")
 
@@ -349,19 +348,26 @@ class DFTBInput(Engine):
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_spe", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_spe",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
 
             self.write_input(
-                mol=mol, job_info={"type": "spe", "charge": charge, "spin": spin,},
+                mol=mol,
+                job_info={
+                    "type": "spe",
+                    "charge": charge,
+                    "spin": spin,
+                },
             )
 
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {self.__MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
+                    f"mpirun -np {ncores} {MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
                 )
 
             elif self.parallel == "nompi":
@@ -440,7 +446,9 @@ class DFTBInput(Engine):
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_opt", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_opt",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -458,7 +466,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {self.__MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
+                    f"mpirun -np {ncores} {MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
                 )
 
             elif self.parallel == "nompi":
@@ -581,7 +589,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {self.__MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                    f"mpirun -np {ncores} {MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
                 )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
@@ -721,7 +729,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {self.__MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                    f"mpirun -np {ncores} {MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
                 )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
