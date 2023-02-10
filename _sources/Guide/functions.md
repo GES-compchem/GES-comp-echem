@@ -1,5 +1,5 @@
 (Guide-functions)=
-# Analysing results
+# Calculating properties
 
 The `compechem.functions` submodule contains a series of methods to "manually" calculate some physical properties of the system under study. The user is expected to provide the exact intended states for the system(s) under study, as the functions will simply take the inputs and generate the output without carrying out any checks. For example, if the user calculates the pKa of a molecule in an unoptimised geometry, the resulting pKa will be that of the unoptimised geometry.
 
@@ -8,6 +8,13 @@ The `compechem.functions` functions can be imported via the following syntax:
 ```python
 from compechem.functions import calculate_pka
 ```
+
+:::{admonition} Empirical corrections
+:class: warning
+The functions to calculate pKa and reduction potentials take into account the self-energy of proton and electron for calculations carried out with GFN2-xTB:
+* electron self energy = $111.75\, \mathrm{kcal/mol}$
+* proton self energy = $164.22\, \mathrm{kcal/mol}$
+:::
 
 ---
 
@@ -18,7 +25,11 @@ The `compechem.functions.pka` submodule provides an interface for the computatio
 * `calculate_pka`: Computes the pKa of a molecular system and its deprotomer. The user must provide both streucture in the form of `System` objects with an already defined electronic energy and possibly a vibronic one.
 * `auto_calculate_pka`: Computes the pKa of a given molecule by automatically searching the lowest-energy deprotomer using CREST. Once the proper deprotomer has been identified the function take care of the geometry optimization of both structures, the calculation of electronic energies and frequencies.
 
-Please notice how both functions return the computed pKa value while the `auto_calculate_pka` function also sets the pKa as a property of the protonated system.
+
+:::{admonition} Note
+:class: info
+Both functions return the computed pKa value and set the pKa as a property (`system.properties.pka`) of the protonated system. The `auto_calculate_pka` also returns the deprotonated system.
+:::
 
 In general terms both functions calculate the pKa of a molecule $HA$ considering a reaction of the type:
 
@@ -104,8 +115,6 @@ provided the following arguments:
 
 * `oxidised` (`System`): molecule in its oxidised state
 * `reduced` (`System`): molecule in its reduced state
-* `method_el` (`System`): level of theory for the electronic component of the total energy (must be present in the `System.energies` dictionary)
-* `method_vib` (`System`): level of theory for the vibronic component of the total energy (must be present in the `System.energies` dictionary). If not specified, defaults to the same level of theory as the electronic energy
 * `pH` (`float`, default: `7.0`): pH at which the reduction potential is calculated
 
 and returns the reduction potential of the molecule considering the provided states at the provided pH, including eventual PCET mechanisms, calculated as:

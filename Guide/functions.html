@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Analysing results &#8212; GES-compechem User Guide</title>
+    <title>Calculating properties &#8212; GES-compechem User Guide</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -143,7 +143,7 @@ const thebe_selector_output = ".output, .cell_output"
    </li>
    <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
-     Analysing results
+     Calculating properties
     </a>
    </li>
    <li class="toctree-l2">
@@ -450,7 +450,7 @@ title="Print to PDF"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Analysing results</h1>
+                <h1>Calculating properties</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -509,12 +509,20 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="analysing-results">
-<span id="guide-functions"></span><h1>Analysing results<a class="headerlink" href="#analysing-results" title="Permalink to this headline">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="calculating-properties">
+<span id="guide-functions"></span><h1>Calculating properties<a class="headerlink" href="#calculating-properties" title="Permalink to this headline">#</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">compechem.functions</span></code> submodule contains a series of methods to “manually” calculate some physical properties of the system under study. The user is expected to provide the exact intended states for the system(s) under study, as the functions will simply take the inputs and generate the output without carrying out any checks. For example, if the user calculates the pKa of a molecule in an unoptimised geometry, the resulting pKa will be that of the unoptimised geometry.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">compechem.functions</span></code> functions can be imported via the following syntax:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">compechem.functions</span> <span class="kn">import</span> <span class="n">calculate_pka</span>
 </pre></div>
+</div>
+<div class="warning admonition">
+<p class="admonition-title">Empirical corrections</p>
+<p>The functions to calculate pKa and reduction potentials take into account the self-energy of proton and electron for calculations carried out with GFN2-xTB:</p>
+<ul class="simple">
+<li><p>electron self energy = <span class="math notranslate nohighlight">\(111.75\, \mathrm{kcal/mol}\)</span></p></li>
+<li><p>proton self energy = <span class="math notranslate nohighlight">\(164.22\, \mathrm{kcal/mol}\)</span></p></li>
+</ul>
 </div>
 <hr class="docutils" />
 <section id="pka">
@@ -524,7 +532,10 @@ title="Print to PDF"
 <li><p><code class="docutils literal notranslate"><span class="pre">calculate_pka</span></code>: Computes the pKa of a molecular system and its deprotomer. The user must provide both streucture in the form of <code class="docutils literal notranslate"><span class="pre">System</span></code> objects with an already defined electronic energy and possibly a vibronic one.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">auto_calculate_pka</span></code>: Computes the pKa of a given molecule by automatically searching the lowest-energy deprotomer using CREST. Once the proper deprotomer has been identified the function take care of the geometry optimization of both structures, the calculation of electronic energies and frequencies.</p></li>
 </ul>
-<p>Please notice how both functions return the computed pKa value while the <code class="docutils literal notranslate"><span class="pre">auto_calculate_pka</span></code> function also sets the pKa as a property of the protonated system.</p>
+<div class="info admonition">
+<p class="admonition-title">Note</p>
+<p>Both functions return the computed pKa value and set the pKa as a property (<code class="docutils literal notranslate"><span class="pre">system.properties.pka</span></code>) of the protonated system. The <code class="docutils literal notranslate"><span class="pre">auto_calculate_pka</span></code> also returns the deprotonated system.</p>
+</div>
 <p>In general terms both functions calculate the pKa of a molecule <span class="math notranslate nohighlight">\(HA\)</span> considering a reaction of the type:</p>
 <div class="math notranslate nohighlight">
 \[
@@ -602,8 +613,6 @@ MH_{n} \rightarrow M^{\cdot (n-1)-} + n\cdot H^{+} + e^{-}
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">oxidised</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): molecule in its oxidised state</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reduced</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): molecule in its reduced state</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">method_el</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): level of theory for the electronic component of the total energy (must be present in the <code class="docutils literal notranslate"><span class="pre">System.energies</span></code> dictionary)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">method_vib</span></code> (<code class="docutils literal notranslate"><span class="pre">System</span></code>): level of theory for the vibronic component of the total energy (must be present in the <code class="docutils literal notranslate"><span class="pre">System.energies</span></code> dictionary). If not specified, defaults to the same level of theory as the electronic energy</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pH</span></code> (<code class="docutils literal notranslate"><span class="pre">float</span></code>, default: <code class="docutils literal notranslate"><span class="pre">7.0</span></code>): pH at which the reduction potential is calculated</p></li>
 </ul>
 <p>and returns the reduction potential of the molecule considering the provided states at the provided pH, including eventual PCET mechanisms, calculated as:</p>
