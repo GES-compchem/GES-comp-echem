@@ -15,19 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class OrcaInput(Engine):
-    """Interface for running Orca calculations."""
-
-    def __init__(
-        self,
-        method: str = "PBE",
-        basis_set: str = "def2-TZVP",
-        aux_basis: str = "def2/J",
-        solvent: str = None,
-        optionals: str = "",
-        ORCADIR: str = None,
-    ) -> None:
-        """
-        Parameters
+    """Interface for running Orca calculations.
+    
+    Parameters
         ----------
         method : str
             level of theory, by default "PBE"
@@ -42,7 +32,18 @@ class OrcaInput(Engine):
         ORCADIR: str, optional
             the path or environment variable containing the path to the ORCA folder. If set
             to None (default) the orca executable will be loaded automatically.
-        """
+    """
+
+    def __init__(
+        self,
+        method: str = "PBE",
+        basis_set: str = "def2-TZVP",
+        aux_basis: str = "def2/J",
+        solvent: str = None,
+        optionals: str = "",
+        ORCADIR: str = None,
+    ) -> None:
+    
         super().__init__(method)
 
         self.basis_set = basis_set if basis_set else ""

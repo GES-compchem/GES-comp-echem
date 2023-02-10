@@ -14,7 +14,21 @@ logger = logging.getLogger(__name__)
 
 
 class XtbInput(Engine):
-    """Interface for running xTB calculations"""
+    """
+    Interface for running xTB calculations
+    
+    Parameters
+    ----------
+    method : str, optional
+        level of theory, by default "gfn2"
+    solvent : str, optional
+        ALPB solvent, by default no solvent (vacuum)
+    optionals : str, optional
+        optional keywords/flags, by default ""
+    XTBPATH: str, optional
+        the path to the xtb executable. If set to None (default) the xtb executable will
+        be loaded automatically.
+    """
 
     def __init__(
         self,
@@ -23,19 +37,6 @@ class XtbInput(Engine):
         optionals: str = "",
         XTBPATH: str = None,
     ) -> None:
-        """
-        Parameters
-        ----------
-        method : str, optional
-            level of theory, by default "gfn2"
-        solvent : str, optional
-            ALPB solvent, by default no solvent (vacuum)
-        optionals : str, optional
-            optional keywords/flags, by default ""
-        XTBPATH: str, optional
-            the path to the xtb executable. If set to None (default) the xtb executable will
-            be loaded automatically.
-        """
 
         super().__init__(method)
 
