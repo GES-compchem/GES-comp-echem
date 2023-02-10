@@ -6,7 +6,7 @@ from os.path import dirname, abspath
 from shutil import rmtree
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_almost_equal
 
 # Get the path of the tests directory
 TEST_DIR = dirname(abspath(__file__))
@@ -72,10 +72,9 @@ def test_XtbInput_opt():
         assert mol.properties.level_of_theory_electronic == engine.level_of_theory
         assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
-        assert_array_almost_equal(
-            mol.properties.electronic_energy, -14.097142459981, decimal=6
-        )
-        assert_array_almost_equal(mol.properties.vibronic_energy, 0.032427777313, decimal=6)
+        assert_almost_equal(mol.properties.electronic_energy, -14.097142459981, decimal=6)
+        assert_almost_equal(mol.properties.vibronic_energy, 0.032427777313, decimal=6)
+        assert_almost_equal(mol.properties.gibbs_free_energy, -14.064714682668, decimal=6)
 
         expected_mulliken_charges = np.array(
             [0.345, -0.301, 0.192, 0.170, -0.300, 0.170, 0.192, -0.470]
@@ -116,10 +115,9 @@ def test_XtbInput_freq():
         assert mol.properties.level_of_theory_electronic == engine.level_of_theory
         assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
-        assert_array_almost_equal(
-            mol.properties.electronic_energy, -14.093063923335, decimal=6
-        )
-        assert_array_almost_equal(mol.properties.vibronic_energy, 0.033817193430, decimal=6)
+        assert_almost_equal(mol.properties.electronic_energy, -14.093063923335, decimal=6)
+        assert_almost_equal(mol.properties.vibronic_energy, 0.033817193430, decimal=6)
+        assert_almost_equal(mol.properties.gibbs_free_energy, -14.059246729905, decimal=6)
 
         expected_mulliken_charges = np.array(
             [0.334, -0.301, 0.191, 0.169, -0.301, 0.169, 0.191, -0.452]

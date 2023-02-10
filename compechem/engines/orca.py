@@ -657,6 +657,9 @@ class OrcaInput(Engine):
                 if "G-E(el)" in line:
                     vibronic_energy = float(line.split()[-4])
                     mol.properties.set_vibronic_energy(vibronic_energy, self)
+                if "Final Gibbs free energy" in line:
+                    gibbs_free_energy = float(line.split()[-2])
+                    mol.properties.set_gibbs_free_energy(gibbs_free_energy, self, self)
 
         # Parse the Mulliken atomic charges and spin populations
         # -----------------------------------------------------------------------------------

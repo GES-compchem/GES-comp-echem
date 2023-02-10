@@ -431,6 +431,9 @@ class XtbInput(Engine):
                 if "G(RRHO) contrib." in line:
                     vibronic_energy = float(line.split()[-3])
                     mol.properties.set_vibronic_energy(vibronic_energy, self)
+                if "TOTAL FREE ENERGY" in line:
+                    gibbs_free_energy = float(line.split()[-3])
+                    mol.properties.set_gibbs_free_energy(gibbs_free_energy, self, self)
 
         # Parse the Mulliken atomic charges and spin populations
         # ----------------------------------------------------------------------------------
