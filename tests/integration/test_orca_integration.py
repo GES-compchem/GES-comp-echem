@@ -6,7 +6,7 @@ from os.path import dirname, abspath, isfile
 from shutil import rmtree
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_almost_equal
 
 # Get the path of the tests directory
 TEST_DIR = dirname(abspath(__file__))
@@ -78,7 +78,7 @@ def test_OrcaInput_spe_no_inplace():
 
     else:
         assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
-        
+
         assert_array_almost_equal(
             newmol.properties.electronic_energy, -75.942595825106, decimal=6
         )
@@ -103,9 +103,7 @@ def test_OrcaInput_spe_no_inplace():
 # Test the spe() function on a radical cation water molecule in DMSO without the inplace option
 def test_OrcaInput_spe_CCSD():
 
-    engine = OrcaInput(
-        method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="AutoAux"
-    )
+    engine = OrcaInput(method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="AutoAux")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
     try:
@@ -115,7 +113,7 @@ def test_OrcaInput_spe_CCSD():
 
     else:
         assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
-        
+
         assert_array_almost_equal(
             newmol.properties.electronic_energy, -75.731114338261, decimal=6
         )
@@ -140,18 +138,18 @@ def test_OrcaInput_spe_CCSD():
 # Test that the correct suffix is generated when forbidden symbol is used
 def test_OrcaInput_forbidden():
 
-    engine = OrcaInput(
-        method="DLPNO-CCSD(T)", basis_set="6-311++G**", aux_basis="AutoAux"
-    )
+    engine = OrcaInput(method="DLPNO-CCSD(T)", basis_set="6-311++G**", aux_basis="AutoAux")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
     try:
         engine.spe(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised"
-    
-    assert isfile("./output_files/water_1_2_orca_DLPNO-CCSD-T-_6-311++G--_vacuum_spe.out") == True, "Output file not found"
 
+    assert (
+        isfile("./output_files/water_1_2_orca_DLPNO-CCSD-T-_6-311++G--_vacuum_spe.out")
+        == True
+    ), "Output file not found"
 
 
 # Test the opt() function on a water molecule in vacuum
@@ -169,10 +167,9 @@ def test_OrcaInput_opt():
         assert mol.properties.level_of_theory_electronic == engine.level_of_theory
         assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
-        assert_array_almost_equal(
-            mol.properties.electronic_energy, -76.272686998306, decimal=6
-        )
-        assert_array_almost_equal(mol.properties.vibronic_energy, 0.00301009, decimal=6)
+        assert_almost_equal(mol.properties.electronic_energy, -76.272686998306, decimal=6)
+        assert_almost_equal(mol.properties.vibronic_energy, 0.00301009, decimal=6)
+        assert_almost_equal(mol.properties.gibbs_free_energy, -76.26967691, decimal=6)
 
         expected_mulliken_charges = np.array([-0.285546, 0.142772, 0.142773])
         assert_array_almost_equal(
@@ -204,10 +201,9 @@ def test_OrcaInput_freq():
         assert mol.properties.level_of_theory_electronic == engine.level_of_theory
         assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
-        assert_array_almost_equal(
-            mol.properties.electronic_energy, -76.272562753586, decimal=6
-        )
-        assert_array_almost_equal(mol.properties.vibronic_energy, 0.00327855, decimal=6)
+        assert_almost_equal(mol.properties.electronic_energy, -76.272562753586, decimal=6)
+        assert_almost_equal(mol.properties.vibronic_energy, 0.00327855, decimal=6)
+        assert_almost_equal(mol.properties.gibbs_free_energy, -76.26928420, decimal=6)
 
         expected_mulliken_charges = np.array([-0.285593, 0.142795, 0.142798])
         assert_array_almost_equal(
@@ -234,10 +230,9 @@ def test_OrcaInput_nfreq():
         assert mol.properties.level_of_theory_electronic == engine.level_of_theory
         assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
 
-        assert_array_almost_equal(
-            mol.properties.electronic_energy, -76.283368184519, decimal=6
-        )
-        assert_array_almost_equal(mol.properties.vibronic_energy, 0.00317889, decimal=6)
+        assert_almost_equal(mol.properties.electronic_energy, -76.283368184519, decimal=6)
+        assert_almost_equal(mol.properties.vibronic_energy, 0.00317889, decimal=6)
+        assert_almost_equal(mol.properties.gibbs_free_energy, -76.28018929, decimal=6)
 
         expected_mulliken_charges = np.array([-0.363774, 0.181883, 0.181890])
         assert_array_almost_equal(

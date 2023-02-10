@@ -2,7 +2,7 @@ import os, copy, shutil, sh
 from typing import Dict
 from tempfile import mkdtemp
 
-from compechem.config import get_ncores
+from compechem.config import get_ncores, MPI_FLAGS
 from compechem.systems import Ensemble, System
 from compechem.tools import process_output
 from compechem.core.base import Engine
@@ -15,20 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class OrcaInput(Engine):
-    """Interface for running Orca calculations."""
-
-    def __init__(
-        self,
-        method: str = "PBE",
-        basis_set: str = "def2-TZVP",
-        aux_basis: str = "def2/J",
-        solvent: str = None,
-        optionals: str = "",
-        MPI_FLAGS: str = "",
-        ORCADIR: str = None,
-    ) -> None:
-        """
-        Parameters
+    """Interface for running Orca calculations.
+    
+    Parameters
         ----------
         method : str
             level of theory, by default "PBE"
@@ -40,20 +29,27 @@ class OrcaInput(Engine):
             SMD solvent, by default None
         optionals : str, optional
             optional keywords, by default ""
-        MPI_FLAGS: str, optional
-            string containing optional flags to be passed to MPI when launching an orca job.
-            (e.g. `--bind-to none` or `--use-hwthread-cpus`), by default ""
         ORCADIR: str, optional
             the path or environment variable containing the path to the ORCA folder. If set
             to None (default) the orca executable will be loaded automatically.
-        """
+    """
+
+    def __init__(
+        self,
+        method: str = "PBE",
+        basis_set: str = "def2-TZVP",
+        aux_basis: str = "def2/J",
+        solvent: str = None,
+        optionals: str = "",
+        ORCADIR: str = None,
+    ) -> None:
+    
         super().__init__(method)
 
         self.basis_set = basis_set if basis_set else ""
         self.aux_basis = aux_basis if aux_basis else ""
         self.solvent = solvent
         self.optionals = optionals
-        self.__MPI_FLAGS = MPI_FLAGS
         self.__ORCADIR = ORCADIR if ORCADIR else locate_orca(get_folder=True)
 
         self.level_of_theory += f""" | basis: {basis_set} | solvent: {solvent}"""
@@ -63,7 +59,11 @@ class OrcaInput(Engine):
         self.__output_suffix += f"_{solvent}" if solvent else "_vacuum"
         self.__output_suffix = clean_suffix(self.__output_suffix)
 
-    def write_input(self, mol: System, job_info: Dict,) -> None:
+    def write_input(
+        self,
+        mol: System,
+        job_info: Dict,
+    ) -> None:
 
         mol.geometry.write_xyz(f"{mol.name}.xyz")
 
@@ -190,7 +190,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_spe", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_spe",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -209,7 +211,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -287,7 +289,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_opt", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_opt",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -306,7 +310,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System("input.xyz", charge, spin)
@@ -367,7 +371,7 @@ class OrcaInput(Engine):
         newmol : System object
             Output molecule containing the new energies.
         """
-        
+
         if ncores is None:
             ncores = get_ncores()
 
@@ -380,7 +384,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_freq", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_freq",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -399,7 +405,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -465,7 +471,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_nfreq", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_nfreq",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -483,7 +491,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -553,7 +561,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_scan", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_scan",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -575,7 +585,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out {self.__MPI_FLAGS}")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
 
             xyz_list = [
                 xyz
@@ -648,6 +658,9 @@ class OrcaInput(Engine):
                 if "G-E(el)" in line:
                     vibronic_energy = float(line.split()[-4])
                     mol.properties.set_vibronic_energy(vibronic_energy, self)
+                if "Final Gibbs free energy" in line:
+                    gibbs_free_energy = float(line.split()[-2])
+                    mol.properties.set_gibbs_free_energy(gibbs_free_energy, self, self)
 
         # Parse the Mulliken atomic charges and spin populations
         # -----------------------------------------------------------------------------------
@@ -768,7 +781,11 @@ class M06(OrcaInput):
 class r2SCAN(OrcaInput):
     def __init__(self):
         super().__init__(
-            method="r2SCAN-3c", basis_set="", aux_basis=None, solvent="water", optionals="",
+            method="r2SCAN-3c",
+            basis_set="",
+            aux_basis=None,
+            solvent="water",
+            optionals="",
         )
 
 

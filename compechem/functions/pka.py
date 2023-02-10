@@ -97,6 +97,12 @@ def calculate_pka(protonated: System, deprotonated: System):
         )
     ) / (2.303 * 1.98720425864083 / 1000 * 298.15)
 
+    protonated.properties.set_pka(
+        pka,
+        protonated.properties.level_of_theory_electronic,
+        protonated.properties.level_of_theory_vibronic,
+    )
+
     return pka
 
 
@@ -170,9 +176,5 @@ def auto_calculate_pka(
     lowest_deprotomer = ordered_deprotomers[0]
 
     pka = calculate_pka(protonated, lowest_deprotomer)
-
-    protonated.properties.set_pka(
-        pka, method_el, method_vib
-    )
 
     return pka, lowest_deprotomer

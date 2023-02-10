@@ -3,11 +3,87 @@ from __future__ import annotations
 import logging, warnings
 import compechem.config
 
-from typing import Dict, List
+from typing import Dict, List, Union
 from compechem.core.base import Engine
 
-
 logger = logging.getLogger(__name__)
+
+
+def is_orca_level_of_theory(string: str) -> bool:
+    """
+    Checks whether the input string matches the standard for the level of theory string in
+    OrcaInput:
+
+    "OrcaInput || method: § | basis: § | solvent: §"
+
+    Parameters
+    ----------
+    string: str
+        String to be checked
+
+    Returns
+    -------
+    bool
+        True if the string matches the standard OrcaInput level of theory format, else False
+    """
+    for required in ["OrcaInput || method: ", " | basis: ", " | solvent: "]:
+        if required not in string:
+            return False
+
+    return True
+
+
+def is_xtb_level_of_theory(string: str) -> bool:
+    """
+    Checks whether the input string matches the standard for the level of theory string in
+    XtbInput:
+
+    "XtbInput || method: § | solvent: §"
+
+    Parameters
+    ----------
+    string: str
+        String to be checked
+
+    Returns
+    -------
+    bool
+        True if the string matches the standard XtbInput level of theory format, else False
+    """
+    for required in ["XtbInput || method: ", " | solvent: "]:
+        if required not in string:
+            return False
+
+    return True
+
+
+def is_dftb_level_of_theory(string: str) -> bool:
+    """
+    Checks whether the input string matches the standard for the level of theory string in
+    DFTBInput:
+
+    "DFTBInput || method: § | parameters: § | 3rd order: § | dispersion: §"
+
+    Parameters
+    ----------
+    string: str
+        String to be checked
+
+    Returns
+    -------
+    bool
+        True if the string matches the standard DFTBInput level of theory format, else False
+    """
+    for required in [
+        "DFTBInput || method: ",
+        " | parameters: ",
+        " | 3rd order: ",
+        " | dispersion: ",
+    ]:
+        if required not in string:
+            return False
+
+    return True
 
 
 class Properties:
@@ -15,9 +91,9 @@ class Properties:
     Class containing the properties associated to a system when a given electronic and vibronic
     level of theory are considered. The class automatically stores the level of theory associated
     to the coputed properties and checks, whenever a new property is set, that a given input data
-    is compatible with the current used level of theory. In normal conditions (strict mode) 
+    is compatible with the current used level of theory. In normal conditions (strict mode)
     if a mismatch between levels of theory is detected all the properties related to the old
-    level of theory are cleaned and a warning is raised. If the strict mode is disables 
+    level of theory are cleaned and a warning is raised. If the strict mode is disables
     (by setting compechem.config.STRICT_MODE to False) the level of theory is set to `Undefined`
     and all the properties are kept.
     """
@@ -58,23 +134,42 @@ class Properties:
         self.__gibbs_free_energy = None
         self.__pka = None
 
-    def __check_engine(self, engine: Engine) -> None:
-        if not isinstance(engine, Engine):
+    def __check_engine(self, engine: Union(Engine, str)) -> None:
+
+        if type(engine) == str:
+            if not any(
+                [
+                    is_orca_level_of_theory(engine),
+                    is_xtb_level_of_theory(engine),
+                    is_dftb_level_of_theory(engine),
+                ]
+            ):
+                raise TypeError(
+                    "The engine argument string does not match any valid level of theory"
+                )
+
+        elif not isinstance(engine, Engine):
             raise TypeError("The engine argument must be derived from `Engine`")
 
-    def __validate_electronic(self, engine: Engine) -> None:
+        else:
+            if isinstance(engine, Engine):
+                return engine.level_of_theory
+            else:
+                return engine
 
-        self.__check_engine(engine)
+    def __validate_electronic(self, engine: Union(Engine, str)) -> None:
+
+        level_of_theory = self.__check_engine(engine)
 
         if self.__level_of_theory_electronic is None:
-            self.__level_of_theory_electronic = engine.level_of_theory
+            self.__level_of_theory_electronic = level_of_theory
 
-        elif self.__level_of_theory_electronic != engine.level_of_theory:
+        elif self.__level_of_theory_electronic != level_of_theory:
             if compechem.config.STRICT_MODE == True:
                 msg = "Different electronic levels of theory used for calculating properties. Clearing properties with different electronic level of theory."
                 logger.warning(msg)
                 self.__clear_electronic()
-                self.__level_of_theory_electronic = engine.level_of_theory
+                self.__level_of_theory_electronic = level_of_theory
 
             else:
                 msg = "Different electronic levels of theory used for calculating properties. Setting level of theory to undefined."
@@ -84,10 +179,10 @@ class Properties:
 
     def __validate_vibronic(self, engine: Engine) -> None:
 
-        self.__check_engine(engine)
+        level_of_theory = self.__check_engine(engine)
 
         if self.__level_of_theory_vibronic is None:
-            self.__level_of_theory_vibronic = engine.level_of_theory
+            self.__level_of_theory_vibronic = level_of_theory
 
             if self.__pka is not None:
                 if compechem.config.STRICT_MODE == True:
@@ -99,13 +194,13 @@ class Properties:
                     logger.warning(msg)
                     warnings.warn(msg)
 
-        elif self.__level_of_theory_vibronic != engine.level_of_theory:
+        elif self.__level_of_theory_vibronic != level_of_theory:
 
             if compechem.config.STRICT_MODE == True:
                 msg = "Different vibronic levels of theory used for calculating properties. Clearing properties with different vibronic level of theory."
                 logger.warning(msg)
                 self.__clear_vibronic()
-                self.__level_of_theory_vibronic = engine.level_of_theory
+                self.__level_of_theory_vibronic = level_of_theory
 
             else:
                 msg = "Different vibronic levels of theory used for calculating properties. Setting level of theory to undefined."
@@ -206,7 +301,9 @@ class Properties:
         """
         return self.__electronic_energy
 
-    def set_electronic_energy(self, value: float, electronic_engine: Engine) -> None:
+    def set_electronic_energy(
+        self, value: float, electronic_engine: Union(Engine, str)
+    ) -> None:
         """
         Sets the electronic energy of the system.
 
@@ -214,7 +311,7 @@ class Properties:
         ---------
         value: float
             The electronic energy of the system in Hartree.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the calculation.
         """
         self.__validate_electronic(electronic_engine)
@@ -232,7 +329,9 @@ class Properties:
         """
         return self.__vibronic_energy
 
-    def set_vibronic_energy(self, value: float, vibronic_engine: Engine) -> None:
+    def set_vibronic_energy(
+        self, value: float, vibronic_engine: Union(Engine, str)
+    ) -> None:
         """
         Sets the vibronic energy of the system.
 
@@ -240,7 +339,7 @@ class Properties:
         ---------
         value: float
             The vibronic energy of the system in Hartree.
-        vibronic_engine: Engine
+        vibronic_engine: Union(Engine, str)
             The engine used in the calculation.
         """
         self.__validate_vibronic(vibronic_engine)
@@ -259,7 +358,10 @@ class Properties:
         return self.__helmholtz_free_energy
 
     def set_helmholtz_free_energy(
-        self, value: float, electronic_engine: Engine, vibronic_engine: Engine
+        self,
+        value: float,
+        electronic_engine: Union(Engine, str),
+        vibronic_engine: Union(Engine, str),
     ) -> float:
         """
         Sets the Helmholtz free energy of the system.
@@ -268,9 +370,9 @@ class Properties:
         ---------
         value: float
             The Helmholtz free energy of the system in Hartree.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
-        vibronic_engine: Engine
+        vibronic_engine: Union(Engine, str)
             The engine used in the vibronic calculation.
         """
         self.__validate_electronic(electronic_engine)
@@ -290,7 +392,10 @@ class Properties:
         return self.__gibbs_free_energy
 
     def set_gibbs_free_energy(
-        self, value: float, electronic_engine: Engine, vibronic_engine: Engine
+        self,
+        value: float,
+        electronic_engine: Union(Engine, str),
+        vibronic_engine: Union(Engine, str),
     ) -> float:
         """
         Sets the Gibbs free energy of the system.
@@ -299,9 +404,9 @@ class Properties:
         ---------
         value: float
             The Gibbs free energy of the system in Hartree.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
-        vibronic_engine: Engine
+        vibronic_engine: Union(Engine, str)
             The engine used in the vibronic calculation.
         """
         self.__validate_electronic(electronic_engine)
@@ -323,8 +428,8 @@ class Properties:
     def set_pka(
         self,
         value: float,
-        electronic_engine: Engine,
-        vibronic_engine: Engine = None,
+        electronic_engine: Union(Engine, str),
+        vibronic_engine: Union(Engine, str) = None,
     ) -> float:
         """
         Sets the pKa of the system.
@@ -333,9 +438,9 @@ class Properties:
         ---------
         value: float
             The pKa of the system.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
-        vibronic_engine: Engine
+        vibronic_engine: Union(Engine, str)
             The engine used in the vibronic calculation. (optional)
         """
         self.__validate_electronic(electronic_engine)
@@ -356,7 +461,7 @@ class Properties:
         return self.__mulliken_charges
 
     def set_mulliken_charges(
-        self, value: List[float], electronic_engine: Engine
+        self, value: List[float], electronic_engine: Union(Engine, str)
     ) -> None:
         """
         Sets the Mulliken charges of the system.
@@ -365,7 +470,7 @@ class Properties:
         ---------
         value: float
             The list of Mulliken charges associated to each atom of the system.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
         self.__validate_electronic(electronic_engine)
@@ -384,7 +489,7 @@ class Properties:
         return self.__mulliken_spin_populations
 
     def set_mulliken_spin_populations(
-        self, value: List[float], electronic_engine: Engine
+        self, value: List[float], electronic_engine: Union(Engine, str)
     ) -> None:
         """
         Sets the Mulliken spin populations of the system.
@@ -393,7 +498,7 @@ class Properties:
         ---------
         value: float
             The list of Mulliken spin populations associated to each atom of the system.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
         self.__validate_electronic(electronic_engine)
@@ -407,14 +512,14 @@ class Properties:
         Returns
         -------
         Dict[str, List[float]]
-            The dictionaty containing the list of condensed Fukui values computed for each 
+            The dictionaty containing the list of condensed Fukui values computed for each
             atom in the system starting from the values of the Mulliken charges. The functions
             are stored in the dictionary according to the `f+`, `f-` and `f0` keys.
         """
         return self.__condensed_fukui_mulliken
 
     def set_condensed_fukui_mulliken(
-        self, value: Dict[str, List[float]], electronic_engine: Engine
+        self, value: Dict[str, List[float]], electronic_engine: Union(Engine, str)
     ) -> None:
         """
         Sets condensed Fukui values computed from the Mulliken charges.
@@ -422,10 +527,10 @@ class Properties:
         Arguments
         ---------
         Dict[str, List[float]]
-            The dictionaty containing the list of condensed Fukui values computed for each 
+            The dictionaty containing the list of condensed Fukui values computed for each
             atom in the system starting from the values of the Mulliken charges. The functions
             are stored in the dictionary according to the `f+`, `f-` and `f0` keys.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
         self.__validate_electronic(electronic_engine)
@@ -444,7 +549,7 @@ class Properties:
         return self.__hirshfeld_charges
 
     def set_hirshfeld_charges(
-        self, value: List[float], electronic_engine: Engine
+        self, value: List[float], electronic_engine: Union(Engine, str)
     ) -> None:
         """
         Sets the Hirshfeld charges of the system.
@@ -453,7 +558,7 @@ class Properties:
         ---------
         value: float
             The list of Hirshfeld charges associated to each atom of the system.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
         self.__validate_electronic(electronic_engine)
@@ -472,7 +577,7 @@ class Properties:
         return self.__hirshfeld_spin_populations
 
     def set_hirshfeld_spin_populations(
-        self, value: List[float], electronic_engine: Engine
+        self, value: List[float], electronic_engine: Union(Engine, str)
     ) -> None:
         """
         Sets the Hirshfeld spin populations of the system.
@@ -481,7 +586,7 @@ class Properties:
         ---------
         value: float
             The list of Hirshfeld spin populations associated to each atom of the system.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
         self.__validate_electronic(electronic_engine)
@@ -495,14 +600,14 @@ class Properties:
         Returns
         -------
         Dict[str, List[float]]
-            The dictionaty containing the list of condensed Fukui values computed for each 
+            The dictionaty containing the list of condensed Fukui values computed for each
             atom in the system starting from the values of the Hirshfeld charges. The functions
             are stored in the dictionary according to the `f+`, `f-` and `f0` keys.
         """
         return self.__condensed_fukui_hirshfeld
 
     def set_condensed_fukui_hirshfeld(
-        self, value: Dict[str, List[float]], electronic_engine: Engine
+        self, value: Dict[str, List[float]], electronic_engine: Union(Engine, str)
     ) -> None:
         """
         Sets condensed Fukui values computed from the Hirshfeld charges.
@@ -510,10 +615,10 @@ class Properties:
         Arguments
         ---------
         Dict[str, List[float]]
-            The dictionaty containing the list of condensed Fukui values computed for each 
+            The dictionaty containing the list of condensed Fukui values computed for each
             atom in the system starting from the values of the Hirshfeld charges. The functions
             are stored in the dictionary according to the `f+`, `f-` and `f0` keys.
-        electronic_engine: Engine
+        electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
         self.__validate_electronic(electronic_engine)
