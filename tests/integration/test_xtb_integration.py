@@ -2,6 +2,8 @@ import pytest
 
 from compechem.engines.xtb import XtbInput
 from compechem.systems import System
+
+from os import listdir
 from os.path import dirname, abspath
 from shutil import rmtree
 
@@ -128,3 +130,37 @@ def test_XtbInput_freq():
 
         rmtree("output_files")
         rmtree("error_files")
+
+
+# Test the catching of runtime errors
+def test_XtbInput_runtime_error_input():
+
+    engine = XtbInput(solvent="watr")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        engine.spe(mol, ncores=4)
+    except:
+        assert True
+    else:
+        assert False, "An exception was not raised on wrong input file."
+
+    for filename in listdir("./"):
+        if filename.endswith("_spe"):
+            rmtree(filename)
+
+def test_XtbInput_runtime_error_scf_not_converged():
+
+    engine = XtbInput(solvent="water")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/cursed_water.xyz")
+
+    try:
+        engine.spe(mol, ncores=4)
+    except:
+        assert True
+    else:
+        assert False, "An exception was not raised on SCF not converged."
+
+    for filename in listdir("./"):
+        if filename.endswith("_spe"):
+            rmtree(filename)

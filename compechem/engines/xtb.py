@@ -422,6 +422,12 @@ class XtbInput(Engine):
         if not os.path.isfile("output.out"):
             raise RuntimeError("Cannot parse output, the `output.out` file does not exist.")
 
+        with open("output.out", "r") as outfile:
+            for line in outfile:
+                if "[ERROR] Program stopped due to fatal error" in line:
+                    logger.error("Error occurred during xTB calculation.")
+                    raise RuntimeError("Error occurred during xTB calculation")
+
         # Parse the final single point energy and the vibronic energy
         # ----------------------------------------------------------------------------------
         with open("output.out", "r") as out:

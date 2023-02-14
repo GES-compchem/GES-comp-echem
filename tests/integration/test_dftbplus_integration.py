@@ -2,6 +2,8 @@ import pytest
 
 from compechem.engines.dftbplus import DFTBInput
 from compechem.systems import System, Ensemble
+
+from os import listdir
 from os.path import dirname, abspath
 from shutil import rmtree
 
@@ -132,3 +134,21 @@ def test_DFTBInput_simulated_annealing():
         rmtree("error_files")
         rmtree("MD_data")
         rmtree("MD_trajectories")
+
+
+# Test the catching of runtime errors
+def test_DFTBInput_runtime_error_input():
+
+    engine = DFTBInput()
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        engine.spe(mol, ncores=4, charge="castoro")
+    except:
+        assert True
+    else:
+        assert False, "An exception was not raised on wrong input file."
+
+    for filename in listdir("./"):
+        if filename.endswith("_spe"):
+            rmtree(filename)
