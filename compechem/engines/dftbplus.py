@@ -373,20 +373,13 @@ class DFTBInput(Engine):
             elif self.parallel == "nompi":
                 os.system(f"{self.__DFTBPATH} > output.out 2>> output.err")
 
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "Total Energy" in line:
-                        electronic_energy = float(line.split()[2])
-
             if inplace is False:
-
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
-
                 newmol.properties = copy.copy(mol.properties)
-                newmol.properties.set_electronic_energy(electronic_energy, self)
+                self.parse_output(newmol)
 
             else:
-                mol.properties.set_electronic_energy(electronic_energy, self)
+                self.parse_output(mol)
 
             process_output(mol, self.__output_suffix, "spe", charge=charge, spin=spin)
             if remove_tdir:
@@ -472,23 +465,18 @@ class DFTBInput(Engine):
             elif self.parallel == "nompi":
                 os.system(f"{self.__DFTBPATH} > output.out 2>> output.err")
 
-            with open("output.out", "r") as out:
-                for line in out:
-                    if "Total Energy" in line:
-                        electronic_energy = float(line.split()[2])
-
             if inplace is False:
 
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
                 newmol.geometry.load_xyz("geo_end.xyz")
                 newmol.geometry.level_of_theory_geometry(self.level_of_theory)
-                newmol.properties.set_electronic_energy(electronic_energy, self)
+                self.parse_output(newmol)
 
             else:
 
                 mol.geometry.load_xyz("geo_end.xyz")
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
-                mol.properties.set_electronic_energy(electronic_energy, self)
+                self.parse_output(mol)
 
             process_output(mol, self.__output_suffix, "spe", charge=charge, spin=spin)
             if remove_tdir:
@@ -771,3 +759,40 @@ class DFTBInput(Engine):
 
         if inplace is False:
             return newmol
+    
+
+    def parse_output(self, mol: System) -> None:
+        """
+        The function will parse a DFTB+ output file automatically looking for all the
+        relevant numerical properties derived form a calculation. All the properties of the
+        given molecule will be set or updated.
+
+        Parameters
+        ----------
+        mol: System
+            The System to which the properties must be written to.
+
+        Raises
+        ------
+        RuntimeError
+            Exception raised if the given path to the output file is not valid.
+        """
+
+        if not os.path.isfile("output.out"):
+            raise RuntimeError("Cannot parse output, the `output.out` file does not exist.")
+
+        with open("output.out", "r") as outfile:
+            for line in outfile:
+                if "ERROR!" in line:
+                    logger.error("Error occurred during DFTB+ calculation.")
+                    raise RuntimeError("Error occurred during DFTB+ calculation")
+
+        # Parse the final single point energy and the vibronic energy
+        # ----------------------------------------------------------------------------------
+        with open("output.out", "r") as out:
+            for line in out:
+                if "Total Energy" in line:
+                    electronic_energy = float(line.split()[2])
+                    mol.properties.set_electronic_energy(electronic_energy, self)
+
+        
