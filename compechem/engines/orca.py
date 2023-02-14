@@ -29,6 +29,8 @@ class OrcaInput(Engine):
             SMD solvent, by default None
         optionals : str, optional
             optional keywords, by default ""
+        scf_block: Dict[str, str], optional
+            the dictionary containing the key and values to be added under the `%scf` block
         ORCADIR: str, optional
             the path or environment variable containing the path to the ORCA folder. If set
             to None (default) the orca executable will be loaded automatically.
