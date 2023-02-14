@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class OrcaInput(Engine):
     """Interface for running Orca calculations.
-    
+
     Parameters
         ----------
         method : str
@@ -41,15 +41,17 @@ class OrcaInput(Engine):
         aux_basis: str = "def2/J",
         solvent: str = None,
         optionals: str = "",
+        scf_block: Dict[str, str] = {},
         ORCADIR: str = None,
     ) -> None:
-    
+
         super().__init__(method)
 
         self.basis_set = basis_set if basis_set else ""
         self.aux_basis = aux_basis if aux_basis else ""
         self.solvent = solvent
         self.optionals = optionals
+        self.scf_block = scf_block
         self.__ORCADIR = ORCADIR if ORCADIR else locate_orca(get_folder=True)
 
         self.level_of_theory += f""" | basis: {basis_set} | solvent: {solvent}"""
@@ -123,6 +125,12 @@ class OrcaInput(Engine):
         if job_info["hirshfeld"]:
             input += "%output\n"
             input += "  Print[P_Hirshfeld] 1\n"
+            input += "end\n\n"
+
+        if self.scf_block != {}:
+            input += "%scf\n"
+            for key, value in self.scf_block.items():
+                input += f"  {key} {value}\n"
             input += "end\n\n"
 
         input += f"* xyzfile {job_info['charge']} {job_info['spin']} {mol.name}.xyz\n"
@@ -647,6 +655,17 @@ class OrcaInput(Engine):
 
         if not os.path.isfile("output.out"):
             raise RuntimeError("Cannot parse output, the `output.out` file does not exist.")
+
+        normal_termination = False
+        with open("output.out", "r") as outfile:
+            for line in outfile:
+                if "****ORCA TERMINATED NORMALLY****" in line:
+                    normal_termination = True
+                    break
+
+        if normal_termination is False:
+            logger.error("Error occurred during orca calculation.")
+            raise RuntimeError("Error occurred during orca calculation")
 
         # Parse the final single point energy and the vibronic energy
         # -----------------------------------------------------------------------------------

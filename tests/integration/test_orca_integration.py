@@ -2,6 +2,8 @@ import pytest
 
 from compechem.engines.orca import OrcaInput
 from compechem.systems import System, Ensemble
+
+from os import listdir
 from os.path import dirname, abspath, isfile
 from shutil import rmtree
 
@@ -278,3 +280,80 @@ def test_OrcaInput_scan():
         assert_array_almost_equal(calculated_energies, expected_energies, decimal=6)
 
         rmtree("output_files")
+
+
+# Test the catching of runtime errors
+def test_OrcaInput_runtime_error_input():
+
+    engine = OrcaInput(method="PBU", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        engine.spe(mol, ncores=4)
+    except:
+        assert True
+    else:
+        assert False, "An exception was not raised on wrong input file."
+
+    for filename in listdir("./"):
+        if filename.endswith("_spe"):
+            rmtree(filename)
+
+
+def test_OrcaInput_runtime_error_missing_basis():
+
+    engine = OrcaInput(
+        method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="def2/J", solvent=None
+    )
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        engine.spe(mol, ncores=4)
+    except:
+        assert True
+    else:
+        assert False, "An exception was not raised on missing basis-set."
+
+    for filename in listdir("./"):
+        if filename.endswith("_spe"):
+            rmtree(filename)
+
+
+def test_OrcaInput_runtime_error_scf_not_converged():
+
+    engine = OrcaInput(
+        method="PBE",
+        basis_set="def2-SVP",
+        aux_basis="def2/J",
+        solvent=None,
+        scf_block={"maxiter": 2},
+    )
+    mol = System(f"{TEST_DIR}/utils/xyz_files/europium-aquoion.xyz", charge=3, spin=7)
+
+    try:
+        engine.spe(mol, ncores=4)
+    except:
+        assert True
+    else:
+        assert False, "An exception was not raised on SCF not converged."
+
+    for filename in listdir("./"):
+        if filename.endswith("_spe"):
+            rmtree(filename)
+
+
+def test_OrcaInput_runtime_error_wrong_multiplicity():
+
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=0, spin=2)
+
+    try:
+        engine.spe(mol, ncores=4)
+    except:
+        assert True
+    else:
+        assert False, "An exception was not raised on wrong multiplicity."
+
+    for filename in listdir("./"):
+        if filename.endswith("_spe"):
+            rmtree(filename)
