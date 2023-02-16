@@ -1,8 +1,9 @@
 import os, copy, shutil, sh
 
+import compechem.config as cfg
+from compechem.config import get_ncores
 from os.path import join
 from tempfile import mkdtemp
-from compechem.config import get_ncores, MPI_FLAGS
 from compechem.core.base import Engine
 from compechem.systems import System, Ensemble
 from compechem.tools import (
@@ -367,7 +368,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
+                    f"mpirun -np {ncores} {cfg.MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
                 )
 
             elif self.parallel == "nompi":
@@ -459,7 +460,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
+                    f"mpirun -np {ncores} {cfg.MPI_FLAGS} {self.__DFTBPATH} > output.out 2>> output.err"
                 )
 
             elif self.parallel == "nompi":
@@ -577,7 +578,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                    f"mpirun -np {ncores} {cfg.MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
                 )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
@@ -717,7 +718,7 @@ class DFTBInput(Engine):
             if self.parallel == "mpi":
                 os.environ["OMP_NUM_THREADS"] = "1"
                 os.system(
-                    f"mpirun -np {ncores} {MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
+                    f"mpirun -np {ncores} {cfg.MPI_FLAGS} {self.__DFTBPATH} > {self.output_path} 2>> output.err"
                 )
             elif self.parallel == "nompi":
                 os.environ["OMP_NUM_THREADS"] = f"{ncores}"
