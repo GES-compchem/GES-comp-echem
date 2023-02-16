@@ -1,15 +1,15 @@
-import os, copy, shutil, sh
+import os, copy, shutil, sh, logging
 from typing import Dict
 from tempfile import mkdtemp
 
-from compechem.config import get_ncores, MPI_FLAGS
+import compechem.config as cfg
+from compechem.config import get_ncores
 from compechem.systems import Ensemble, System
 from compechem.tools import process_output
 from compechem.core.base import Engine
 from compechem.core.dependency_finder import locate_orca
 from compechem.tools.internaltools import clean_suffix
 
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +221,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -320,7 +320,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System("input.xyz", charge, spin)
@@ -415,7 +415,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -501,7 +501,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'")
 
             if inplace is False:
                 newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
@@ -595,7 +595,7 @@ class OrcaInput(Engine):
                 },
             )
 
-            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{MPI_FLAGS}'")
+            os.system(f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'")
 
             xyz_list = [
                 xyz
