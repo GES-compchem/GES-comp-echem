@@ -63,13 +63,14 @@ def tautomer_search(
         mol.geometry.write_xyz("geom.xyz")
 
         if solvent:
-            os.system(
-                f"{CRESTPATH} geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"{CRESTPATH} geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
+
         else:
-            os.system(
-                f"{CRESTPATH} geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"{CRESTPATH} geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick --fstrict --tautomerize {optionals} -T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
 
         if os.path.exists("tautomers.xyz"):
             tautomers_to_check = split_multixyz(mol, file="tautomers.xyz", suffix="t")
@@ -157,13 +158,14 @@ def conformer_search(
         mol.geometry.write_xyz("geom.xyz")
 
         if solvent:
-            os.system(
-                f"{CRESTPATH} geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"{CRESTPATH} geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
+
         else:
-            os.system(
-                f"{CRESTPATH} geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"{CRESTPATH} geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --mquick {optionals} -T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
 
         if os.path.exists("crest_conformers.xyz"):
             conformers_to_check = split_multixyz(
@@ -249,13 +251,14 @@ def deprotonate(
         mol.geometry.write_xyz("geom.xyz")
 
         if solvent:
-            os.system(
-                f"crest geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"crest geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
+
         else:
-            os.system(
-                f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --deprotonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
 
         if os.path.exists("deprotonated.xyz"):
             deprotomers_to_check = split_multixyz(
@@ -350,13 +353,14 @@ def protonate(
         mol.geometry.write_xyz("geom.xyz")
 
         if solvent:
-            os.system(
-                f"crest geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"crest geom.xyz --alpb {solvent} --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
+
         else:
-            os.system(
-                f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"crest geom.xyz --chrg {mol.charge} --uhf {mol.spin-1} --protonate --fstrict {optionals} -T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
 
         if os.path.exists("protonated.xyz"):
             protomers_to_check = split_multixyz(
@@ -482,13 +486,14 @@ def qcg_grow(
         solvent.geometry.write_xyz("solvent.xyz")
 
         if alpb_solvent:
-            os.system(
-                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb {alpb_solvent} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --alpb {alpb_solvent} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
+
         else:
-            os.system(
-                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
 
         solute.geometry.write_xyz(f"{solute.name}.xyz")
         cluster = System(f"{solute.name}.xyz", charge=charge, spin=spin)
@@ -606,13 +611,14 @@ def qcg_ensemble(
         solvent.geometry.write_xyz("solvent.xyz")
 
         if alpb_solvent:
-            os.system(
-                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb {alpb_solvent} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --alpb {alpb_solvent} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
+
         else:
-            os.system(
-                f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
-            )
+            cmd = f"crest solute.xyz --qcg solvent.xyz --nsolv {nsolv} --{method} --ensemble --enslvl {enslvl} --chrg {charge} --uhf {spin-1} {optionals} --T {ncores} > output.out 2>> output.err"
+            logger.debug(f"Running CREST with command: {cmd}")
+            os.system(cmd)
 
         try:
             ensemble = split_multixyz(
