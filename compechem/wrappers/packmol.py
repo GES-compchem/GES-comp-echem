@@ -67,13 +67,13 @@ def packmol_cube(
             sum([atomic_masses[atom] for atom, _ in solute.geometry]) / avogadro
         )  # g
 
-        volume = (cube_side**3) * 1e-27  # L
+        volume = (cube_side ** 3) * 1e-27  # L
 
         target_dens = (solvent_grams + solute_grams) / volume
 
     elif target_dens and cube_side:
 
-        volume = (cube_side**3) * 1e-27  # L
+        volume = (cube_side ** 3) * 1e-27  # L
 
         solute_grams = (
             sum([atomic_masses[atom] for atom, _ in solute.geometry]) / avogadro
@@ -145,8 +145,7 @@ def packmol_cube(
         )
 
         solvated_molecule = System(
-            f"{solute.name}_{nsolv}{solvent.name}s.xyz",
-            box_side=cube_side,
+            f"{solute.name}_{nsolv}{solvent.name}s.xyz", box_side=cube_side,
         )
 
         process_output(mol=solute, method="packmol", calc=f"{nsolv}{solvent.name}_cube")
