@@ -136,6 +136,8 @@ class Properties:
 
     def __check_engine(self, engine: Union(Engine, str)) -> None:
 
+        logger.debug(f"Engine type: {type(engine)}")
+
         if type(engine) == str:
             if not any(
                 [
@@ -147,19 +149,23 @@ class Properties:
                 raise TypeError(
                     "The engine argument string does not match any valid level of theory"
                 )
-
-        elif not isinstance(engine, Engine):
-            raise TypeError("The engine argument must be derived from `Engine`")
-
-        else:
-            if isinstance(engine, Engine):
-                return engine.level_of_theory
             else:
                 return engine
+
+        elif isinstance(engine, Engine):
+            return engine.level_of_theory
+
+        else:
+            raise TypeError("The engine argument must be derived from `Engine`")
 
     def __validate_electronic(self, engine: Union(Engine, str)) -> None:
 
         level_of_theory = self.__check_engine(engine)
+
+        logger.debug("Validating electronic energy")
+        logger.debug(
+            f"current: {self.__level_of_theory_electronic}, requested: {level_of_theory}"
+        )
 
         if self.__level_of_theory_electronic is None:
             self.__level_of_theory_electronic = level_of_theory
@@ -180,6 +186,11 @@ class Properties:
     def __validate_vibronic(self, engine: Engine) -> None:
 
         level_of_theory = self.__check_engine(engine)
+
+        logger.debug("Validating vibronic energy")
+        logger.debug(
+            f"current: {self.__level_of_theory_vibronic}, requested: {level_of_theory}"
+        )
 
         if self.__level_of_theory_vibronic is None:
             self.__level_of_theory_vibronic = level_of_theory
@@ -314,6 +325,7 @@ class Properties:
         electronic_engine: Union(Engine, str)
             The engine used in the calculation.
         """
+        logger.debug("Setting electronic energy")
         self.__validate_electronic(electronic_engine)
         self.__electronic_energy = value
 
@@ -342,6 +354,7 @@ class Properties:
         vibronic_engine: Union(Engine, str)
             The engine used in the calculation.
         """
+        logger.debug("Setting vibronic energy")
         self.__validate_vibronic(vibronic_engine)
         self.__vibronic_energy = value
 
@@ -375,6 +388,7 @@ class Properties:
         vibronic_engine: Union(Engine, str)
             The engine used in the vibronic calculation.
         """
+        logger.debug("Setting Helmholtz free energy")
         self.__validate_electronic(electronic_engine)
         self.__validate_vibronic(vibronic_engine)
         self.__helmholtz_free_energy = value
@@ -409,6 +423,7 @@ class Properties:
         vibronic_engine: Union(Engine, str)
             The engine used in the vibronic calculation.
         """
+        logger.debug("setting Gibbs free energy")
         self.__validate_electronic(electronic_engine)
         self.__validate_vibronic(vibronic_engine)
         self.__gibbs_free_energy = value
@@ -443,6 +458,7 @@ class Properties:
         vibronic_engine: Union(Engine, str)
             The engine used in the vibronic calculation. (optional)
         """
+        logger.debug("Setting pKa")
         self.__validate_electronic(electronic_engine)
         if vibronic_engine is not None:
             self.__validate_vibronic(vibronic_engine)
@@ -473,6 +489,7 @@ class Properties:
         electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
+        logger.debug("Setting Mulliken charges")
         self.__validate_electronic(electronic_engine)
         self.__mulliken_charges = value
 
@@ -501,6 +518,7 @@ class Properties:
         electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
+        logger.debug("Setting Mulliken Spin populations")
         self.__validate_electronic(electronic_engine)
         self.__mulliken_spin_populations = value
 
@@ -533,6 +551,7 @@ class Properties:
         electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
+        logger.debug("Setting condensed Fukui functions (Mulliken)")
         self.__validate_electronic(electronic_engine)
         self.__condensed_fukui_mulliken = value
 
@@ -561,6 +580,7 @@ class Properties:
         electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
+        logger.debug("Setting Hirshfeld charges")
         self.__validate_electronic(electronic_engine)
         self.__hirshfeld_charges = value
 
@@ -589,6 +609,7 @@ class Properties:
         electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
+        logger.debug("Setting Hirshfeld Spin populations")
         self.__validate_electronic(electronic_engine)
         self.__hirshfeld_spin_populations = value
 
@@ -621,5 +642,6 @@ class Properties:
         electronic_engine: Union(Engine, str)
             The engine used in the electronic calculation.
         """
+        logger.debug("Setting condensed Fukui functions (Hirshfeld)")
         self.__validate_electronic(electronic_engine)
         self.__condensed_fukui_hirshfeld = value
