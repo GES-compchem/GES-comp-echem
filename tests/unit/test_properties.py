@@ -201,21 +201,13 @@ def test_pka_vibronic_addition_not_strict():
 def test_check_engine():
 
     p = Properties()
-    engine = XtbInput()
 
     try:
-        p.set_electronic_energy(0.1, engine)
-    except:
-        assert False, "Exception raised when Engine is passed to check_engine"
-
-    assert p.level_of_theory_electronic == engine.level_of_theory
-
-    try:
-        p.set_electronic_energy(0.1, engine.level_of_theory)
+        p.set_electronic_energy(0.1, "XtbInput || method: gfn2 | solvent: None")
     except:
         assert False, "Exception raised when string is passed to check_engine"
 
-    assert p.level_of_theory_electronic == engine.level_of_theory
+    assert p.level_of_theory_electronic == "XtbInput || method: gfn2 | solvent: None"
 
     try:
         p.set_electronic_energy(0.1, "This is a string")
