@@ -4,6 +4,7 @@ from numpy.testing import assert_array_almost_equal
 import compechem.config as cc
 from compechem.core.base import Engine
 from compechem.core.properties import Properties
+from compechem.engines.xtb import XtbInput
 
 # Test the Properties class
 # ------------------------------------------------------------------------------------------
@@ -200,6 +201,21 @@ def test_pka_vibronic_addition_not_strict():
 def test_check_engine():
 
     p = Properties()
+    engine = XtbInput()
+
+    try:
+        p.set_electronic_energy(0.1, engine)
+    except:
+        assert False, "Exception raised when Engine is passed to check_engine"
+
+    assert p.level_of_theory_electronic == engine.level_of_theory
+
+    try:
+        p.set_electronic_energy(0.1, engine.level_of_theory)
+    except:
+        assert False, "Exception raised when string is passed to check_engine"
+
+    assert p.level_of_theory_electronic == engine.level_of_theory
 
     try:
         p.set_electronic_energy(0.1, "This is a string")
