@@ -1,6 +1,7 @@
 from compechem.systems import Ensemble
 from compechem.systems import System
 from compechem.constants import Eh_to_kcalmol
+from typing import Tuple
 
 import logging
 
@@ -11,7 +12,7 @@ def calculate_reduction_potential(
     oxidised: System,
     reduced: System,
     pH: float = 7.0,
-):
+) -> Tuple[float, int, int]:
     """
     Calculates the reduction potential of a molecule, given the oxidized and reduced forms
     assuming that energies have already been computed. The number of electrons exchanged in
