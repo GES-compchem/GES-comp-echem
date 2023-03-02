@@ -60,10 +60,10 @@ def calculate_reduction_potential(
     exchanged_electrons = (oxidised.charge - reduced.charge) + exchanged_protons
     if exchanged_protons != 0:
         logger.info(
-            f"{exchanged_electrons}e/{exchanged_protons}H PCET reduction detected. Calculated potential is pH-dependent."
+            f"pH = {pH}: {exchanged_electrons}e/{exchanged_protons}H PCET reduction detected. Calculated potential is pH-dependent."
         )
     else:
-        logger.info(f"{exchanged_electrons}e reduction detected.")
+        logger.info(f"pH = {pH}: {exchanged_electrons}e reduction detected.")
 
     if reduced.geometry.atomcount - oxidised.geometry.atomcount != exchanged_protons:
         logger.error(
