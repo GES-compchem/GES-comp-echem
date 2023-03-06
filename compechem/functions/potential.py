@@ -1,6 +1,7 @@
 from compechem.systems import Ensemble
 from compechem.systems import System
 from compechem.constants import Eh_to_kcalmol
+from typing import Tuple
 
 import logging
 
@@ -11,7 +12,7 @@ def calculate_reduction_potential(
     oxidised: System,
     reduced: System,
     pH: float = 7.0,
-):
+) -> Tuple[float, int, int]:
     """
     Calculates the reduction potential of a molecule, given the oxidized and reduced forms
     assuming that energies have already been computed. The number of electrons exchanged in
@@ -56,10 +57,13 @@ def calculate_reduction_potential(
     reduced_protons = reduced.geometry.atoms.count("H")
     exchanged_protons = reduced_protons - oxidised_protons
 
+    exchanged_electrons = (oxidised.charge - reduced.charge) + exchanged_protons
     if exchanged_protons != 0:
         logger.info(
-            f"PCET mechanism detected, {exchanged_protons} protons exchanged. Calculated potential will be pH-dependent."
+            f"pH = {pH}: {exchanged_electrons}e/{exchanged_protons}H PCET reduction detected. Calculated potential is pH-dependent."
         )
+    else:
+        logger.info(f"pH = {pH}: {exchanged_electrons}e reduction detected.")
 
     if reduced.geometry.atomcount - oxidised.geometry.atomcount != exchanged_protons:
         logger.error(
@@ -68,9 +72,6 @@ def calculate_reduction_potential(
         raise RuntimeError(
             "oxidised and reduced forms are not the same molecule. Only molecules differing for the number of protons are allowed."
         )
-
-    exchanged_electrons = (oxidised.charge - reduced.charge) + exchanged_protons
-    logger.info(f"{exchanged_electrons}-electron reduction detected.")
 
     if exchanged_electrons < 0:
         logger.error(
