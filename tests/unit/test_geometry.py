@@ -144,3 +144,69 @@ def test_MolecularGeometry_properties():
     mol = MolecularGeometry.from_xyz(xyzfile)
 
     assert_almost_equal(mol.mass, 18.01528, decimal=4)
+
+
+# Test the MolecularGeometry bureid_volume_fraction method
+def test_MolecularGeometry_buried_volume_fraction():
+
+    path = join(TEST_DIR, "utils/xyz_examples/without_comment.xyz")
+    
+    mol = MolecularGeometry()
+    mol.load_xyz(path)
+    
+    # Test normal buried volume
+    bv = mol.buried_volume_fraction(0)
+    assert_almost_equal(bv, 0.11210631755, decimal=6)
+
+    # Test buried volume excluding one of the hydrogen atoms
+    bv = mol.buried_volume_fraction(0, excluded_atoms=[1])
+    assert_almost_equal(bv, 0.06464894707, decimal=6)
+
+    # Test buried volume excluding both the hydrogen atoms
+    bv = mol.buried_volume_fraction(0, excluded_atoms=[1, 2])
+    assert_almost_equal(bv, 0.0, decimal=6)
+
+    bv = mol.buried_volume_fraction(0, include_hydrogens=False)
+    assert_almost_equal(bv, 0.0, decimal=6)
+
+
+
+# Test the MolecularGeometry bureid_volume_fraction method with invalid parameters
+def test_MolecularGeometry_buried_volume_fraction_fail():
+
+    path = join(TEST_DIR, "utils/xyz_examples/without_comment.xyz")
+    
+    mol = MolecularGeometry()
+    mol.load_xyz(path)
+
+    # Test failure with index out of bounds
+    try:
+        _ = mol.buried_volume_fraction(4)
+    except ValueError:
+        assert True
+    else:
+        assert False, "A `ValueError` exception was expected when accessing non existing atom"
+    
+    try:
+        _ = mol.buried_volume_fraction(-1)
+    except ValueError:
+        assert True
+    else:
+        assert False, "A `ValueError` exception was expected when accessing non existing atom"
+    
+    # Test failure when using unsupported radii type
+    try:
+        _ = mol.buried_volume_fraction(0, radii_type="wrong")
+    except ValueError:
+        assert True
+    else:
+        assert False, "A `ValueError` exception was expected when using wrong radii type"
+
+    # Test failure when using unsupported radii type
+    try:
+        _ = mol.buried_volume_fraction(0, radii=[1])
+    except ValueError:
+        assert True
+    else:
+        assert False, "A `RuntimeError` exception was expected when using wrong radii type"
+    

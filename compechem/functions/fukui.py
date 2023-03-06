@@ -26,10 +26,10 @@ def calculate_fukui(
     molecule: System,
     engine: Union[OrcaInput, XtbInput],
     spins_states: Union[None, List[int]] = None,
-    cube_grid: CubeGrids = CubeGrids.NORMAL,
+    cube_grid: Union[CubeGrids, None] = CubeGrids.NORMAL,
     ncores: int = None,
     maxcore: int = 1000,
-) -> Dict[str, Dict[str, List[float]]]:
+) -> None:
     """
     Computes the Fukui f+, f- and f0 functions starting from a given input molecule. The
     functions are saved in Gaussian cube compatible format and stored in the 
@@ -51,8 +51,9 @@ def calculate_fukui(
         user specified values. The order of the spin multiplicity values is: molecule with
         one electron added (-1), the molecule as it is (0) and the molecule  with one of its
         electrons removed (+1).
-    cube_grid: CubeGrids
-        Resolution for the cube files (default Normal)
+    cube_grid: Union[CubeGrids, None]
+        Resolution for the cube files (default Normal). If set to None the function will avoid
+        the generation of cube files and will only compute condensed fukui values.
     ncores : int, optional
         The number of cores, by default all available cores (None)
     maxcore: int
@@ -61,7 +62,8 @@ def calculate_fukui(
 
     if type(engine) not in [OrcaInput, XtbInput]:
         raise TypeError("calculate_fukui currently only supports xTB and Orca")
-    
+
+    save_cubes = False if cube_grid is None else True
     
     # RUN ALL THE REQUIRED CALCULATIONS
     # --------------------------------------------------------------------------------------
@@ -69,7 +71,7 @@ def calculate_fukui(
     if type(engine) == OrcaInput:
         engine.spe(
             molecule,
-            save_cubes=True,
+            save_cubes=save_cubes,
             cube_dim=cube_grid.value[0],
             hirshfeld=True,
             inplace=True,
@@ -80,7 +82,7 @@ def calculate_fukui(
     elif type(engine) == XtbInput:
         engine.spe(
             molecule,
-            save_cubes=True,
+            save_cubes=save_cubes,
             cube_step=cube_grid.value[1],
             inplace=True,
             ncores=ncores,
@@ -98,7 +100,7 @@ def calculate_fukui(
     if type(engine) == OrcaInput:
         engine.spe(
             cation,
-            save_cubes=True,
+            save_cubes=save_cubes,
             cube_dim=cube_grid.value[0],
             hirshfeld=True,
             inplace=True,
@@ -109,7 +111,7 @@ def calculate_fukui(
     elif type(engine) == XtbInput:
         engine.spe(
             cation,
-            save_cubes=True,
+            save_cubes=save_cubes,
             cube_step=cube_grid.value[1],
             inplace=True,
             ncores=ncores,
@@ -127,7 +129,7 @@ def calculate_fukui(
     if type(engine) == OrcaInput:
         engine.spe(
             anion,
-            save_cubes=True,
+            save_cubes=save_cubes,
             cube_dim=cube_grid.value[0],
             hirshfeld=True,
             inplace=True,
@@ -138,7 +140,7 @@ def calculate_fukui(
     elif type(engine) == XtbInput:
         engine.spe(
             anion,
-            save_cubes=True,
+            save_cubes=save_cubes,
             cube_step=cube_grid.value[1],
             inplace=True,
             ncores=ncores,
@@ -182,40 +184,42 @@ def calculate_fukui(
     # LOAD THE VOLUMETRIC FILES AND COMPUTE THE FUKUI FUNCTIONS
     # --------------------------------------------------------------------------------------
     # Load cubes from the output_densities folder
-    cubes: Dict[int, Cube] = {}
-    for mol in [cation, molecule, anion]:
-        cubename = f"{mol.name}_{mol.charge}_{mol.spin}_{engine.output_suffix}_spe.eldens.cube"
-        cube = Cube.from_file(join("./output_densities", cubename))
-        cubes[mol.charge] = cube
+    if save_cubes:
 
-    # Check if all the densities have been loaded correctly
-    if len(cubes) != 3:
-        raise RuntimeError(f"Three cube files expected, {len(cubes)} found.")
+        cubes: Dict[int, Cube] = {}
+        for mol in [cation, molecule, anion]:
+            cubename = f"{mol.name}_{mol.charge}_{mol.spin}_{engine.output_suffix}_spe.eldens.cube"
+            cube = Cube.from_file(join("./output_densities", cubename))
+            cubes[mol.charge] = cube
 
-    # Compute the f+ Fukui function
-    f_plus = cubes[anion.charge] - cubes[molecule.charge]
-    f_plus.charges = localized_fukui_mulliken["f+"]
-    f_plus.save(
-        join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_plus.fukui.cube"),
-        comment_1st=FUKUI_CUBE_WARNING,
-        comment_2nd="Fukui f+",
-    )
+        # Check if all the densities have been loaded correctly
+        if len(cubes) != 3:
+            raise RuntimeError(f"Three cube files expected, {len(cubes)} found.")
 
-    # Compute the f- Fukui function
-    f_minus = cubes[molecule.charge] - cubes[cation.charge]
-    f_minus.charges = localized_fukui_mulliken["f-"]
-    f_minus.save(
-        join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_minus.fukui.cube"),
-        comment_1st=FUKUI_CUBE_WARNING,
-        comment_2nd="Fukui f-",
-    )
+        # Compute the f+ Fukui function
+        f_plus = cubes[anion.charge] - cubes[molecule.charge]
+        f_plus.charges = localized_fukui_mulliken["f+"]
+        f_plus.save(
+            join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_plus.fukui.cube"),
+            comment_1st=FUKUI_CUBE_WARNING,
+            comment_2nd="Fukui f+",
+        )
 
-    # Compute the f0 Fukui function
-    f_zero = (cubes[anion.charge] - cubes[cation.charge]).scale(0.5)
-    f_zero.charges = localized_fukui_mulliken["f0"]
-    f_zero.save(
-        join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_zero.fukui.cube"),
-        comment_1st=FUKUI_CUBE_WARNING,
-        comment_2nd="Fukui f0",
-    )
+        # Compute the f- Fukui function
+        f_minus = cubes[molecule.charge] - cubes[cation.charge]
+        f_minus.charges = localized_fukui_mulliken["f-"]
+        f_minus.save(
+            join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_minus.fukui.cube"),
+            comment_1st=FUKUI_CUBE_WARNING,
+            comment_2nd="Fukui f-",
+        )
+
+        # Compute the f0 Fukui function
+        f_zero = (cubes[anion.charge] - cubes[cation.charge]).scale(0.5)
+        f_zero.charges = localized_fukui_mulliken["f0"]
+        f_zero.save(
+            join("./output_densities", f"{molecule.name}_{engine.output_suffix}_Fukui_zero.fukui.cube"),
+            comment_1st=FUKUI_CUBE_WARNING,
+            comment_2nd="Fukui f0",
+        )
     

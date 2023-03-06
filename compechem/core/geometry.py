@@ -4,6 +4,8 @@ import numpy as np
 
 from os.path import isfile
 from typing import Tuple, List, Union
+from morfeus import BuriedVolume
+
 from compechem.constants import atoms_dict, atomic_masses
 
 
@@ -296,3 +298,88 @@ class MolecularGeometry:
         for atom in self.__atoms:
             mass += atomic_masses[atom]
         return mass
+
+    def buried_volume_fraction(
+        self,
+        site: int,
+        radius: float = 3.5,
+        density: float = 0.001,
+        include_hydrogens: bool = True,
+        excluded_atoms: List[int] = None,
+        radii: List[float] = None,
+        radii_type: str = "bondi",
+        radii_scale: float = 1.17,
+    ):
+        """
+        Computes the buried volume fraction around a given site. The functions adopts the implementation
+        provided in the morfeus python package (https://kjelljorner.github.io/morfeus/buried_volume.html).
+
+        Arguments
+        ---------
+        site: int
+            The index (starting the numeration from zero) of the reactive atom around which
+            the buried volume must be computed
+        radius: float
+            The radius (in Angstrom) of the sphere in which the buried volume should be computed
+        density: float
+            The volume (in Angstrom^3) per point in the sphere used in the calculation
+        include_hydrogens: bool
+            If set to True (default) will consider the hydrogen atoms in the calculation
+        excluded_atoms: List[int]
+            The list of indices (starting the numeration from zero) of the atom that should be
+            excluded from the compuitation of the buried volume (default: None)
+        radii: List[float]
+            The custom list of atomic radii to be used in the computation (default: None).
+            If set to a value different from `None`, will override the `radii_type` and 
+            `radii_scale` options.
+        radii_type: str
+            Type of radii to use in the calculation. The available options are `alvarez`,
+            `bondi`, `crc` or `truhlar`.
+        radii_scale: float
+            Scaling factor for the selected radii_type
+        
+        Raises
+        ------
+        ValueError
+            Exception raised if either the index of the selected atoms are out of bounds or
+            if the radii type does not match any of the presets.
+        
+        Returns
+        -------
+        float
+            The fraction of buried volume of the sphere (between 0 and 1)
+        """
+
+        if site < 0 or site >= self.atomcount:
+            raise ValueError(
+                f"The site index {site} is out of bounds (current atomcount: {self.atomcount})"
+            )
+
+        if excluded_atoms != None:
+            for idx in excluded_atoms:
+                if idx < 0 or idx >= self.atomcount:
+                    raise ValueError(
+                        f"The excluded atom index {idx} is out of bounds (current atomcount: {self.atomcount})"
+                    )
+        
+        if radii_type not in ['alvarez', 'bondi', 'crc', 'truhlar']:
+            raise ValueError(f"The radii definition {radii_type} is not available at this time.")
+
+        if radii is not None:
+            if len(radii) != self.atomcount:
+                raise ValueError("The length of the radii list must match the number of atoms in the molecule")
+
+        bv = BuriedVolume(
+            self.atoms,
+            self.coordinates,
+            site + 1,
+            excluded_atoms=[idx + 1 for idx in excluded_atoms] if excluded_atoms is not None else None,
+            radii=radii,
+            radii_type=radii_type,
+            radii_scale=radii_scale,
+            density=density,
+            include_hs=include_hydrogens,
+            radius=radius,
+        )
+
+        return bv.fraction_buried_volume
