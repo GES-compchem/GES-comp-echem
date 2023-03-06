@@ -98,9 +98,9 @@ def calculate_pka(protonated: System, deprotonated: System):
     ) / (2.303 * 1.98720425864083 / 1000 * 298.15)
 
     protonated.properties.set_pka(
-        pka,
-        protonated.properties.level_of_theory_electronic,
-        protonated.properties.level_of_theory_vibronic,
+        value=pka,
+        electronic_engine=protonated.properties.level_of_theory_electronic,
+        vibronic_engine=protonated.properties.level_of_theory_vibronic,
     )
 
     return pka
