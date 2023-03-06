@@ -49,10 +49,7 @@ class XtbInput(Engine):
         self.__output_suffix += "vacuum" if solvent is None else f"{self.solvent}"
         self.__output_suffix = clean_suffix(self.__output_suffix)
 
-    def write_input(
-        self,
-        job_info: Dict,
-    ) -> None:
+    def write_input(self, job_info: Dict,) -> None:
 
         input = f"$chrg {job_info['charge']}\n"
         input += f"$spin {job_info['spin']-1}\n"
@@ -125,9 +122,7 @@ class XtbInput(Engine):
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_",
-            suffix=f"_{self.__output_suffix}_spe",
-            dir=os.getcwd(),
+            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_spe", dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -144,14 +139,14 @@ class XtbInput(Engine):
             mol.geometry.write_xyz(f"{mol.name}.xyz")
 
             if self.solvent:
-                os.system(
-                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} -P {ncores} {self.optionals} > output.out 2>> output.err"
-                )
+                cmd = f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                logger.debug(f"Running xTB with command: {cmd}")
+                os.system(cmd)
 
             else:
-                os.system(
-                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} -P {ncores} {self.optionals} > output.out 2>> output.err"
-                )
+                cmd = f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} -P {ncores} {self.optionals} > output.out 2>> output.err"
+                logger.debug(f"Running xTB with command: {cmd}")
+                os.system(cmd)
 
             if inplace is False:
 
@@ -230,9 +225,7 @@ class XtbInput(Engine):
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_",
-            suffix=f"_{self.__output_suffix}_opt",
-            dir=os.getcwd(),
+            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_opt", dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -249,14 +242,14 @@ class XtbInput(Engine):
             mol.geometry.write_xyz(f"{mol.name}.xyz")
 
             if self.solvent:
-                os.system(
-                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
-                )
+                cmd = f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                logger.debug(f"Running xTB with command: {cmd}")
+                os.system(cmd)
 
             else:
-                os.system(
-                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
-                )
+                cmd = f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --ohess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                logger.debug(f"Running xTB with command: {cmd}")
+                os.system(cmd)
 
             if dissociation_check() is True:
                 logger.error(f"Dissociation spotted for {mol.name}.")
@@ -353,9 +346,7 @@ class XtbInput(Engine):
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_",
-            suffix=f"_{self.__output_suffix}_freq",
-            dir=os.getcwd(),
+            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_freq", dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -372,14 +363,14 @@ class XtbInput(Engine):
             mol.geometry.write_xyz(f"{mol.name}.xyz")
 
             if self.solvent:
-                os.system(
-                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
-                )
+                cmd = f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --alpb {self.solvent} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                logger.debug(f"Running xTB with command: {cmd}")
+                os.system(cmd)
 
             else:
-                os.system(
-                    f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
-                )
+                cmd = f"{self.__XTBPATH} --input input.inp {mol.name}.xyz --{self.method} --hess -P {ncores} {self.optionals} > output.out 2>> output.err"
+                logger.debug(f"Running xTB with command: {cmd}")
+                os.system(cmd)
 
             if inplace is False:
 
