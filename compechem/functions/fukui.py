@@ -72,7 +72,7 @@ def calculate_fukui(
         engine.spe(
             molecule,
             save_cubes=save_cubes,
-            cube_dim=cube_grid.value[0],
+            cube_dim=cube_grid.value[0] if save_cubes else 0,
             hirshfeld=True,
             inplace=True,
             ncores=ncores,
@@ -83,7 +83,7 @@ def calculate_fukui(
         engine.spe(
             molecule,
             save_cubes=save_cubes,
-            cube_step=cube_grid.value[1],
+            cube_step=cube_grid.value[1] if save_cubes else 0,
             inplace=True,
             ncores=ncores,
         )
@@ -101,7 +101,7 @@ def calculate_fukui(
         engine.spe(
             cation,
             save_cubes=save_cubes,
-            cube_dim=cube_grid.value[0],
+            cube_dim=cube_grid.value[0] if save_cubes else 0,
             hirshfeld=True,
             inplace=True,
             ncores=ncores,
@@ -112,7 +112,7 @@ def calculate_fukui(
         engine.spe(
             cation,
             save_cubes=save_cubes,
-            cube_step=cube_grid.value[1],
+            cube_step=cube_grid.value[1] if save_cubes else 0,
             inplace=True,
             ncores=ncores,
         )
@@ -130,7 +130,7 @@ def calculate_fukui(
         engine.spe(
             anion,
             save_cubes=save_cubes,
-            cube_dim=cube_grid.value[0],
+            cube_dim=cube_grid.value[0] if save_cubes else 0,
             hirshfeld=True,
             inplace=True,
             ncores=ncores,
@@ -141,7 +141,7 @@ def calculate_fukui(
         engine.spe(
             anion,
             save_cubes=save_cubes,
-            cube_step=cube_grid.value[1],
+            cube_step=cube_grid.value[1] if save_cubes else 0,
             inplace=True,
             ncores=ncores,
         )
