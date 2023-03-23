@@ -182,6 +182,7 @@ class System:
         info += "----------------------------------------------\n\n"
 
         info += "********************** PROPERTIES *************************\n\n"
+        info += f"Geometry level of theory: {self.geometry.level_of_theory_geometry}\n"
         info += (
             f"Electronic level of theory: {self.properties.level_of_theory_electronic}\n"
         )
