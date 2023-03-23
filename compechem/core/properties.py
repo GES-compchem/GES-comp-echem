@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import logging, warnings
 import compechem.config
+import numpy as np
 
 from typing import Dict, List, Union
 from compechem.core.base import Engine
+from compechem.core.spectroscopy import VibrationalData
+
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +116,8 @@ class Properties:
         self.__hirshfeld_charges: List[float] = []
         self.__hirshfeld_spin_populations: List[float] = []
         self.__condensed_fukui_hirshfeld: Dict[str, List[float]] = {}
+        self.__vibrational_data: VibrationalData = None
+
 
     def __clear_electronic(self):
         self.__level_of_theory_electronic = None
@@ -133,6 +138,7 @@ class Properties:
         self.__helmholtz_free_energy = None
         self.__gibbs_free_energy = None
         self.__pka = None
+        self.__vibrational_data = None
 
     def __check_engine(self, engine: Union(Engine, str)) -> None:
 
@@ -645,3 +651,33 @@ class Properties:
         logger.debug("Setting condensed Fukui functions (Hirshfeld)")
         self.__validate_electronic(electronic_engine)
         self.__condensed_fukui_hirshfeld = value
+    
+    @property
+    def vibrational_data(self) -> VibrationalData:
+        """
+        Returns the class containing all the available vibrational data about the molecule
+
+        Returns
+        -------
+        VibrationalData
+            The class containing all the available vibrational data
+        """
+        return self.__vibrational_data
+
+
+    def set_vibrational_data(
+        self, value: VibrationalData, vibronic_engine: Union(Engine, str),
+    ) -> None:
+        """
+        Sets condensed Fukui values computed from the Hirshfeld charges.
+
+        Arguments
+        ---------
+        value: VibrationalData
+            The class encoding all the vibrational data associated to the molecule
+        vibronic_engine: Union(Engine, str)
+            The engine used in the vibronic calculation.
+        """
+        logger.debug("Setting vibrational data")
+        self.__validate_vibronic(vibronic_engine)
+        self.__vibrational_data = value

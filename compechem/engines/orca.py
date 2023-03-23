@@ -1,6 +1,8 @@
 import os, copy, shutil, sh, logging
+import numpy as np
 from typing import Dict
 from tempfile import mkdtemp
+from enum import Enum
 
 import compechem.config as cfg
 from compechem.config import get_ncores
@@ -8,10 +10,11 @@ from compechem.systems import Ensemble, System
 from compechem.tools import process_output
 from compechem.core.base import Engine
 from compechem.core.dependency_finder import locate_orca
+from compechem.core.spectroscopy import VibrationalData
 from compechem.tools.internaltools import clean_suffix
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__) 
 
 
 class OrcaInput(Engine):
@@ -63,7 +66,11 @@ class OrcaInput(Engine):
         self.__output_suffix += f"_{solvent}" if solvent else "_vacuum"
         self.__output_suffix = clean_suffix(self.__output_suffix)
 
-    def write_input(self, mol: System, job_info: Dict,) -> None:
+    def write_input(
+        self,
+        mol: System,
+        job_info: Dict,
+    ) -> None:
 
         mol.geometry.write_xyz(f"{mol.name}.xyz")
 
@@ -82,9 +89,9 @@ class OrcaInput(Engine):
 
         elif job_info["type"] == "opt":
             if self.solvent:
-                input += "! Opt NumFreq\n\n"
+                input += f"! {job_info['optimization_level']} NumFreq\n\n"
             else:
-                input += "! Opt Freq\n\n"
+                input += f"! {job_info['optimization_level']} Freq\n\n"
 
         elif job_info["type"] == "freq":
             if self.solvent:
@@ -99,12 +106,13 @@ class OrcaInput(Engine):
             input += "! Opt\n"
             input += "%geom\n" "  scan\n" f"    {job_info['scan']}\n" "  end\n"
             if job_info["constraints"]:
-                input += (
-                    "  constraints\n" f"    {{ {job_info['constraints']} C }}\n" "  end\n"
-                )
+                input += "  constraints\n" f"    {{ {job_info['constraints']} C }}\n" "  end\n"
             if job_info["invertconstraints"]:
                 input += "  invertConstraints true\n"
             input += "end\n\n"
+
+        if "overtones" in job_info and job_info["overtones"]:
+            input += "! NEARIR\n\n"
 
         if self.solvent:
             input += "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n\n"
@@ -129,6 +137,11 @@ class OrcaInput(Engine):
             input += "%scf\n"
             for key, value in self.scf_block.items():
                 input += f"  {key} {value}\n"
+            input += "end\n\n"
+
+        if "raman" in job_info and job_info["raman"]:
+            input += "%elprop\n"
+            input += "  Polar 1\n"
             input += "end\n\n"
 
         input += f"* xyzfile {job_info['charge']} {job_info['spin']} {mol.name}.xyz\n"
@@ -196,7 +209,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_spe", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_spe",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -227,9 +242,7 @@ class OrcaInput(Engine):
             else:
                 self.parse_output(mol)
 
-            process_output(
-                mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes
-            )
+            process_output(mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -249,6 +262,7 @@ class OrcaInput(Engine):
         hirshfeld: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
+        optimization_level: str = "NORMALOPT"
     ):
         """Geometry optimization + frequency analysis.
 
@@ -276,12 +290,19 @@ class OrcaInput(Engine):
             by default False
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
+        optimization_level: str
+            The convergence level to be adopted during the geometry optimization (Default: NORMALOPT)
 
         Returns
         -------
         newmol : System object
             Output molecule containing the new geometry and energies.
         """
+
+        optimization_level = optimization_level.upper()
+        if optimization_level not in ["VERYTIGHTOPT", "TIGHTOPT", "NORMALOPT", "LOOSEOPT"]:
+            logger.error(f"Invalid optimization level {optimization_level}")
+            raise RuntimeError(f"{optimization_level} is not a valid ORCA optimization level.")
 
         if ncores is None:
             ncores = get_ncores()
@@ -295,7 +316,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_opt", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_opt",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -311,6 +334,7 @@ class OrcaInput(Engine):
                     "save_cubes": save_cubes,
                     "cube_dim": cube_dim,
                     "hirshfeld": hirshfeld,
+                    "optimization_level": optimization_level
                 },
             )
 
@@ -319,7 +343,7 @@ class OrcaInput(Engine):
             os.system(cmd)
 
             if inplace is False:
-                newmol = System("input.xyz", charge, spin)
+                newmol = System(filepath="input.xyz", charge=charge, spin=spin)
                 newmol.name = mol.name
                 newmol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(newmol)
@@ -329,9 +353,7 @@ class OrcaInput(Engine):
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(mol)
 
-            process_output(
-                mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes
-            )
+            process_output(mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -348,6 +370,8 @@ class OrcaInput(Engine):
         spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
+        raman: bool = False,
+        overtones: bool = False,
     ):
         """Frequency analysis (analytical frequencies).
 
@@ -371,6 +395,11 @@ class OrcaInput(Engine):
             by default False
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
+        raman: bool
+            If set to True will compute the Raman spectrum. (default: False)
+        overtones: bool
+            If set to True will enable the computation of infrared overtones and combination
+            bands. (default: False)
 
         Returns
         -------
@@ -390,7 +419,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_freq", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_freq",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -406,6 +437,8 @@ class OrcaInput(Engine):
                     "save_cubes": False,
                     "cube_dim": None,
                     "hirshfeld": False,
+                    "raman": raman,
+                    "overtones": overtones,
                 },
             )
 
@@ -438,6 +471,8 @@ class OrcaInput(Engine):
         spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
+        raman: bool = False,
+        overtones: bool = False,
     ):
         """Frequency analysis (numerical frequencies).
 
@@ -458,6 +493,11 @@ class OrcaInput(Engine):
             by default False
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
+        raman: bool
+            If set to True will compute the Raman spectrum.
+        overtones: bool
+            Is set to True will enable the computation of infrared overtones and combination
+            bands.
 
         Returns
         -------
@@ -477,7 +517,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_nfreq", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_nfreq",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -485,6 +527,7 @@ class OrcaInput(Engine):
             self.write_input(
                 mol=mol,
                 job_info={
+                    "type": "nfreq",
                     "ncores": ncores,
                     "maxcore": maxcore,
                     "charge": charge,
@@ -492,6 +535,8 @@ class OrcaInput(Engine):
                     "save_cubes": False,
                     "cube_dim": None,
                     "hirshfeld": False,
+                    "raman": raman,
+                    "overtones": overtones,
                 },
             )
 
@@ -567,7 +612,9 @@ class OrcaInput(Engine):
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_scan", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_scan",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -771,6 +818,149 @@ class OrcaInput(Engine):
             mol.properties.set_hirshfeld_charges(hirshfeld_charges, self)
             mol.properties.set_hirshfeld_spin_populations(hirshfeld_spins, self)
 
+        # If available parse the section related to the vibrational analysis
+        # -----------------------------------------------------------------------------------
+        with open("output.out", "r") as file:
+
+            vibrational_data = None
+
+            for line in file:
+
+                if "VIBRATIONAL FREQUENCIES" in line:
+
+                    vibrational_data = VibrationalData()
+
+                    # Discard the following 4 lines to skip formatting
+                    for i in range(4):
+                        _ = file.readline()
+
+                    # Read the whole vibrational frequencies section
+                    while True:
+
+                        # Read the line
+                        buffer = file.readline()
+
+                        # Break if the line is empty
+                        if buffer == "\n":
+                            break
+
+                        # Parse the frequency line and append it to the vibrational_data class
+                        frequency = float(buffer.split(":")[-1].rstrip("cm**-1\n"))
+                        vibrational_data.frequencies.append(frequency)
+
+                elif "NORMAL MODES" in line:
+
+                    # Discard the following 6 lines to skip formatting
+                    for i in range(6):
+                        _ = file.readline()
+
+                    block = 0
+                    while True:
+
+                        # Discard the header line of the table block
+                        _ = file.readline()
+
+                        # Read the data within the current table block
+                        ncoords = 3 * mol.geometry.atomcount
+                        modes_left = ncoords - 6 * block
+
+                        # If all the blocks have been already readed, break
+                        if modes_left <= 0:
+                            break
+
+                        # Compute the number of data columns in the block
+                        ncols = 6 if modes_left > 6 else modes_left
+
+                        # Read each vector line by line
+                        modes_buffer = [[] for i in range(ncols)]
+                        for _ in range(ncoords):
+
+                            sline = file.readline().split()
+
+                            for i, element in enumerate(sline[1::]):
+                                modes_buffer[i].append(float(element))
+
+                        # Add all the obtained vectors to the vibrational data class
+                        for vector in modes_buffer:
+                            vibrational_data.normal_modes.append(np.array(vector))
+
+                        # Increment the block counter
+                        block += 1
+
+                elif "IR SPECTRUM" in line:
+
+                    # Discard the following 5 lines to skip formatting
+                    for i in range(5):
+                        _ = file.readline()
+
+                    while True:
+
+                        # Read the table line by line
+                        line = file.readline()
+
+                        # Check if the end of the table has been reached
+                        if line == "\n":
+                            break
+
+                        # Split the mode index field from the rest of the data
+                        sline = line.split(":")
+
+                        # Add the mode index and the transition intensity in km/mol
+                        vibrational_data.ir_transitions.append((int(sline[0]), float(sline[1].split()[2])))
+
+                elif "OVERTONES AND COMBINATION BANDS" in line:
+
+                    # Discard the following 5 lines to skip formatting
+                    for i in range(5):
+                        _ = file.readline()
+
+                    while True:
+
+                        # Read the table line by line
+                        line = file.readline()
+
+                        # Check if the end of the table has been reached
+                        if line == "\n":
+                            break
+
+                        # Split the mode index field from the rest of the data
+                        sline = line.split(":")
+
+                        mode_index = [int(x) for x in sline[0].split("+")]
+                        transition_intensity = float(sline[1].split()[2])
+
+                        # Add the modes indeces and the transition intensity in km/mol
+                        vibrational_data.ir_combination_bands.append(
+                            (mode_index[0], mode_index[1], transition_intensity)
+                        )
+
+                elif "RAMAN SPECTRUM" in line:
+
+                    # Discard the following 4 lines to skip formatting
+                    for i in range(4):
+                        _ = file.readline()
+
+                    while True:
+
+                        # Read the table line by line
+                        line = file.readline()
+
+                        # Check if the end of the table has been reached
+                        if line == "\n":
+                            break
+
+                        # Split the mode index field from the rest of the data
+                        sline = line.split(":")
+                        mode_index = int(sline[0])
+                        activity = float(sline[1].split()[1])
+                        deplarization = float(sline[1].split()[2])
+
+                        # Add the mode index, activity and depolarization
+                        vibrational_data.ir_transitions.append((mode_index, activity, deplarization))
+
+            if vibrational_data is not None:
+                mol.properties.set_vibrational_data(vibrational_data, self)
+
     @property
     def output_suffix(self) -> str:
         """
@@ -798,7 +988,11 @@ class M06(OrcaInput):
 class r2SCAN(OrcaInput):
     def __init__(self):
         super().__init__(
-            method="r2SCAN-3c", basis_set="", aux_basis=None, solvent="water", optionals="",
+            method="r2SCAN-3c",
+            basis_set="",
+            aux_basis=None,
+            solvent="water",
+            optionals="",
         )
 
 
