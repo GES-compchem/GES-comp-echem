@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Optional
@@ -73,12 +75,82 @@ class VibrationalData:
         self.ir_combination_bands: List[Tuple[int, int, float]] = []
         self.raman_transitions: List[Tuple[int, float, float]] = []
     
+    def __str__(self) -> str:
+        info = "VIBRATIONAL FREQUENCIES\n"
+        info += "----------------------------------------------\n"
+        info += " index  frequency  intensity \n"
+        info += "         (cm^-1)   (km/mol)  \n"
+        info += "----------------------------------------------\n"
+        for mode, frequency in enumerate(self.frequencies):
+
+            ir_intensity = None
+            for m, intensity in self.ir_transitions:
+                if m == mode:
+                    ir_intensity = intensity
+                    break
+            
+            if ir_intensity is None:
+                ir_intensity = ""
+            else:
+                ir_intensity = "{:.2f}  ".format(ir_intensity)   
+
+            frequency = "{:.2f}  ".format(frequency)            
+            
+            info += f" {mode:<6}{frequency:>11}{ir_intensity:>11}\n"
+
+        info += "\n"
+
+        return info
+
+        
+    def to_dict(self) -> dict:
+        """
+        Generates a dictionary representation of the class. The obtained dictionary can be
+        saved and used to re-load the object using the built-in `from_dict` class method.
+
+        Returns
+        -------
+        dict
+            The dictionary listing, with human friendly names, the attributes of the class
+        """
+        data = {}
+        data["frequencies"] = self.frequencies
+        data["normal_modes"] = [list(x) for x in self.normal_modes]
+        data["ir_transitions"] = self.ir_transitions
+        data["ir_combination_bands"] = self.ir_combination_bands
+        data["raman_transitions"] = self.raman_transitions
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> VibrationalData:
+        """
+        Construct a VibrationalData object from the data encoded in a dictionary.
+
+        Arguments
+        ---------
+        data: dict
+            The dictionary containing the class attributes
+
+        Returns
+        -------
+        Properties
+            The fully initialized VibrationalData object
+        """
+        obj = cls()
+        obj.frequencies = data["frequencies"]
+        obj.normal_modes = [np.array(x) for x in data["normal_modes"]]
+        obj.ir_transitions = [(x, y) for x, y in data["ir_transitions"]]
+        obj.ir_combination_bands = [(x, y, z) for x, y, z in data["ir_combination_bands"]]
+        obj.raman_transitions = data["raman_transitions"]
+        return obj
+    
     def show_ir_spectrum(
             self,
-            broadening: Optional[str] = None,
+            lineshape: Optional[str] = None,
             FWHM: float = 25.,
             padding: float = 200.,
             include_overtones: bool = True,
+            show_bars: bool = False,
             logscale: bool = False,
             figsize: Tuple[int, int] = (12, 6),
             color: str = "#154C79",
@@ -90,7 +162,7 @@ class VibrationalData:
 
         Arguments
         ---------
-        broadening: Optional[str]
+        lineshape: Optional[str]
             The type of broadening to be used in rendering the spectrum. The available lineshapes are `lorentzian` and
             `gaussian`. If set to `None` only vertical bars will be used to represent the spectrum.
         FWHM: float
@@ -98,8 +170,10 @@ class VibrationalData:
         padding: float
             The padding to be used in plotting the spectrum. If set to 0, will plot the spectrum between the highest and
             lowest wavenumbers associated to the IR-active transitions (default: 200).
-        include_overtoned: bool
+        include_overtones: bool
             If set to True (default) will use, if available, the overtones and combination bands to plot the spectrum.
+        show_bars: bool
+            If set to True will show the intensity bars even if the lineshape parameters is set.
         logscale: bool
             If set to True will use a logaritmic scale to represent the intensities (default: False). The option is mainly
             useful when plotting the spectrum without broadening.
@@ -121,7 +195,7 @@ class VibrationalData:
 
         ir_bands = {}
         for mode, intensity in self.ir_transitions:
-
+                
             if intensity == 0:
                 continue
 
@@ -151,7 +225,7 @@ class VibrationalData:
         if logscale:
             plt.yscale("log")
 
-        if broadening is None:
+        if lineshape is None:
             plt.stem(ir_bands.keys(), ir_bands.values(), linefmt=color, basefmt="None", markerfmt="None")
             plt.xlim((fmin, fmax))
 
@@ -165,18 +239,21 @@ class VibrationalData:
                 value = 0
                 for f0, intensity in ir_bands.items():
                     
-                    if broadening == "lorentzian":
+                    if lineshape == "lorentzian":
                         value += intensity*unitary_height_lorentzian(f, f0, FWHM)
 
-                    elif broadening == "gaussian":
+                    elif lineshape == "gaussian":
                         value += intensity*unitary_height_gaussian(f, f0, FWHM)
                     
                     else:
-                        raise TypeError(f"`{broadening}` broadening option is invalid.")
+                        raise TypeError(f"`{lineshape}` lineshape option is invalid.")
                 
                 amplitude.append(value)
 
             plt.plot(frequency, amplitude, color=color, linewidth=1.5)
+
+            if show_bars:
+                plt.stem(ir_bands.keys(), ir_bands.values(), linefmt=color, basefmt="None", markerfmt="None")
         
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)

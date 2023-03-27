@@ -249,6 +249,8 @@ class Properties:
         data["Hirshfeld charges"] = self.__hirshfeld_charges
         data["Hirshfeld spin populations"] = self.__hirshfeld_spin_populations
         data["Hirshfeld Fukui"] = self.__condensed_fukui_hirshfeld
+        data["Vibrational data"] = self.__vibrational_data.to_dict()
+
         return data
 
     @classmethod
@@ -280,6 +282,8 @@ class Properties:
         obj.__hirshfeld_charges = data["Hirshfeld charges"]
         obj.__hirshfeld_spin_populations = data["Hirshfeld spin populations"]
         obj.__condensed_fukui_hirshfeld = data["Hirshfeld Fukui"]
+        obj.__vibrational_data = VibrationalData.from_dict(data["Vibrational data"])
+
         return obj
 
     @property
