@@ -6,8 +6,10 @@ import logging
 
 from typing import List
 from enum import Enum
+from copy import deepcopy
 
 from compechem.constants import kB
+from compechem.config import __JSON_VERSION__
 from compechem.core.geometry import MolecularGeometry
 from compechem.core.properties import Properties
 
@@ -75,6 +77,8 @@ class System:
             with open(filepath, "r") as jsonfile:
                 data = json.load(jsonfile)
 
+            data = json_parser(data)
+
             self.name = data["Name"]
             self.__charge = data["Charge"]
             self.__spin = data["Spin"]
@@ -98,6 +102,7 @@ class System:
             The path to the .json file that must be created.
         """
         data = {}
+        data["__JSON_VERSION__"] = __JSON_VERSION__
         data["Name"] = self.name
         data["Charge"] = self.__charge
         data["Spin"] = self.__spin
@@ -344,6 +349,40 @@ class System:
             True if the system is periodic (the `box_side` is not None), False otherwise.
         """
         return True if self.box_side is not None else False
+
+
+
+def json_parser(input: dict) -> dict:
+    """
+    The parser takes an input dictionary from an arbitrary .json file version and converts it into a dictionary
+    compatible with the latest .json file standard.
+
+    Arguments
+    ---------
+    input: dict
+        The dictionary containing the data that used to be required to fully describe a System object in a previous
+        version of the internal .json standard
+    
+    Returns
+    -------
+    dict
+        The dictionary containing the data required to fully describe a System object in the new .json standard
+    """
+
+    output = deepcopy(input)
+
+    if "__JSON_VERSION__" not in input or input["__JSON_VERSION__"] < 1:
+        
+        logger.warning("Detected JSON version <1: Updating dictionary content to version 1")
+
+        # In version 1 of the JSON format the vibrational data field has been added
+        output["Properties"]["Vibrational data"] = None
+        output["__JSON_VERSION__"] = 1
+    
+    output["__JSON_VERSION__"] = __JSON_VERSION__
+
+    return output
+
 
 
 class Ensemble:

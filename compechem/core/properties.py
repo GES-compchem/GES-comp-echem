@@ -118,7 +118,6 @@ class Properties:
         self.__condensed_fukui_hirshfeld: Dict[str, List[float]] = {}
         self.__vibrational_data: VibrationalData = None
 
-
     def __clear_electronic(self):
         self.__level_of_theory_electronic = None
         self.__electronic_energy = None
@@ -152,9 +151,7 @@ class Properties:
                     is_dftb_level_of_theory(engine),
                 ]
             ):
-                raise TypeError(
-                    "The engine argument string does not match any valid level of theory"
-                )
+                raise TypeError("The engine argument string does not match any valid level of theory")
             else:
                 return engine
 
@@ -169,9 +166,7 @@ class Properties:
         level_of_theory = self.__check_engine(engine)
 
         logger.debug("Validating electronic energy")
-        logger.debug(
-            f"current: {self.__level_of_theory_electronic}, requested: {level_of_theory}"
-        )
+        logger.debug(f"current: {self.__level_of_theory_electronic}, requested: {level_of_theory}")
 
         if self.__level_of_theory_electronic is None:
             self.__level_of_theory_electronic = level_of_theory
@@ -194,9 +189,7 @@ class Properties:
         level_of_theory = self.__check_engine(engine)
 
         logger.debug("Validating vibronic energy")
-        logger.debug(
-            f"current: {self.__level_of_theory_vibronic}, requested: {level_of_theory}"
-        )
+        logger.debug(f"current: {self.__level_of_theory_vibronic}, requested: {level_of_theory}")
 
         if self.__level_of_theory_vibronic is None:
             self.__level_of_theory_vibronic = level_of_theory
@@ -207,7 +200,9 @@ class Properties:
                     logger.warning(msg)
                     self.__pka = None
                 else:
-                    msg = "Added vibronic energy to Properties with pKa previously computed with electronic energy only."
+                    msg = (
+                        "Added vibronic energy to Properties with pKa previously computed with electronic energy only."
+                    )
                     logger.warning(msg)
                     warnings.warn(msg)
 
@@ -249,7 +244,11 @@ class Properties:
         data["Hirshfeld charges"] = self.__hirshfeld_charges
         data["Hirshfeld spin populations"] = self.__hirshfeld_spin_populations
         data["Hirshfeld Fukui"] = self.__condensed_fukui_hirshfeld
-        data["Vibrational data"] = self.__vibrational_data.to_dict()
+
+        if self.__vibrational_data is None:
+            data["Vibrational data"] = None
+        else:
+            data["Vibrational data"] = self.__vibrational_data.to_dict()
 
         return data
 
@@ -282,7 +281,11 @@ class Properties:
         obj.__hirshfeld_charges = data["Hirshfeld charges"]
         obj.__hirshfeld_spin_populations = data["Hirshfeld spin populations"]
         obj.__condensed_fukui_hirshfeld = data["Hirshfeld Fukui"]
-        obj.__vibrational_data = VibrationalData.from_dict(data["Vibrational data"])
+
+        if data["Vibrational data"] is None:
+            obj.__vibrational_data = None
+        else:
+            obj.__vibrational_data = VibrationalData.from_dict(data["Vibrational data"])
 
         return obj
 
@@ -322,9 +325,7 @@ class Properties:
         """
         return self.__electronic_energy
 
-    def set_electronic_energy(
-        self, value: float, electronic_engine: Union(Engine, str)
-    ) -> None:
+    def set_electronic_energy(self, value: float, electronic_engine: Union(Engine, str)) -> None:
         """
         Sets the electronic energy of the system.
 
@@ -351,9 +352,7 @@ class Properties:
         """
         return self.__vibronic_energy
 
-    def set_vibronic_energy(
-        self, value: float, vibronic_engine: Union(Engine, str)
-    ) -> None:
+    def set_vibronic_energy(self, value: float, vibronic_engine: Union(Engine, str)) -> None:
         """
         Sets the vibronic energy of the system.
 
@@ -486,9 +485,7 @@ class Properties:
         """
         return self.__mulliken_charges
 
-    def set_mulliken_charges(
-        self, value: List[float], electronic_engine: Union(Engine, str)
-    ) -> None:
+    def set_mulliken_charges(self, value: List[float], electronic_engine: Union(Engine, str)) -> None:
         """
         Sets the Mulliken charges of the system.
 
@@ -515,9 +512,7 @@ class Properties:
         """
         return self.__mulliken_spin_populations
 
-    def set_mulliken_spin_populations(
-        self, value: List[float], electronic_engine: Union(Engine, str)
-    ) -> None:
+    def set_mulliken_spin_populations(self, value: List[float], electronic_engine: Union(Engine, str)) -> None:
         """
         Sets the Mulliken spin populations of the system.
 
@@ -577,9 +572,7 @@ class Properties:
         """
         return self.__hirshfeld_charges
 
-    def set_hirshfeld_charges(
-        self, value: List[float], electronic_engine: Union(Engine, str)
-    ) -> None:
+    def set_hirshfeld_charges(self, value: List[float], electronic_engine: Union(Engine, str)) -> None:
         """
         Sets the Hirshfeld charges of the system.
 
@@ -606,9 +599,7 @@ class Properties:
         """
         return self.__hirshfeld_spin_populations
 
-    def set_hirshfeld_spin_populations(
-        self, value: List[float], electronic_engine: Union(Engine, str)
-    ) -> None:
+    def set_hirshfeld_spin_populations(self, value: List[float], electronic_engine: Union(Engine, str)) -> None:
         """
         Sets the Hirshfeld spin populations of the system.
 
@@ -655,7 +646,7 @@ class Properties:
         logger.debug("Setting condensed Fukui functions (Hirshfeld)")
         self.__validate_electronic(electronic_engine)
         self.__condensed_fukui_hirshfeld = value
-    
+
     @property
     def vibrational_data(self) -> VibrationalData:
         """
@@ -668,9 +659,10 @@ class Properties:
         """
         return self.__vibrational_data
 
-
     def set_vibrational_data(
-        self, value: VibrationalData, vibronic_engine: Union(Engine, str),
+        self,
+        value: VibrationalData,
+        vibronic_engine: Union(Engine, str),
     ) -> None:
         """
         Sets condensed Fukui values computed from the Hirshfeld charges.
