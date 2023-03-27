@@ -953,10 +953,10 @@ class OrcaInput(Engine):
                         sline = line.split(":")
                         mode_index = int(sline[0])
                         activity = float(sline[1].split()[1])
-                        deplarization = float(sline[1].split()[2])
+                        depolarization = float(sline[1].split()[2])
 
                         # Add the mode index, activity and depolarization
-                        vibrational_data.ir_transitions.append((mode_index, activity, deplarization))
+                        vibrational_data.raman_transitions.append((mode_index, activity, depolarization))
 
             if vibrational_data is not None:
                 mol.properties.set_vibrational_data(vibrational_data, self)
