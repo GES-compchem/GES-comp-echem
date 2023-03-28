@@ -3,6 +3,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+__JSON_VERSION__ = 1
+
 global STRICT_MODE
 STRICT_MODE = True
 
