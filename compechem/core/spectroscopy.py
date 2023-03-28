@@ -155,7 +155,8 @@ class VibrationalData:
             figsize: Tuple[int, int] = (12, 6),
             color: str = "#154C79",
             export_path: Optional[str] = None,
-            export_dpi: int = 600
+            export_dpi: int = 600,
+            show: bool = True
         ) -> None:
         """
         Plots the infrared spectrum of the molecule.
@@ -186,6 +187,8 @@ class VibrationalData:
             no file will be saved.
         export_dpi: int
             The resolution of the exported image (default: 600).
+        show: bool
+            If set to True (default) will open an interactive window containing the spectrum.
         
         Raises
         ------
@@ -268,6 +271,121 @@ class VibrationalData:
         if export_path is not None:
             plt.savefig(export_path, dpi=export_dpi)
 
-        plt.show()
+        if show:
+            plt.show()
+
+    
+    def show_raman_spectrum(
+            self,
+            lineshape: Optional[str] = None,
+            FWHM: float = 25.,
+            padding: float = 200.,
+            show_bars: bool = False,
+            logscale: bool = False,
+            figsize: Tuple[int, int] = (12, 6),
+            color: str = "#154C79",
+            export_path: Optional[str] = None,
+            export_dpi: int = 600,
+            show: bool = True
+        ) -> None:
+        """
+        Plots the raman spectrum of the molecule.
+
+        Arguments
+        ---------
+        lineshape: Optional[str]
+            The type of broadening to be used in rendering the spectrum. The available lineshapes are `lorentzian` and
+            `gaussian`. If set to `None` only vertical bars will be used to represent the spectrum.
+        FWHM: float
+            The full width at half maximum in cm^-1 of the broadening lineshapes (default: 25).
+        padding: float
+            The padding to be used in plotting the spectrum. If set to 0, will plot the spectrum between the highest and
+            lowest wavenumbers associated to the IR-active transitions (default: 200).
+        show_bars: bool
+            If set to True will show the intensity bars even if the lineshape parameters is set.
+        logscale: bool
+            If set to True will use a logaritmic scale to represent the intensities (default: False). The option is mainly
+            useful when plotting the spectrum without broadening.
+        figsize: Tuple[int, int]
+            The size of the matplotlib figure.
+        color: str
+            The string encoding the color of the line.
+        export_path: Optional[str]
+            The string encoding the location in which a copy of the spectrum should be saved. If set to None (default)
+            no file will be saved.
+        export_dpi: int
+            The resolution of the exported image (default: 600).
+        show: bool
+            If set to True (default) will open an interactive window containing the spectrum.
+        
+        Raises
+        ------
+        TypeError
+            Exception raised when an invalid lineshape is given as the broadening argument.
+        """
+        raman_bands = {}
+        for mode, activity, _ in self.raman_transitions:
+                
+            if activity == 0:
+                continue
+
+            frequency = self.frequencies[mode]
+            if frequency not in raman_bands:
+                raman_bands[frequency] = activity
+            else:
+                raman_bands[frequency] += activity
+
+        fmin, fmax = min(raman_bands.keys())-padding, max(raman_bands.keys())+padding
+
+        fig = plt.figure(figsize=figsize)
+
+        if logscale:
+            plt.yscale("log")
+
+        if lineshape is None:
+            plt.stem(raman_bands.keys(), raman_bands.values(), linefmt=color, basefmt="None", markerfmt="None")
+            plt.xlim((fmin, fmax))
+
+            if logscale is False:
+                plt.ylim(bottom=0)
+        
+        else:
+            amplitude = []
+            frequency = np.arange(fmin, fmax, 0.01)
+            for f in frequency:
+                value = 0
+                for f0, intensity in raman_bands.items():
+                    
+                    if lineshape == "lorentzian":
+                        value += intensity*unitary_height_lorentzian(f, f0, FWHM)
+
+                    elif lineshape == "gaussian":
+                        value += intensity*unitary_height_gaussian(f, f0, FWHM)
+                    
+                    else:
+                        raise TypeError(f"`{lineshape}` lineshape option is invalid.")
+                
+                amplitude.append(value)
+
+            plt.plot(frequency, amplitude, color=color, linewidth=1.5)
+
+            if show_bars:
+                plt.stem(raman_bands.keys(), raman_bands.values(), linefmt=color, basefmt="None", markerfmt="None")
+        
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xlabel(r"Wavenumber [$cm^{-1}$]", fontsize=20)
+        plt.ylabel(r"Activity", fontsize=20)
+        
+        plt.grid(which="major", color="#DDDDDD")
+        plt.grid(which="minor", color="#EEEEEE")
+
+        plt.tight_layout()
+
+        if export_path is not None:
+            plt.savefig(export_path, dpi=export_dpi)
+
+        if show:
+            plt.show()
 
     
