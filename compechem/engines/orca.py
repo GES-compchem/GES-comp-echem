@@ -88,16 +88,19 @@ class OrcaInput(Engine):
             input += "\n"
 
         elif job_info["type"] == "opt":
+            input += f"! {job_info['optimization_level']}\n\n"
+        
+        elif job_info["type"] == "opt-freq":
             if self.solvent:
+                logger.info("Optimization with frequency required in solvent. Switching to numerical frequencies.")
                 input += f"! {job_info['optimization_level']} NumFreq\n\n"
             else:
                 input += f"! {job_info['optimization_level']} Freq\n\n"
 
         elif job_info["type"] == "freq":
             if self.solvent:
-                input += "! NumFreq\n\n"
-            else:
-                input += "! Freq\n\n"
+                logger.warning("Analytical frequencies are not supported for the SMD solvent model.")
+            input += "! Freq\n\n"
 
         elif job_info["type"] == "nfreq":
             input += "! NumFreq\n\n"
@@ -249,7 +252,8 @@ class OrcaInput(Engine):
         hirshfeld: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
-        optimization_level: str = "NORMALOPT"
+        optimization_level: str = "NORMALOPT",
+        frequency_analysis: bool = True,
     ):
         """Geometry optimization + frequency analysis.
 
@@ -275,6 +279,9 @@ class OrcaInput(Engine):
             temporary work directory will be removed, by default True
         optimization_level: str
             The convergence level to be adopted during the geometry optimization (Default: NORMALOPT)
+        frequency_analysis: bool
+            If set to True (default) will also compute the vibration modes of the molecule and the frequencies. If the
+            optimization is run in solvent, it will automatically switch to numerical frequencies.
 
         Returns
         -------
@@ -304,7 +311,7 @@ class OrcaInput(Engine):
             self.write_input(
                 mol=mol,
                 job_info={
-                    "type": "opt",
+                    "type": "opt" if frequency_analysis is False else "opt-freq",
                     "ncores": ncores,
                     "maxcore": maxcore,
                     "save_cubes": save_cubes,
