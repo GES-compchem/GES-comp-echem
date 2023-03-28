@@ -319,7 +319,7 @@ class OrcaInput(Engine):
             os.system(cmd)
 
             if inplace is False:
-                newmol = System("input.xyz", charge, spin)
+                newmol = System("input.xyz", charge=charge, spin=spin)
                 newmol.name = mol.name
                 newmol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(newmol)

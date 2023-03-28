@@ -367,8 +367,9 @@ class DFTBInput(Engine):
                 os.system(cmd)
 
             if inplace is False:
-                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
-                newmol.properties = copy.copy(mol.properties)
+                newmol = copy.deepcopy(mol)
+                newmol.charge = charge
+                newmol.spin = spin
                 self.parse_output(newmol)
 
             else:
@@ -461,9 +462,11 @@ class DFTBInput(Engine):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol = copy.deepcopy(mol)
+                newmol.charge = charge
+                newmol.spin = spin
                 newmol.geometry.load_xyz("geo_end.xyz")
-                newmol.geometry.level_of_theory_geometry(self.level_of_theory)
+                newmol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(newmol)
 
             else:
@@ -725,7 +728,9 @@ class DFTBInput(Engine):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol = copy.deepcopy(mol)
+                newmol.charge = charge
+                newmol.spin = spin
                 newmol.geometry.load_xyz("geo_end.xyz")
                 newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
