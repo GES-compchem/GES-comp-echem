@@ -54,15 +54,15 @@ class VibrationalData:
     Attributes
     ----------
     frequencies: List[float]
-        The list of frequencies associated to each mode of vibration. The leading modes, associated to rotations and
+        The list of frequencies associated with each mode of vibration. The leading modes, associated to rotations and
         translations will be associated with zero frequencies.
     normal_modes: List[np.ndarray]
         The vectors encoding the cartesian displacements associated to each mode of vibration.
     ir_transitions: List[Tuple[int, float]]
-        The list of tuples associated with each infrared transitions. Each tuple is composed by the index of the mode
+        The list of tuples associated with each infrared transition. Each tuple is composed by the index of the mode
         involved and the corresponding intensity in km/mol.
     ir_combination_bands: List[Tuple[int, int, float]]
-        The list of tuples associated with each combination and overtone transitions. Each tuple is composed by the
+        The list of tuples associated with each combination and overtone transition. Each tuple is composed by the
         index of the two modes involved and the corresponding intensity in km/mol.
     raman_transitions: List[Tuple[int, float, float]]
         The list of tuples associated with each Raman transition. Each tuple is composed by the index of the mode
