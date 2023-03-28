@@ -154,7 +154,11 @@ class DFTBInput(Engine):
             "S": [-0.021, -0.017, 0.000, -0.017, -0.016, 0.000, 0.000, 0.000, -0.080],
         }
 
-    def write_input(self, mol: System, job_info: Dict,) -> None:
+    def write_input(
+        self,
+        mol: System,
+        job_info: Dict,
+    ) -> None:
 
         mol.write_gen(f"{mol.name}.gen")
 
@@ -218,21 +222,15 @@ class DFTBInput(Engine):
             ### <--
             input += "}\n" "\n"
 
-        input += (
-            f"Hamiltonian = {self.method} {{\n"
-            "  MaxSCCIterations = 500\n"
-            f"  Charge = {job_info['charge']}\n"
-        )
+        input += f"Hamiltonian = {self.method} {{\n" "  MaxSCCIterations = 500\n" f"  Charge = {mol.charge}\n"
 
         if self.fermi:
-            input += (
-                "  Filling = Fermi {\n" f"    Temperature [K] = {self.fermi_temp}\n" "  }\n"
-            )
+            input += "  Filling = Fermi {\n" f"    Temperature [K] = {self.fermi_temp}\n" "  }\n"
 
-        if job_info["spin"] != 1:
+        if mol.spin != 1:
             input += (
                 "  SpinPolarisation = Colinear {\n"
-                f"    UnpairedElectrons = {job_info['spin']-1}\n"
+                f"    UnpairedElectrons = {mol.spin-1}\n"
                 "  }\n"
                 "  SpinConstants = {\n"
             )
@@ -267,9 +265,7 @@ class DFTBInput(Engine):
                 input += "  ThirdOrderFull = Yes\n" "  HubbardDerivs {\n"
                 for atom in atom_types:
                     input += f"    {atom} = {self.hubbard_derivs[atom]}\n"
-                input += (
-                    "  }\n" "  HCorrection = Damping {\n" "    Exponent = 4.00\n" "  }\n"
-                )
+                input += "  }\n" "  HCorrection = Damping {\n" "    Exponent = 4.00\n" "  }\n"
             if self.dispersion:
                 input += (
                     "  Dispersion = SimpleDftD3 {\n"
@@ -302,8 +298,6 @@ class DFTBInput(Engine):
         mol: System,
         ncores: int = None,
         maxcore=None,
-        charge: int = None,
-        spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -317,10 +311,6 @@ class DFTBInput(Engine):
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -336,22 +326,20 @@ class DFTBInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SPE")
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_spe", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_spe",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
 
             self.write_input(
-                mol=mol, job_info={"type": "spe", "charge": charge, "spin": spin,},
+                mol=mol,
+                job_info={"type": "spe"},
             )
 
             if self.parallel == "mpi":
@@ -368,14 +356,12 @@ class DFTBInput(Engine):
 
             if inplace is False:
                 newmol = copy.deepcopy(mol)
-                newmol.charge = charge
-                newmol.spin = spin
                 self.parse_output(newmol)
 
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.__output_suffix, "spe", charge=charge, spin=spin)
+            process_output(mol, self.__output_suffix, "spe", charge=mol.charge, spin=mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -388,8 +374,6 @@ class DFTBInput(Engine):
         latticeopt: bool = False,
         ncores: int = None,
         maxcore=None,
-        charge: int = None,
-        spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
     ):
@@ -405,10 +389,6 @@ class DFTBInput(Engine):
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -424,16 +404,13 @@ class DFTBInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT")
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_opt", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_opt",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
@@ -442,8 +419,6 @@ class DFTBInput(Engine):
                 mol=mol,
                 job_info={
                     "type": "opt",
-                    "charge": charge,
-                    "spin": spin,
                     "latticeopt": latticeopt,
                 },
             )
@@ -463,8 +438,6 @@ class DFTBInput(Engine):
             if inplace is False:
 
                 newmol = copy.deepcopy(mol)
-                newmol.charge = charge
-                newmol.spin = spin
                 newmol.geometry.load_xyz("geo_end.xyz")
                 newmol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(newmol)
@@ -475,7 +448,7 @@ class DFTBInput(Engine):
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(mol)
 
-            process_output(mol, self.__output_suffix, "spe", charge=charge, spin=spin)
+            process_output(mol, self.__output_suffix, "spe", charge=mol.charge, spin=mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -492,8 +465,6 @@ class DFTBInput(Engine):
         box_side: float = None,
         ncores: int = None,
         maxcore=None,
-        charge: int = None,
-        spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
         compress_traj: bool = True,
@@ -518,10 +489,6 @@ class DFTBInput(Engine):
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -540,14 +507,10 @@ class DFTBInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
         if box_side is None:
             box_side = mol.box_side
 
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} NVT MD")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} NVT MD")
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
 
         tdir = mkdtemp(
@@ -562,8 +525,6 @@ class DFTBInput(Engine):
                 mol=mol,
                 job_info={
                     "type": "md_nvt",
-                    "charge": charge,
-                    "spin": spin,
                     "timestep": timestep,
                     "temperature": temperature,
                     "steps": steps,
@@ -590,25 +551,25 @@ class DFTBInput(Engine):
             suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
 
             if compress_traj:
-                compress_dftb_trajectory(f"{mol.name}_{charge}_{spin}")
+                compress_dftb_trajectory(f"{mol.name}_{mol.charge}_{mol.spin}")
                 os.makedirs("../MD_trajectories", exist_ok=True)
                 shutil.move(
-                    f"{mol.name}_{charge}_{spin}.zip",
-                    f"../MD_trajectories/{mol.name}_{charge}_{spin}.zip",
+                    f"{mol.name}_{mol.charge}_{mol.spin}.zip",
+                    f"../MD_trajectories/{mol.name}_{mol.charge}_{mol.spin}.zip",
                 )
 
-            save_dftb_trajectory(f"{mol.name}_{charge}_{spin}_{suffix}")
+            save_dftb_trajectory(f"{mol.name}_{mol.charge}_{mol.spin}_{suffix}")
 
             if mol.is_periodic:
-                with open(f"../MD_data/{mol.name}_{charge}_{spin}_{suffix}.pbc", "w") as f:
+                with open(f"../MD_data/{mol.name}_{mol.charge}_{mol.spin}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.__output_suffix, "md_nvt", charge, spin)
+            process_output(mol, self.__output_suffix, "md_nvt", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
         ### --> CURRENTLY NOT WORKING, REFACTORING NEEDED
-        # trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
+        # trajectory = MDTrajectory(f"{mol.name}_{mol.charge}_{mol.spin}_{suffix}", self.method)
         ### <--
 
         return ensemble
@@ -625,8 +586,6 @@ class DFTBInput(Engine):
         box_side: float = None,
         ncores: int = None,
         maxcore=None,
-        charge: int = None,
-        spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
         compress_traj: bool = True,
@@ -655,10 +614,6 @@ class DFTBInput(Engine):
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -676,16 +631,10 @@ class DFTBInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
         if box_side is None:
             box_side = mol.box_side
 
-        logger.info(
-            f"{mol.name}, charge {charge} spin {spin} - {self.method} Simulated Annealing"
-        )
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} Simulated Annealing")
         logger.debug(f"Running DFTB+ calculation on {ncores} cores")
         logger.debug(
             f"Heating/cooling between {start_temp}K and {target_temp}K for {ramp_steps} steps and holding max temp for {hold_steps} steps"
@@ -703,8 +652,6 @@ class DFTBInput(Engine):
                 mol=mol,
                 job_info={
                     "type": "simulated_annealing",
-                    "charge": charge,
-                    "spin": spin,
                     "timestep": timestep,
                     "start_temp": start_temp,
                     "ramp_steps": ramp_steps,
@@ -729,8 +676,6 @@ class DFTBInput(Engine):
             if inplace is False:
 
                 newmol = copy.deepcopy(mol)
-                newmol.charge = charge
-                newmol.spin = spin
                 newmol.geometry.load_xyz("geo_end.xyz")
                 newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
@@ -754,12 +699,12 @@ class DFTBInput(Engine):
                 with open(f"../MD_data/{mol.name}_{suffix}.pbc", "w") as f:
                     f.write(f"{mol.box_side}")
 
-            process_output(mol, self.__output_suffix, "anneal", charge, spin)
+            process_output(mol, self.__output_suffix, "anneal", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
         ### --> CURRENTLY NOT WORKING, REFACTORING NEEDED
-        # trajectory = MDTrajectory(f"{mol.name}_{charge}_{spin}_{suffix}", self.method)
+        # trajectory = MDTrajectory(f"{mol.name}_{mol.charge}_{mol.spin}_{suffix}", self.method)
         ### <--
 
         if inplace is False:
@@ -798,4 +743,3 @@ class DFTBInput(Engine):
                 if "Total Energy" in line:
                     electronic_energy = float(line.split()[2])
                     mol.properties.set_electronic_energy(electronic_energy, self)
-
