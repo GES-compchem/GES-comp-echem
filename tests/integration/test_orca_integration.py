@@ -168,6 +168,40 @@ def test_OrcaInput_opt():
         rmtree("output_files")
 
 
+# Test the opt() function on a water molecule in vacuum with no inplace option
+def test_OrcaInput_opt_no_inplace():
+
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        newmol = engine.opt(mol, ncores=4)
+    except:
+        assert False, "Unexpected exception raised during geometry optimization"
+
+    else:
+        assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert newmol.properties.level_of_theory_vibronic == engine.level_of_theory
+
+        assert_almost_equal(newmol.properties.electronic_energy, -76.272686998306, decimal=6)
+        assert_almost_equal(newmol.properties.vibronic_energy, 0.00301009, decimal=6)
+        assert_almost_equal(newmol.properties.gibbs_free_energy, -76.26967691, decimal=6)
+
+        expected_mulliken_charges = np.array([-0.285546, 0.142772, 0.142773])
+        assert_array_almost_equal(
+            expected_mulliken_charges, newmol.properties.mulliken_charges, decimal=4
+        )
+
+        expected_geometry = [
+            np.array([-3.216653, -0.578663, -0.020175]),
+            np.array([-2.244047, -0.623851, 0.023928]),
+            np.array([-3.481320, -1.249905, 0.635066]),
+        ]
+        assert_array_almost_equal(expected_geometry, newmol.geometry.coordinates, decimal=6)
+
+        rmtree("output_files")
+
+
 # Test the freq() function on a water molecule in vacuum
 def test_OrcaInput_freq():
 
@@ -221,6 +255,32 @@ def test_OrcaInput_freq():
         for expected, computed in zip(expected_ir_intensities, computed_ir_intensities):
             assert expected[0] == computed[0]
             assert_almost_equal(expected[1], computed[1], decimal=1)
+
+        rmtree("output_files")
+
+# Test the freq() function on a water molecule in vacuum with no inplace option
+def test_OrcaInput_freq_no_inplace():
+
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        newmol = engine.freq(mol, ncores=4)
+    except:
+        assert False, "Unexpected exception raised during frequency analysis"
+
+    else:
+        assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert newmol.properties.level_of_theory_vibronic == engine.level_of_theory
+
+        assert_almost_equal(newmol.properties.electronic_energy, -76.272562753586, decimal=6)
+        assert_almost_equal(newmol.properties.vibronic_energy, 0.00327855, decimal=6)
+        assert_almost_equal(newmol.properties.gibbs_free_energy, -76.26928420, decimal=6)
+
+        expected_mulliken_charges = np.array([-0.285593, 0.142795, 0.142798])
+        assert_array_almost_equal(
+            expected_mulliken_charges, newmol.properties.mulliken_charges, decimal=4
+        )
 
         rmtree("output_files")
 
@@ -343,6 +403,35 @@ def test_OrcaInput_raman_nearir():
         assert expected[1] == computed[1]
         assert_almost_equal(expected[2], computed[2], decimal=1)
 
+
+
+# Test the nfreq() function on a water molecule in ethanol with no inplace option
+def test_OrcaInput_nfreq_no_inplace():
+
+    engine = OrcaInput(
+        method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="ethanol"
+    )
+    mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
+
+    try:
+        newmol = engine.freq(mol, ncores=4)
+    except:
+        assert False, "Unexpected exception raised during numerical frequency analysis"
+
+    else:
+        assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert newmol.properties.level_of_theory_vibronic == engine.level_of_theory
+
+        assert_almost_equal(newmol.properties.electronic_energy, -76.283368184519, decimal=6)
+        assert_almost_equal(newmol.properties.vibronic_energy, 0.00317889, decimal=6)
+        assert_almost_equal(newmol.properties.gibbs_free_energy, -76.28018929, decimal=6)
+
+        expected_mulliken_charges = np.array([-0.363774, 0.181883, 0.181890])
+        assert_array_almost_equal(
+            expected_mulliken_charges, newmol.properties.mulliken_charges, decimal=4
+        )
+
+        rmtree("output_files")
 
 
 # Test the scan() function on a water molecule in vacuum

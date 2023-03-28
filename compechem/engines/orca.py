@@ -124,7 +124,7 @@ class OrcaInput(Engine):
             input += f"  dim2 {job_info['cube_dim']}\n"
             input += f"  dim3 {job_info['cube_dim']}\n"
             input += '  ElDens("eldens.cube");\n'
-            if job_info["spin"] != 1:
+            if mol.spin != 1:
                 input += '  SpinDens("spindens.cube");\n'
             input += "end\n\n"
 
@@ -144,7 +144,7 @@ class OrcaInput(Engine):
             input += "  Polar 1\n"
             input += "end\n\n"
 
-        input += f"* xyzfile {job_info['charge']} {job_info['spin']} {mol.name}.xyz\n"
+        input += f"* xyzfile {mol.charge} {mol.spin} {mol.name}.xyz\n"
 
         with open("input.inp", "w") as inp:
             inp.writelines(input)
@@ -156,8 +156,6 @@ class OrcaInput(Engine):
         mol: System,
         ncores: int = None,
         maxcore: int = 350,
-        charge: int = None,
-        spin: int = None,
         save_cubes: bool = False,
         cube_dim: int = 250,
         hirshfeld: bool = False,
@@ -174,10 +172,6 @@ class OrcaInput(Engine):
             number of cores, by default all available cores
         maxcore : int, optional
             memory per core, in MB, by default 350
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         save_cubes: bool, optional
             if set to True, will save a cube file containing electronic and spin densities,
             by default False.
@@ -200,12 +194,7 @@ class OrcaInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SPE")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
@@ -222,8 +211,6 @@ class OrcaInput(Engine):
                     "type": "spe",
                     "ncores": ncores,
                     "maxcore": maxcore,
-                    "charge": charge,
-                    "spin": spin,
                     "save_cubes": save_cubes,
                     "cube_dim": cube_dim,
                     "hirshfeld": hirshfeld,
@@ -235,14 +222,16 @@ class OrcaInput(Engine):
             os.system(cmd)
 
             if inplace is False:
-                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
 
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes)
+            process_output(
+                mol, self.__output_suffix, "spe", mol.charge, mol.spin, save_cubes=save_cubes
+            )
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -255,8 +244,6 @@ class OrcaInput(Engine):
         mol: System,
         ncores: int = None,
         maxcore: int = 350,
-        charge: int = None,
-        spin: int = None,
         save_cubes: bool = False,
         cube_dim: int = 250,
         hirshfeld: bool = False,
@@ -274,10 +261,6 @@ class OrcaInput(Engine):
             number of cores, by default all available cores
         maxcore : int, optional
             memory per core, in MB, by default 350
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         save_cubes: bool, optional
             if set to True, will save a cube file containing electronic and spin densities,
             by default False.
@@ -307,12 +290,7 @@ class OrcaInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
@@ -329,8 +307,6 @@ class OrcaInput(Engine):
                     "type": "opt",
                     "ncores": ncores,
                     "maxcore": maxcore,
-                    "charge": charge,
-                    "spin": spin,
                     "save_cubes": save_cubes,
                     "cube_dim": cube_dim,
                     "hirshfeld": hirshfeld,
@@ -343,7 +319,7 @@ class OrcaInput(Engine):
             os.system(cmd)
 
             if inplace is False:
-                newmol = System(filepath="input.xyz", charge=charge, spin=spin)
+                newmol = System("input.xyz", charge=mol.charge, spin=mol.spin)
                 newmol.name = mol.name
                 newmol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(newmol)
@@ -353,7 +329,9 @@ class OrcaInput(Engine):
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(mol)
 
-            process_output(mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes)
+            process_output(
+                mol, self.__output_suffix, "opt", mol.charge, mol.spin, save_cubes=save_cubes
+            )
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -366,8 +344,6 @@ class OrcaInput(Engine):
         mol: System,
         ncores: int = None,
         maxcore: int = 350,
-        charge: int = None,
-        spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
         raman: bool = False,
@@ -386,10 +362,6 @@ class OrcaInput(Engine):
             number of cores, by default all available cores
         maxcore : int, optional
             memory per core, in MB, by default 350
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -410,12 +382,7 @@ class OrcaInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} FREQ")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
@@ -432,8 +399,6 @@ class OrcaInput(Engine):
                     "type": "freq",
                     "ncores": ncores,
                     "maxcore": maxcore,
-                    "charge": charge,
-                    "spin": spin,
                     "save_cubes": False,
                     "cube_dim": None,
                     "hirshfeld": False,
@@ -447,14 +412,14 @@ class OrcaInput(Engine):
             os.system(cmd)
 
             if inplace is False:
-                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
 
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.__output_suffix, "freq", charge, spin)
+            process_output(mol, self.__output_suffix, "freq", mol.charge, mol.spin)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -467,8 +432,6 @@ class OrcaInput(Engine):
         mol: System,
         ncores: int = None,
         maxcore: int = 350,
-        charge: int = None,
-        spin: int = None,
         inplace: bool = False,
         remove_tdir: bool = True,
         raman: bool = False,
@@ -484,10 +447,6 @@ class OrcaInput(Engine):
             number of cores, by default all available cores
         maxcore : int, optional
             memory per core, in MB, by default 350
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -508,12 +467,7 @@ class OrcaInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} NFREQ")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} NFREQ")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
@@ -530,8 +484,6 @@ class OrcaInput(Engine):
                     "type": "nfreq",
                     "ncores": ncores,
                     "maxcore": maxcore,
-                    "charge": charge,
-                    "spin": spin,
                     "save_cubes": False,
                     "cube_dim": None,
                     "hirshfeld": False,
@@ -545,14 +497,14 @@ class OrcaInput(Engine):
             os.system(cmd)
 
             if inplace is False:
-                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
 
             else:
                 self.parse_output(mol)
 
-            process_output(mol, self.__output_suffix, "numfreq", charge, spin)
+            process_output(mol, self.__output_suffix, "numfreq", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 
@@ -567,8 +519,6 @@ class OrcaInput(Engine):
         invertconstraints: bool = False,
         ncores: int = None,
         maxcore: int = 350,
-        charge: int = None,
-        spin: int = None,
         remove_tdir: bool = True,
     ):
         """Relaxed surface scan.
@@ -587,10 +537,6 @@ class OrcaInput(Engine):
             number of cores, by default all available cores
         maxcore : int, optional
             memory per core, in MB, by default 350
-        charge : int, optional
-            total charge of the molecule. Default is taken from the input molecule.
-        spin : int, optional
-            total spin of the molecule. Default is taken from the input molecule.
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
 
@@ -603,12 +549,7 @@ class OrcaInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SCAN")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SCAN")
         logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
@@ -625,8 +566,6 @@ class OrcaInput(Engine):
                     "type": "scan",
                     "ncores": ncores,
                     "maxcore": maxcore,
-                    "charge": charge,
-                    "spin": spin,
                     "save_cubes": False,
                     "cube_dim": None,
                     "hirshfeld": False,
@@ -669,13 +608,13 @@ class OrcaInput(Engine):
             for xyz in xyz_list:
                 index = xyz.split(".")[1]
                 shutil.move(f"input.{index}.xyz", f"{mol.name}.{index}.xyz")
-                system = System(f"{mol.name}.{index}.xyz", charge=charge, spin=spin)
+                system = System(f"{mol.name}.{index}.xyz", charge=mol.charge, spin=mol.spin)
                 system.properties.set_electronic_energy(energies.pop(0), self)
                 mol_list.append(system)
 
             ensemble = Ensemble(mol_list)
 
-            process_output(mol, self.__output_suffix, "scan", charge, spin)
+            process_output(mol, self.__output_suffix, "scan", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
 

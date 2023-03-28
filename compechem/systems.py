@@ -137,6 +137,11 @@ class System:
 
     @charge.setter
     def charge(self, new_charge: int) -> None:
+
+        if type(new_charge) != int:
+            logger.error(f"Charge {new_charge} is invalid. Must be an integer.")
+            raise TypeError("Charge must be an integer value")
+        
         self.__charge = new_charge
         logger.info(f"Charge changed: clearing properties for {self.name}")
         self.properties = Properties()
@@ -147,6 +152,11 @@ class System:
 
     @spin.setter
     def spin(self, new_spin: int) -> None:
+
+        if type(new_spin) != int or new_spin<1:
+            logger.error(f"Spin multiplicity {new_spin} is invalid. Must be a positive integer.")
+            raise TypeError("Spin multiplicity must be an integer value")
+        
         self.__spin = new_spin
         logger.info(f"Spin changed: clearing properties for {self.name}")
         self.properties = Properties()

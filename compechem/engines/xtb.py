@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class XtbInput(Engine):
     """
     Interface for running xTB calculations
-    
+
     Parameters
     ----------
     method : str, optional
@@ -49,10 +49,10 @@ class XtbInput(Engine):
         self.__output_suffix += "vacuum" if solvent is None else f"{self.solvent}"
         self.__output_suffix = clean_suffix(self.__output_suffix)
 
-    def write_input(self, job_info: Dict,) -> None:
+    def write_input(self, mol: System, job_info: dict) -> None:
 
-        input = f"$chrg {job_info['charge']}\n"
-        input += f"$spin {job_info['spin']-1}\n"
+        input = f"$chrg {mol.charge}\n"
+        input += f"$spin {mol.spin-1}\n"
 
         input += "$write\n"
         input += "   spin population=true\n"
@@ -72,8 +72,6 @@ class XtbInput(Engine):
         mol: System,
         ncores: int = None,
         maxcore=None,
-        charge: int = None,
-        spin: int = None,
         save_cubes: bool = False,
         cube_step: float = 0.1,
         inplace: bool = False,
@@ -89,10 +87,6 @@ class XtbInput(Engine):
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
-        charge : int, optional
-            total charge of the system. Default is taken from the input system.
-        spin : int, optional
-            total spin of the system. Default is taken from the input system.
         save_cubes: bool, optional
             if set to True, will save a cube file containing electronic and spin densities,
             by default False.
@@ -113,24 +107,20 @@ class XtbInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} SPE")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SPE")
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_spe", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_spe",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
 
             self.write_input(
+                mol,
                 job_info={
-                    "charge": charge,
-                    "spin": spin,
                     "save_cubes": save_cubes,
                     "cube_step": cube_step,
                 },
@@ -150,16 +140,14 @@ class XtbInput(Engine):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
 
             else:
                 self.parse_output(mol)
 
-            process_output(
-                mol, self.__output_suffix, "spe", charge, spin, save_cubes=save_cubes
-            )
+            process_output(mol, self.__output_suffix, "spe", mol.charge, mol.spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -172,8 +160,6 @@ class XtbInput(Engine):
         mol: System,
         ncores: int = None,
         maxcore=None,
-        charge: int = None,
-        spin: int = None,
         save_cubes: bool = False,
         cube_step: float = 0.1,
         inplace: bool = False,
@@ -189,10 +175,6 @@ class XtbInput(Engine):
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
-        charge : int, optional
-            Total charge of the system. Default is taken from the input system.
-        spin : int, optional
-            Total spin of the system. Default is taken from the input system.
         save_cubes: bool, optional
             if set to True, will save a cube file containing electronic and spin densities,
             by default False.
@@ -216,24 +198,20 @@ class XtbInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} OPT")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT")
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_opt", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_opt",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
 
             self.write_input(
+                mol,
                 job_info={
-                    "charge": charge,
-                    "spin": spin,
                     "save_cubes": save_cubes,
                     "cube_step": cube_step,
                 },
@@ -269,7 +247,7 @@ class XtbInput(Engine):
 
                 if inplace is False:
 
-                    newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                    newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
                     newmol.geometry.load_xyz("xtbopt.xyz")
                     newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
@@ -281,9 +259,7 @@ class XtbInput(Engine):
 
                     self.parse_output(mol)
 
-                process_output(
-                    mol, self.__output_suffix, "opt", charge, spin, save_cubes=save_cubes
-                )
+                process_output(mol, self.__output_suffix, "opt", mol.charge, mol.spin, save_cubes=save_cubes)
 
                 if remove_tdir:
                     shutil.rmtree(tdir)
@@ -296,8 +272,6 @@ class XtbInput(Engine):
         mol: System,
         ncores: int = None,
         maxcore=None,
-        charge: int = None,
-        spin: int = None,
         save_cubes: bool = False,
         cube_step: float = 0.1,
         inplace: bool = False,
@@ -313,10 +287,6 @@ class XtbInput(Engine):
             number of cores, by default all available cores
         maxcore : dummy variable
             dummy variable used for compatibility with Orca calculations
-        charge : int, optional
-            Total charge of the system. Default is taken from the input system.
-        spin : int, optional
-            Total spin of the system. Default is taken from the input system.
         save_cubes: bool, optional
             if set to True, will save a cube file containing electronic and spin densities,
             by default False.
@@ -337,24 +307,20 @@ class XtbInput(Engine):
         if ncores is None:
             ncores = get_ncores()
 
-        if charge is None:
-            charge = mol.charge
-        if spin is None:
-            spin = mol.spin
-
-        logger.info(f"{mol.name}, charge {charge} spin {spin} - {self.method} FREQ")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} FREQ")
         logger.debug(f"Running xTB calculation on {ncores} cores")
 
         tdir = mkdtemp(
-            prefix=mol.name + "_", suffix=f"_{self.__output_suffix}_freq", dir=os.getcwd(),
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_freq",
+            dir=os.getcwd(),
         )
 
         with sh.pushd(tdir):
 
             self.write_input(
+                mol,
                 job_info={
-                    "charge": charge,
-                    "spin": spin,
                     "save_cubes": save_cubes,
                     "cube_step": cube_step,
                 },
@@ -374,7 +340,7 @@ class XtbInput(Engine):
 
             if inplace is False:
 
-                newmol = System(f"{mol.name}.xyz", charge=charge, spin=spin)
+                newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
 
                 newmol.properties = copy.copy(mol.properties)
 
@@ -383,9 +349,7 @@ class XtbInput(Engine):
             else:
                 self.parse_output(mol)
 
-            process_output(
-                mol, self.__output_suffix, "freq", charge, spin, save_cubes=save_cubes
-            )
+            process_output(mol, self.__output_suffix, "freq", mol.charge, mol.spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
