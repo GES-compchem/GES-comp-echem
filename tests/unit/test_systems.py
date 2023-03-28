@@ -3,6 +3,7 @@ import pytest, pathlib, json
 from numpy.testing import assert_array_almost_equal
 from os.path import abspath, dirname, join
 
+from compechem.config import __JSON_VERSION__
 from compechem.systems import System, SupportedTypes
 from compechem.core.base import Engine
 from compechem.core.geometry import MolecularGeometry
@@ -81,6 +82,7 @@ def test_System_save_json(tmp_path_factory):
         data = json.load(jsonfile)
 
     expected = {
+        "__JSON_VERSION__": __JSON_VERSION__, 
         "Box Side": None,
         "Charge": 1,
         "Flags": [],
@@ -109,6 +111,7 @@ def test_System_save_json(tmp_path_factory):
             "Mulliken spin populations": [],
             "Vibronic energy (Eh)": None,
             "pKa": None,
+            "Vibrational data": None,
         },
         "Spin": 2,
     }

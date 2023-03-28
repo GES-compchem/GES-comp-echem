@@ -17,27 +17,20 @@ TEST_DIR = dirname(abspath(__file__))
 def test_OrcaInput___init__():
 
     try:
-        engine = OrcaInput(
-            method="HF", basis_set="def2-SVP", aux_basis="def2/J", solvent="water"
-        )
+        engine = OrcaInput(method="HF", basis_set="def2-SVP", aux_basis="def2/J", solvent="water")
 
     except:
         assert False, "Unenxpected exception raised during OrcaInput class construction"
 
     else:
         assert engine.method == "HF"
-        assert (
-            engine.level_of_theory
-            == "OrcaInput || method: HF | basis: def2-SVP | solvent: water"
-        )
+        assert engine.level_of_theory == "OrcaInput || method: HF | basis: def2-SVP | solvent: water"
 
 
 # Test the spe() function on a radical cation water molecule in DMSO
 def test_OrcaInput_spe():
 
-    engine = OrcaInput(
-        method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO"
-    )
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
     try:
@@ -47,14 +40,10 @@ def test_OrcaInput_spe():
 
     else:
         assert mol.properties.level_of_theory_electronic == engine.level_of_theory
-        assert_array_almost_equal(
-            mol.properties.electronic_energy, -75.942595825106, decimal=6
-        )
+        assert_array_almost_equal(mol.properties.electronic_energy, -75.942595825106, decimal=6)
 
         expected_mulliken_charges = np.array([0.377902, 0.311149, 0.310950])
-        assert_array_almost_equal(
-            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4
-        )
+        assert_array_almost_equal(expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4)
         expected_mulliken_spin_populations = np.array([1.044851, -0.022422, -0.022429])
         assert_array_almost_equal(
             expected_mulliken_spin_populations,
@@ -68,9 +57,7 @@ def test_OrcaInput_spe():
 # Test the spe() function on a radical cation water molecule in DMSO without the inplace option
 def test_OrcaInput_spe_no_inplace():
 
-    engine = OrcaInput(
-        method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO"
-    )
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
     try:
@@ -81,9 +68,7 @@ def test_OrcaInput_spe_no_inplace():
     else:
         assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
 
-        assert_array_almost_equal(
-            newmol.properties.electronic_energy, -75.942595825106, decimal=6
-        )
+        assert_array_almost_equal(newmol.properties.electronic_energy, -75.942595825106, decimal=6)
 
         expected_mulliken_charges = np.array([0.377902, 0.311149, 0.310950])
         assert_array_almost_equal(
@@ -116,9 +101,7 @@ def test_OrcaInput_spe_CCSD():
     else:
         assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
 
-        assert_array_almost_equal(
-            newmol.properties.electronic_energy, -75.731114338261, decimal=6
-        )
+        assert_array_almost_equal(newmol.properties.electronic_energy, -75.731114338261, decimal=6)
 
         expected_mulliken_charges = np.array([0.391458, 0.304269, 0.304274])
         assert_array_almost_equal(
@@ -149,8 +132,7 @@ def test_OrcaInput_forbidden():
         assert False, "Unexpected exception raised"
 
     assert (
-        isfile("./output_files/water_1_2_orca_DLPNO-CCSD-T-_6-311++G--_vacuum_spe.out")
-        == True
+        isfile("./output_files/water_1_2_orca_DLPNO-CCSD-T-_6-311++G--_vacuum_spe.out") == True
     ), "Output file not found"
 
 
@@ -174,9 +156,7 @@ def test_OrcaInput_opt():
         assert_almost_equal(mol.properties.gibbs_free_energy, -76.26967691, decimal=6)
 
         expected_mulliken_charges = np.array([-0.285546, 0.142772, 0.142773])
-        assert_array_almost_equal(
-            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4
-        )
+        assert_array_almost_equal(expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4)
 
         expected_geometry = [
             np.array([-3.216653, -0.578663, -0.020175]),
@@ -242,9 +222,39 @@ def test_OrcaInput_freq():
         assert_almost_equal(mol.properties.gibbs_free_energy, -76.26928420, decimal=6)
 
         expected_mulliken_charges = np.array([-0.285593, 0.142795, 0.142798])
-        assert_array_almost_equal(
-            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4
-        )
+        assert_array_almost_equal(expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4)
+
+        expected_frequencies = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1571.22, 3754.38, 3868.70]
+        assert_array_almost_equal(expected_frequencies, mol.properties.vibrational_data.frequencies, decimal=2)
+
+        expected_modes = [
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.040743, -0.041219, 0.040236, 0.026863, 0.504371, -0.492346, -0.673538, 0.149853, -0.146275],
+            [-0.028793, 0.029302, -0.028604, 0.704773, 0.009164, -0.008952, -0.247768, -0.474253, 0.462948],
+            [0.057229, 0.028881, -0.028193, -0.705943, 0.024095, -0.023515, -0.202399, -0.482498, 0.470996],
+        ]
+
+        computed_modes = mol.properties.vibrational_data.normal_modes
+        assert len(computed_modes) == 9
+
+        for expected_mode, computed_mode in zip(expected_modes, computed_modes):
+
+            try:
+                assert_array_almost_equal(expected_mode, computed_mode, decimal=4)
+            except:
+                assert_array_almost_equal([-v for v in expected_mode], computed_mode, decimal=4)
+
+        expected_ir_intensities = [(6, 51.09), (7, 2.43), (8, 24.85)]
+        computed_ir_intensities = mol.properties.vibrational_data.ir_transitions
+
+        for expected, computed in zip(expected_ir_intensities, computed_ir_intensities):
+            assert expected[0] == computed[0]
+            assert_almost_equal(expected[1], computed[1], decimal=1)
 
         rmtree("output_files")
 
@@ -278,13 +288,11 @@ def test_OrcaInput_freq_no_inplace():
 # Test the nfreq() function on a water molecule in ethanol
 def test_OrcaInput_nfreq():
 
-    engine = OrcaInput(
-        method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="ethanol"
-    )
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="ethanol")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
     try:
-        engine.freq(mol, ncores=4, inplace=True)
+        engine.nfreq(mol, ncores=4, inplace=True)
     except:
         assert False, "Unexpected exception raised during numerical frequency analysis"
 
@@ -297,11 +305,104 @@ def test_OrcaInput_nfreq():
         assert_almost_equal(mol.properties.gibbs_free_energy, -76.28018929, decimal=6)
 
         expected_mulliken_charges = np.array([-0.363774, 0.181883, 0.181890])
-        assert_array_almost_equal(
-            expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4
-        )
+        assert_array_almost_equal(expected_mulliken_charges, mol.properties.mulliken_charges, decimal=4)
+
+        expected_frequencies = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1532.63, 3762.34, 3855.63]
+        assert_array_almost_equal(expected_frequencies, mol.properties.vibrational_data.frequencies, decimal=2)
+
+        expected_modes = [
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.040440, -0.040996, 0.040018, 0.033134, 0.504194, -0.492173, -0.675004, 0.146495, -0.142997],
+            [-0.029303, 0.029535, -0.028831, 0.707130, 0.005219, -0.005101, -0.242031, -0.474002, 0.462704],
+            [0.057170, 0.028941, -0.028251, -0.703530, 0.024606, -0.024013, -0.203876, -0.483956, 0.472420],
+        ]
+
+        computed_modes = mol.properties.vibrational_data.normal_modes
+        assert len(computed_modes) == 9
+
+        for expected_mode, computed_mode in zip(expected_modes, computed_modes):
+
+            try:
+                assert_array_almost_equal(expected_mode, computed_mode, decimal=4)
+            except:
+                assert_array_almost_equal([-v for v in expected_mode], computed_mode, decimal=4)
+
+        expected_ir_intensities = [(6, 95.18), (7, 23.64), (8, 93.20)]
+        computed_ir_intensities = mol.properties.vibrational_data.ir_transitions
+
+        for expected, computed in zip(expected_ir_intensities, computed_ir_intensities):
+            assert expected[0] == computed[0]
+            assert_almost_equal(expected[1], computed[1], decimal=1)
 
         rmtree("output_files")
+
+# Test the calculation of raman spectra and overtones in orca using a tight optimization
+@pytest.mark.xfail
+def test_OrcaInput_raman_nearir():
+
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/CO2.xyz")
+
+    engine.opt(mol, ncores=4, optimization_level="TIGHTOPT", inplace=True)
+    engine.nfreq(mol, ncores=4, raman=True, overtones=True, inplace=True)
+
+    expected_frequencies = [0.0, 0.0, 0.0, 0.0, 0.0, 623.22, 624.09, 1339.10, 2421.82]
+    assert_array_almost_equal(expected_frequencies, mol.properties.vibrational_data.frequencies, decimal=2)
+
+    expected_modes = [
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [-0.863117, 0.187569, -0.000001, 0.323987, -0.070401, 0.000001, 0.323984, -0.070413, 0.000001],
+        [0.000001, -0.000000, -0.883262, -0.000001, 0.000000, 0.331548, -0.000001, 0.000000, 0.331548],
+        [-0.000010, 0.000001, 0.000000, -0.150307, -0.690946, -0.000000, 0.150314, 0.690946, -0.000000],
+        [0.187569, 0.863117, 0.000000, -0.070405, -0.323987, -0.000000, -0.070409, -0.323984, -0.000000],
+    ]
+
+    computed_modes = mol.properties.vibrational_data.normal_modes
+    assert len(computed_modes) == 9
+
+    for expected_mode, computed_mode in zip(expected_modes, computed_modes):
+
+        try:
+            assert_array_almost_equal(expected_mode, computed_mode, decimal=4)
+        except:
+            assert_array_almost_equal([-v for v in expected_mode], computed_mode, decimal=4)
+
+    expected_ir_intensities = [(5, 23.20), (6, 23.20), (7, 0.00), (8, 490.10)]
+    computed_ir_intensities = mol.properties.vibrational_data.ir_transitions
+
+    for expected, computed in zip(expected_ir_intensities, computed_ir_intensities):
+        assert expected[0] == computed[0]
+        assert_almost_equal(expected[1], computed[1], decimal=1)
+
+    expected_ir_overtones = [
+        (5, 5, 0.00),
+        (5, 6, 0.00),
+        (5, 7, 0.04),
+        (5, 8, 0.00),
+        (6, 6, 0.00),
+        (6, 7, 0.04),
+        (6, 8, 0.00),
+        (7, 7, 0.00),
+        (7, 8, 13.18),
+        (8, 8, 0.00),
+    ]
+
+    computed_ir_overtones = mol.properties.vibrational_data.ir_combination_bands
+
+    for expected, computed in zip(expected_ir_overtones, computed_ir_overtones):
+        assert expected[0] == computed[0]
+        assert expected[1] == computed[1]
+        assert_almost_equal(expected[2], computed[2], decimal=1)
+
 
 
 # Test the nfreq() function on a water molecule in ethanol with no inplace option
@@ -362,9 +463,7 @@ def test_OrcaInput_scan():
             ]
         )
 
-        calculated_energies = np.array(
-            [system.properties.electronic_energy for system in ensemble.systems]
-        )
+        calculated_energies = np.array([system.properties.electronic_energy for system in ensemble.systems])
 
         assert_array_almost_equal(calculated_energies, expected_energies, decimal=6)
 
@@ -391,9 +490,7 @@ def test_OrcaInput_runtime_error_input():
 
 def test_OrcaInput_runtime_error_missing_basis():
 
-    engine = OrcaInput(
-        method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="def2/J", solvent=None
-    )
+    engine = OrcaInput(method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
     try:
