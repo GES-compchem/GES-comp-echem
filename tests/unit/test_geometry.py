@@ -144,6 +144,7 @@ def test_MolecularGeometry_properties():
     mol = MolecularGeometry.from_xyz(xyzfile)
 
     assert_almost_equal(mol.mass, 18.01528, decimal=4)
+    assert mol.atomic_numbers == [8, 1, 1]
 
 
 # Test the MolecularGeometry bureid_volume_fraction method

@@ -272,6 +272,20 @@ class MolecularGeometry:
         return self.__atoms
 
     @property
+    def atomic_numbers(self) -> List[int]:
+        """
+        The ordered list of the atomic numbers of each atom in the molecule
+
+        Returns
+        -------
+        List[int]
+            The list of integers atomic numbers associated with each atom in the molecule
+        """
+
+        ATOMIC_NUMBERS = {v: k for k, v in atoms_dict.items()}
+        return [ATOMIC_NUMBERS[element] for element in self.atoms]
+
+    @property
     def coordinates(self) -> List[np.ndarray]:
         """
         The list of coordinates of the atoms in the molecule
