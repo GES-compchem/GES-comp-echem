@@ -16,16 +16,6 @@ from compechem.core.properties import Properties
 logger = logging.getLogger(__name__)
 
 
-class SupportedTypes(Enum):
-    """
-    The enumeration listing the file types (.xyz and .json) supported by the System class
-    constructor.
-    """
-
-    XYZ = ".xyz"
-    JSON = ".json"
-
-
 class System:
     """
     The System object describes a generic molecular system described at a given level of
@@ -36,8 +26,6 @@ class System:
     ----------
     filepath : str
         The path to the file containing the system geometry or data
-    filetype: SupportedTypes
-        The type of file loaded (default: XYZ)
     charge : int, optional
         The total charge of the system. (Default: 0 neutral)
     spin : int, optional
@@ -54,7 +42,6 @@ class System:
     def __init__(
         self,
         filepath: str,
-        filetype: SupportedTypes = SupportedTypes.XYZ,
         charge: int = 0,
         spin: int = 1,
         box_side: float = None,
@@ -63,7 +50,7 @@ class System:
         if not os.path.isfile(filepath):
             raise ValueError(f"The specified file `{filepath}` does not exist.")
 
-        if filetype == SupportedTypes.XYZ:
+        if filepath.endswith(".xyz"):
             self.name = os.path.basename(filepath).strip(".xyz")
             self.__charge: int = charge
             self.__spin: int = spin
@@ -72,7 +59,7 @@ class System:
             self.properties: Properties = Properties()
             self.flags: list = []
 
-        elif filetype == SupportedTypes.JSON:
+        elif filepath.endswith(".json"):
 
             with open(filepath, "r") as jsonfile:
                 data = json.load(jsonfile)
