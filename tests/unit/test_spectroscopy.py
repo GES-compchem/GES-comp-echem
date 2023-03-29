@@ -3,7 +3,7 @@ import pytest
 from os import remove
 from os.path import dirname, abspath, isfile
 
-from compechem.systems import System, SupportedTypes
+from compechem.systems import System
 from compechem.core.spectroscopy import VibrationalData
 
 
@@ -27,7 +27,7 @@ def test_VibrationalData___init__():
 
 def test_VibrationalData___str__():
 
-    mol = System(f"{TEST_DIR}/utils/json_examples/CO2_ir_raman.json", filetype=SupportedTypes.JSON)
+    mol = System(f"{TEST_DIR}/utils/json_examples/CO2_ir_raman.json")
     obj = mol.properties.vibrational_data
 
     expected_string = """VIBRATIONAL FREQUENCIES
@@ -51,7 +51,7 @@ def test_VibrationalData___str__():
 
 def test_VibrationalData_show_ir_spectrum():
 
-    mol = System(f"{TEST_DIR}/utils/json_examples/CO2_ir_raman.json", filetype=SupportedTypes.JSON)
+    mol = System(f"{TEST_DIR}/utils/json_examples/CO2_ir_raman.json")
     obj = mol.properties.vibrational_data
 
     try:
@@ -76,7 +76,7 @@ def test_VibrationalData_show_ir_spectrum():
 
 def test_VibrationalData_show_raman_spectrum():
 
-    mol = System(f"{TEST_DIR}/utils/json_examples/CO2_ir_raman.json", filetype=SupportedTypes.JSON)
+    mol = System(f"{TEST_DIR}/utils/json_examples/CO2_ir_raman.json")
     obj = mol.properties.vibrational_data
 
     try:

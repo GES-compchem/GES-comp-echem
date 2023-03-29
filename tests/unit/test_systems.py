@@ -4,7 +4,7 @@ from numpy.testing import assert_array_almost_equal
 from os.path import abspath, dirname, join
 
 from compechem.config import __JSON_VERSION__
-from compechem.systems import System, SupportedTypes
+from compechem.systems import System
 from compechem.core.base import Engine
 from compechem.core.geometry import MolecularGeometry
 
@@ -52,7 +52,7 @@ def test_System_json___init__():
     ]
 
     try:
-        mol = System(jsonfile, filetype=SupportedTypes.JSON)
+        mol = System(jsonfile)
 
     except:
         assert False, "Exception raised during `System` class constructor"

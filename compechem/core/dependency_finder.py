@@ -24,13 +24,13 @@ def locate_executable(name: str) -> str:
     str
         The path to the requested program.
     """
-    output = subprocess.check_output(f"whereis {name}", shell=True).decode("utf-8")
-    output = output.strip("\n")
+    try:
+        output = subprocess.check_output(f"which {name}", shell=True).decode("utf-8")
+        output = output.strip("\n")
+        return output
 
-    if len(output.split(": ")) == 1:
+    except:
         raise RuntimeError(f"cannot find '{name}' in the system path")
-    else:
-        return str(abspath(output.split(": ")[-1]))
 
 
 def locate_vmd() -> str:

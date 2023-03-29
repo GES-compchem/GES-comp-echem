@@ -1,3 +1,15 @@
+---
+jupytext:
+  formats: md:myst
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+---
+
 (getting-started)=
 
 # Getting Started
@@ -17,7 +29,7 @@ Alternatively, individual submodules, classes, and functions can be imported sep
 
 ```python
 from compechem import systems
-from compechem.wrappers import dftbplus
+from compechem.engines import dftbplus
 from compechem.wrappers.packmol import packmol_cube
 ```
 
@@ -29,7 +41,7 @@ For a more detailed explanation of the available features in each submodule, ple
 
 ### Introduction
 
-Let us go through the very basics of using the library. We are going to carry out a geometry optimisation on a water molecule. At the very least, you will need the geometrical structure of the system you want to study, in the form of a .xyz file. You can obtain it from available databases, or you can draw the structures yourself in programs such as [Avogadro](https://avogadro.cc/).
+Let us go through the very basics of using the library. We are going to carry out a geometry optimisation on a water molecule. At the very least, you will need the geometrical structure of the system you want to study, in the form of a `.xyz` file. You can obtain it from available databases, or you can draw the structures yourself in programs such as [Avogadro](https://avogadro.cc/).
 
 Below is the `water.xyz` file, containing the structure of the water molecule, which we will use in these examples:
 
@@ -49,12 +61,12 @@ Before starting, we need to create a Python script and import the necessary clas
 
 ```python
 from compechem.systems import System
-from compechem import XtbInput
+from compechem import XtbInput  # Engines can also be imported directly from compechem 
 ```
 
 ### Creating the System object
 
-After importing the necessary modules, we can create our molecule, by indicating the (relative, or complete) path where the .xyz file is located:
+After importing the necessary modules, we can create our molecule, by indicating the (relative, or complete) path where the `.xyz` file is located:
 
 ```python
 water = System("example_files/water.xyz")
@@ -62,7 +74,7 @@ water = System("example_files/water.xyz")
 
 ### Creating a XtbInput object
 
-We can now setup a wrapper object using an instance of `XtbInput`. Most of these wrappers come with sensible default options for electrochemical calculations in solution. To see all the available options, please refer to the [wrappers](API-wrappers) section.
+We can now set up a engine object using an instance of `XtbInput`. Most of these engines come with sensible default options for calculations on small organic molecules in vacuum. To see all the available options, please refer to the [engine](API-engines) section of the API documentation.
 
 ```python
 xtb = XtbInput()
@@ -84,37 +96,31 @@ If you want to see the data currently stored in our `System` object, simply ask 
 print(water)
 ```
 
-```
-=========================================================
-SYSTEM: water
-=========================================================
-
-Number of atoms: 3
-Charge: 0
-Spin multeplicity: 1
-
-********************** GEOMETRY *************************
-
-Total system mass: 18.0153 amu
-
-----------------------------------------------
- index  atom    x (Å)      y (Å)      z (Å)   
-----------------------------------------------
- 0       O    -0.00001   -0.37937    0.00000  
- 1       H     0.77221    0.18968   -0.00000  
- 2       H    -0.77221    0.18969    0.00000  
-----------------------------------------------
-
-********************** PROPERTIES *************************
-
-Electronic level of theory: XtbInput || method: gfn2 | solvent: None
-Vibronic level of theory: XtbInput || method: gfn2 | solvent: None
-
-Electronic energy: -5.070544446446 Eh
-Vibronic energy: 0.002508816182 Eh
-Helmholtz free energy: None Eh
-Gibbs free energy: None Eh
-pKa: None
+```{code-cell} python
+:tags: ["remove-input"]
+from compechem.systems import System
+water = System("./example_files/water.json")
+print(water)
 ```
 
 Et voilà! You have successfully carried out a geometry optimization for the water molecule using the `GES-comp-echem` library!
+
+`````{admonition} Basic molecule visualization
+:class: tip
+The `GES-comp-echem` library also offers simple tools to visualize the structure of the molecules encoded by a `System` object. As an example, the distorted structure of the input molecule, loaded into the `water` object, can be visualized using the built in [`mogli`](https://github.com/sciapp/mogli) interface using the commands:
+
+```python
+from compechem.tools.moglitools import MogliViewer
+
+viewer = MogliViewer(water)
+viewer.show()
+```
+
+The output image, freely capable of rotating, will look something like this:
+
+```{image} ./images/water.png
+:alt: water.png
+:width: 600px
+:align: center
+```
+`````
