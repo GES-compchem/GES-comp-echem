@@ -1,8 +1,9 @@
-import subprocess
+import subprocess, logging
 
 from os.path import abspath
 from os import environ
 
+logger = logging.getLogger(__name__) 
 
 def locate_executable(name: str) -> str:
     """
@@ -111,6 +112,12 @@ def locate_orca(version: str = None, get_folder: bool = False) -> str:
         raise RuntimeError(
             f"orca {orca_version} retuires OpenMPI {msg}. OpenMPI {openmpi_version} found instead."
         )
+    
+    try:
+        folder = path.rstrip("/orca")
+        locate_executable(f"{folder}/otool_xtb")
+    except:
+        logger.warning("The `otool_xtb` symbolic link to xTB has not been found. The orca interface for xTB will not be available.")
 
     return path.rstrip("/orca") if get_folder is True else path
 
