@@ -1,8 +1,7 @@
 import os, copy, shutil, sh, logging
 import numpy as np
-from typing import Dict
+from typing import Dict, Optional
 from tempfile import mkdtemp
-from enum import Enum
 
 import compechem.config as cfg
 from compechem.config import get_ncores
@@ -14,29 +13,166 @@ from compechem.core.spectroscopy import VibrationalData
 from compechem.tools.internaltools import clean_suffix
 
 
-logger = logging.getLogger(__name__) 
+logger = logging.getLogger(__name__)
+
+
+class OrcaJobInfo:
+    def __init__(self) -> None:
+        self.__ncores: int = get_ncores()
+        self.__maxcore: int = 750
+        self.opt: bool = False
+        self.freq: bool = False
+        self.nfreq: bool = False
+        self.scan: Optional[str] = None
+
+        self.constraints: Optional[str] = None
+        self.invert_constraints: bool = False
+
+        self.cube_dim: Optional[int] = None
+
+        self.hirshfeld: bool = False
+        self.nearir: bool = False
+        self.raman: bool = False
+
+        self.__print_level: Optional[str] = None
+        self.__optimization_level: Optional[str] = None
+        self.__scf_convergence_level: Optional[str] = None
+        self.__scf_convergence_strategy: Optional[str] = None
+    
+    @property
+    def ncores(self) -> int:
+        return self.__ncores
+    
+    @ncores.setter
+    def ncores(self, value: Optional[int]) -> None:
+        self.__ncores = get_ncores() if value is None else value
+
+    @property
+    def maxcore(self) -> int:
+        return self.__maxcore
+    
+    @maxcore.setter
+    def maxcore(self, value: Optional[int]) -> None:
+        self.__maxcore = 750 if value is None else value
+
+    @property
+    def print_level(self) -> Optional[str]:
+        return self.__print_level
+
+    @print_level.setter
+    def print_level(self, value: Optional[str]) -> None:
+        if value is not None:
+            ACCEPTED_VALUES = [
+                "MINIPRINT",
+                "SMALLPRINT",
+                "NORMALPRINT",
+                "LARGEPRINT",
+            ]
+            if value.upper() not in ACCEPTED_VALUES:
+                raise ValueError(
+                    f"`{value}` is not a valid optimization level. Must be one of {', '.join(ACCEPTED_VALUES)}"
+                )
+
+            self.__print_level = value.upper()
+
+        else:
+            self.__print_level = None
+
+    @property
+    def optimization_level(self) -> Optional[str]:
+        return self.__optimization_level
+
+    @optimization_level.setter
+    def optimization_level(self, value: str) -> None:
+        if value is not None:
+            ACCEPTED_VALUES = [
+                "VERYTIGHTOPT",
+                "TIGHTOPT",
+                "NORMALOPT",
+                "LOOSEOPT",
+            ]
+            if value.upper() not in ACCEPTED_VALUES:
+                raise ValueError(
+                    f"`{value}` is not a valid optimization level. Must be one of {', '.join(ACCEPTED_VALUES)}"
+                )
+
+            self.__optimization_level = value.upper()
+
+        else:
+            self.__print_level = None
+
+    @property
+    def scf_convergence_level(self) -> Optional[str]:
+        return self.__scf_convergence_level
+
+    @scf_convergence_level.setter
+    def scf_convergence_level(self, value: str) -> None:
+        if value is not None:
+            ACCEPTED_VALUES = [
+                "NORMALSCF",
+                "LOOSESCF",
+                "SLOPPYSCF",
+                "STRONGSCF",
+                "TIGHTSCF",
+                "VERYTIGHTSCF",
+                "EXTREMESCF",
+            ]
+            if value.upper() not in ACCEPTED_VALUES:
+                raise ValueError(
+                    f"`{value}` is not a valid SCF convergence level. Must be one of {', '.join(ACCEPTED_VALUES)}"
+                )
+
+            self.__scf_convergence_level = value.upper()
+
+        else:
+            self.__print_level = None
+
+    @property
+    def scf_convergence_strategy(self) -> Optional[str]:
+        return self.__scf_convergence_strategy
+
+    @scf_convergence_strategy.setter
+    def scf_convergence_strategy(self, value: str) -> None:
+        if value is not None:
+            ACCEPTED_VALUES = [
+                "EASYCONV",
+                "NORMALCONV",
+                "SLOWCONV",
+                "VERYSLOWCONV",
+                "FORCECONV",
+                "IGNORECONV",
+            ]
+            if value.upper() not in ACCEPTED_VALUES:
+                raise ValueError(
+                    f"`{value}` is not a valid convergence strategy. Must be one of {', '.join(ACCEPTED_VALUES)}"
+                )
+
+            self.__scf_convergence_strategy = value.upper()
+
+        else:
+            self.__print_level = None
 
 
 class OrcaInput(Engine):
     """Interface for running Orca calculations.
 
     Parameters
-        ----------
-        method : str
-            level of theory, by default "PBE"
-        basis_set : str, optional
-            basis set, by default "def2-TZVP"
-        aux_basis : str, optional
-            auxiliary basis set for RIJCOSX, by default "def2/J"
-        solvent : str, optional
-            SMD solvent, by default None
-        optionals : str, optional
-            optional keywords, by default ""
-        scf_block: Dict[str, str], optional
-            the dictionary containing the key and values to be added under the `%scf` block
-        ORCADIR: str, optional
-            the path or environment variable containing the path to the ORCA folder. If set
-            to None (default) the orca executable will be loaded automatically.
+    ----------
+    method : str
+        level of theory, by default "PBE"
+    basis_set : str, optional
+        basis set, by default "def2-TZVP"
+    aux_basis : str, optional
+        auxiliary basis set for RIJCOSX, by default "def2/J"
+    solvent : str, optional
+        SMD solvent, by default None
+    optionals : str, optional
+        optional keywords, by default ""
+    scf_block: Dict[str, str], optional
+        the dictionary containing the key and values to be added under the `%scf` block
+    ORCADIR: str, optional
+        the path or environment variable containing the path to the ORCA folder. If set
+        to None (default) the orca executable will be loaded automatically.
     """
 
     def __init__(
@@ -49,7 +185,6 @@ class OrcaInput(Engine):
         scf_block: Dict[str, str] = {},
         ORCADIR: str = None,
     ) -> None:
-
         super().__init__(method)
 
         self.basis_set = basis_set if basis_set else ""
@@ -69,69 +204,84 @@ class OrcaInput(Engine):
     def write_input(
         self,
         mol: System,
-        job_info: Dict,
+        job_info: OrcaJobInfo,
     ) -> None:
-
+        
         mol.geometry.write_xyz(f"{mol.name}.xyz")
+
+        logger.debug(f"Running ORCA calculation on {job_info.ncores} cores and {job_info.maxcore} MB of RAM")
 
         input = (
             "%pal\n"
-            f"  nprocs {job_info['ncores']}\n"
+            f"  nprocs {job_info.ncores}\n"
             "end\n\n"
-            f"%maxcore {job_info['maxcore']}\n\n"
+            f"%maxcore {job_info.maxcore}\n\n"
             f"! {self.method} {self.basis_set} {self.optionals}\n"
         )
-        if self.aux_basis:
-            input += f"! RIJCOSX {self.aux_basis}\n"
 
-        if job_info["type"] == "spe":
+        if job_info.scf_convergence_strategy is not None or job_info.scf_convergence_level is not None:
+            input += "! "
+
+            if job_info.scf_convergence_level is not None:
+                input += job_info.scf_convergence_level
+                input += ""
+
+            if job_info.scf_convergence_strategy is not None:
+                input += job_info.scf_convergence_strategy
+                input += " "
             input += "\n"
 
-        elif job_info["type"] == "opt":
-            input += f"! {job_info['optimization_level']}\n\n"
+        if self.aux_basis:
+            input += f"! RIJCOSX {self.aux_basis}\n\n"
         
-        elif job_info["type"] == "opt-freq":
-            if self.solvent:
-                logger.info("Optimization with frequency required in solvent. Switching to numerical frequencies.")
-                input += f"! {job_info['optimization_level']} NumFreq\n\n"
-            else:
-                input += f"! {job_info['optimization_level']} Freq\n\n"
+        if job_info.print_level is not None:
+            input += f"! {job_info.print_level}\n\n"
 
-        elif job_info["type"] == "freq":
+        if job_info.opt is True and job_info.freq is True and self.solvent is not None:
+            logger.warning("Optimization with frequency in solvent was requested. Switching to numerical frequencies.")
+            job_info.freq = False
+            job_info.nfreq = True
+
+        if job_info.opt is True:
+            input += "! Opt\n" if job_info.optimization_level is None else f"! {job_info.optimization_level}\n"
+
+        if job_info.freq is True:
             if self.solvent:
                 logger.warning("Analytical frequencies are not supported for the SMD solvent model.")
-            input += "! Freq\n\n"
 
-        elif job_info["type"] == "nfreq":
-            input += "! NumFreq\n\n"
+            input += "! Freq\n"
 
-        elif job_info["type"] == "scan":
+        if job_info.nfreq is True:
+            input += "! NumFreq\n"
+
+        if job_info.nearir is True:
+            input += "! NearIR\n"       
+
+        if job_info.scan is not None:
+
             input += "! Opt\n"
-            input += "%geom\n" "  scan\n" f"    {job_info['scan']}\n" "  end\n"
-            if job_info["constraints"]:
-                input += "  constraints\n" f"    {{ {job_info['constraints']} C }}\n" "  end\n"
-            if job_info["invertconstraints"]:
+            input += "%geom\n" "  scan\n" f"    {job_info.scan}\n" "  end\n"
+            if job_info.constraints is not None:
+                input += "  constraints\n" f"    {{ {job_info.constraints} C }}\n" "  end\n"
+            if job_info.invert_constraints is True:
                 input += "  invertConstraints true\n"
             input += "end\n\n"
-
-        if "overtones" in job_info and job_info["overtones"]:
-            input += "! NEARIR\n\n"
 
         if self.solvent:
             input += "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n\n"
 
-        if job_info["save_cubes"]:
+        if job_info.cube_dim is not None:
             input += "%plots\n"
             input += "  Format Gaussian_Cube\n"
-            input += f"  dim1 {job_info['cube_dim']}\n"
-            input += f"  dim2 {job_info['cube_dim']}\n"
-            input += f"  dim3 {job_info['cube_dim']}\n"
+            input += f"  dim1 {job_info.cube_dim}\n"
+            input += f"  dim2 {job_info.cube_dim}\n"
+            input += f"  dim3 {job_info.cube_dim}\n"
             input += '  ElDens("eldens.cube");\n'
             if mol.spin != 1:
                 input += '  SpinDens("spindens.cube");\n'
             input += "end\n\n"
 
-        if job_info["hirshfeld"]:
+        if job_info.hirshfeld is True:
             input += "%output\n"
             input += "  Print[P_Hirshfeld] 1\n"
             input += "end\n\n"
@@ -142,7 +292,7 @@ class OrcaInput(Engine):
                 input += f"  {key} {value}\n"
             input += "end\n\n"
 
-        if "raman" in job_info and job_info["raman"]:
+        if job_info.raman is True:
             input += "%elprop\n"
             input += "  Polar 1\n"
             input += "end\n\n"
@@ -158,7 +308,7 @@ class OrcaInput(Engine):
         self,
         mol: System,
         ncores: int = None,
-        maxcore: int = 350,
+        maxcore: int = 750,
         save_cubes: bool = False,
         cube_dim: int = 250,
         hirshfeld: bool = False,
@@ -174,7 +324,7 @@ class OrcaInput(Engine):
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : int, optional
-            memory per core, in MB, by default 350
+            memory per core, in MB, by default 750
         save_cubes: bool, optional
             if set to True, will save a cube file containing electronic and spin densities,
             by default False.
@@ -194,11 +344,7 @@ class OrcaInput(Engine):
             Output molecule containing the new energies.
         """
 
-        if ncores is None:
-            ncores = get_ncores()
-
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SPE")
-        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -207,18 +353,13 @@ class OrcaInput(Engine):
         )
 
         with sh.pushd(tdir):
+            job_info = OrcaJobInfo()
+            job_info.ncores = ncores
+            job_info.maxcore = maxcore
+            job_info.cube_dim = None if save_cubes is False else cube_dim
+            job_info.hirshfeld = hirshfeld
 
-            self.write_input(
-                mol=mol,
-                job_info={
-                    "type": "spe",
-                    "ncores": ncores,
-                    "maxcore": maxcore,
-                    "save_cubes": save_cubes,
-                    "cube_dim": cube_dim,
-                    "hirshfeld": hirshfeld,
-                },
-            )
+            self.write_input(mol=mol, job_info=job_info)
 
             cmd = f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'"
             logger.debug(f"Running Orca with command: {cmd}")
@@ -232,9 +373,7 @@ class OrcaInput(Engine):
             else:
                 self.parse_output(mol)
 
-            process_output(
-                mol, self.__output_suffix, "spe", mol.charge, mol.spin, save_cubes=save_cubes
-            )
+            process_output(mol, self.__output_suffix, "spe", mol.charge, mol.spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -246,13 +385,13 @@ class OrcaInput(Engine):
         self,
         mol: System,
         ncores: int = None,
-        maxcore: int = 350,
+        maxcore: int = 750,
         save_cubes: bool = False,
         cube_dim: int = 250,
         hirshfeld: bool = False,
         inplace: bool = False,
         remove_tdir: bool = True,
-        optimization_level: str = "NORMALOPT",
+        optimization_level: Optional[str] = None,
         frequency_analysis: bool = True,
     ):
         """Geometry optimization + frequency analysis.
@@ -264,7 +403,7 @@ class OrcaInput(Engine):
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : int, optional
-            memory per core, in MB, by default 350
+            memory per core, in MB, by default 750
         save_cubes: bool, optional
             if set to True, will save a cube file containing electronic and spin densities,
             by default False.
@@ -289,16 +428,7 @@ class OrcaInput(Engine):
             Output molecule containing the new geometry and energies.
         """
 
-        optimization_level = optimization_level.upper()
-        if optimization_level not in ["VERYTIGHTOPT", "TIGHTOPT", "NORMALOPT", "LOOSEOPT"]:
-            logger.error(f"Invalid optimization level {optimization_level}")
-            raise RuntimeError(f"{optimization_level} is not a valid ORCA optimization level.")
-
-        if ncores is None:
-            ncores = get_ncores()
-
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT")
-        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -307,19 +437,16 @@ class OrcaInput(Engine):
         )
 
         with sh.pushd(tdir):
+            job_info = OrcaJobInfo()
+            job_info.ncores = ncores
+            job_info.maxcore = maxcore
+            job_info.opt = True
+            job_info.freq = frequency_analysis
+            job_info.cube_dim = cube_dim
+            job_info.hirshfeld = hirshfeld
+            job_info.optimization_level = optimization_level
 
-            self.write_input(
-                mol=mol,
-                job_info={
-                    "type": "opt" if frequency_analysis is False else "opt-freq",
-                    "ncores": ncores,
-                    "maxcore": maxcore,
-                    "save_cubes": save_cubes,
-                    "cube_dim": cube_dim,
-                    "hirshfeld": hirshfeld,
-                    "optimization_level": optimization_level
-                },
-            )
+            self.write_input(mol=mol, job_info=job_info)
 
             cmd = f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'"
             logger.debug(f"Running Orca with command: {cmd}")
@@ -336,9 +463,7 @@ class OrcaInput(Engine):
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(mol)
 
-            process_output(
-                mol, self.__output_suffix, "opt", mol.charge, mol.spin, save_cubes=save_cubes
-            )
+            process_output(mol, self.__output_suffix, "opt", mol.charge, mol.spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -350,7 +475,7 @@ class OrcaInput(Engine):
         self,
         mol: System,
         ncores: int = None,
-        maxcore: int = 350,
+        maxcore: int = 750,
         inplace: bool = False,
         remove_tdir: bool = True,
         raman: bool = False,
@@ -368,7 +493,7 @@ class OrcaInput(Engine):
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : int, optional
-            memory per core, in MB, by default 350
+            memory per core, in MB, by default 750
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -386,11 +511,7 @@ class OrcaInput(Engine):
             Output molecule containing the new energies.
         """
 
-        if ncores is None:
-            ncores = get_ncores()
-
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} FREQ")
-        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -399,20 +520,14 @@ class OrcaInput(Engine):
         )
 
         with sh.pushd(tdir):
+            job_info = OrcaJobInfo()
+            job_info.ncores = ncores
+            job_info.maxcore = maxcore
+            job_info.freq = True
+            job_info.raman = raman
+            job_info.nearir = overtones
 
-            self.write_input(
-                mol=mol,
-                job_info={
-                    "type": "freq",
-                    "ncores": ncores,
-                    "maxcore": maxcore,
-                    "save_cubes": False,
-                    "cube_dim": None,
-                    "hirshfeld": False,
-                    "raman": raman,
-                    "overtones": overtones,
-                },
-            )
+            self.write_input(mol=mol, job_info=job_info)
 
             cmd = f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'"
             logger.debug(f"Running Orca with command: {cmd}")
@@ -438,7 +553,7 @@ class OrcaInput(Engine):
         self,
         mol: System,
         ncores: int = None,
-        maxcore: int = 350,
+        maxcore: int = 750,
         inplace: bool = False,
         remove_tdir: bool = True,
         raman: bool = False,
@@ -453,7 +568,7 @@ class OrcaInput(Engine):
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : int, optional
-            memory per core, in MB, by default 350
+            memory per core, in MB, by default 750
         inplace : bool, optional
             updates info for the input molecule instead of outputting a new molecule object,
             by default False
@@ -471,11 +586,7 @@ class OrcaInput(Engine):
             Output molecule containing the new energies.
         """
 
-        if ncores is None:
-            ncores = get_ncores()
-
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} NFREQ")
-        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -484,20 +595,14 @@ class OrcaInput(Engine):
         )
 
         with sh.pushd(tdir):
+            job_info = OrcaJobInfo()
+            job_info.ncores = ncores
+            job_info.maxcore = maxcore
+            job_info.nfreq = True
+            job_info.raman = raman
+            job_info.nearir = overtones
 
-            self.write_input(
-                mol=mol,
-                job_info={
-                    "type": "nfreq",
-                    "ncores": ncores,
-                    "maxcore": maxcore,
-                    "save_cubes": False,
-                    "cube_dim": None,
-                    "hirshfeld": False,
-                    "raman": raman,
-                    "overtones": overtones,
-                },
-            )
+            self.write_input(mol=mol, job_info=job_info)
 
             cmd = f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'"
             logger.debug(f"Running Orca with command: {cmd}")
@@ -525,7 +630,7 @@ class OrcaInput(Engine):
         constraints: str = None,
         invertconstraints: bool = False,
         ncores: int = None,
-        maxcore: int = 350,
+        maxcore: int = 750,
         remove_tdir: bool = True,
     ):
         """Relaxed surface scan.
@@ -543,7 +648,7 @@ class OrcaInput(Engine):
         ncores : int, optional
             number of cores, by default all available cores
         maxcore : int, optional
-            memory per core, in MB, by default 350
+            memory per core, in MB, by default 750
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
 
@@ -553,11 +658,7 @@ class OrcaInput(Engine):
             Output Ensemble containing the scan frames.
         """
 
-        if ncores is None:
-            ncores = get_ncores()
-
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SCAN")
-        logger.debug(f"Running ORCA calculation on {ncores} cores and {maxcore} MB of RAM")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -566,21 +667,14 @@ class OrcaInput(Engine):
         )
 
         with sh.pushd(tdir):
+            job_info = OrcaJobInfo()
+            job_info.ncores = ncores
+            job_info.maxcore = maxcore
+            job_info.scan = scan
+            job_info.constraints = constraints
+            job_info.invert_constraints = invertconstraints
 
-            self.write_input(
-                mol=mol,
-                job_info={
-                    "type": "scan",
-                    "ncores": ncores,
-                    "maxcore": maxcore,
-                    "save_cubes": False,
-                    "cube_dim": None,
-                    "hirshfeld": False,
-                    "scan": scan,
-                    "constraints": constraints,
-                    "invertconstraints": invertconstraints,
-                },
-            )
+            self.write_input(mol=mol, job_info=job_info)
 
             cmd = f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'"
             logger.debug(f"Running Orca with command: {cmd}")
@@ -678,7 +772,6 @@ class OrcaInput(Engine):
         mulliken_charges, mulliken_spins = [], []
         spin_available = False
         with open("output.out", "r") as file:
-
             # Count the number of "MULLIKEN ATOMIC CHARGES" sections in the file
             sections = file.read().count("MULLIKEN ATOMIC CHARGES")
 
@@ -687,7 +780,6 @@ class OrcaInput(Engine):
 
             # Cycle over all the lines of the fuke
             for line in file:
-
                 # If a "MULLIKEN ATOMIC CHARGES" section is found, increment the counter
                 if "MULLIKEN ATOMIC CHARGES" in line:
                     counter += 1
@@ -695,7 +787,6 @@ class OrcaInput(Engine):
                 # If the index of the "MULLIKEN ATOMIC CHARGES" correspond with the last one
                 # proceed with the file parsing else continue
                 if counter == sections:
-
                     # Check if the section contains also the "SPIN" column (either "SPIN POPULATIONS" or "SPIN DENSITIES")
                     if "SPIN" in line:
                         spin_available = True
@@ -731,12 +822,9 @@ class OrcaInput(Engine):
         # -----------------------------------------------------------------------------------
         hirshfeld_charges, hirshfeld_spins = [], []
         with open("output.out", "r") as file:
-
             for line in file:
-
                 # Read the file until the HIRSHFELD ANALYSIS title is found
                 if "HIRSHFELD ANALYSIS" in line:
-
                     # Discard the following 6 lines to skip formatting and total integrated
                     # densities
                     for i in range(6):
@@ -744,7 +832,6 @@ class OrcaInput(Engine):
 
                     # Read the whole hirshfeld section until a empty line is found
                     while True:
-
                         # Read the next line
                         buffer = file.readline()
 
@@ -767,13 +854,10 @@ class OrcaInput(Engine):
         # If available parse the section related to the vibrational analysis
         # -----------------------------------------------------------------------------------
         with open("output.out", "r") as file:
-
             vibrational_data = None
 
             for line in file:
-
                 if "VIBRATIONAL FREQUENCIES" in line:
-
                     vibrational_data = VibrationalData()
 
                     # Discard the following 4 lines to skip formatting
@@ -782,7 +866,6 @@ class OrcaInput(Engine):
 
                     # Read the whole vibrational frequencies section
                     while True:
-
                         # Read the line
                         buffer = file.readline()
 
@@ -795,14 +878,12 @@ class OrcaInput(Engine):
                         vibrational_data.frequencies.append(frequency)
 
                 elif "NORMAL MODES" in line:
-
                     # Discard the following 6 lines to skip formatting
                     for i in range(6):
                         _ = file.readline()
 
                     block = 0
                     while True:
-
                         # Discard the header line of the table block
                         _ = file.readline()
 
@@ -820,7 +901,6 @@ class OrcaInput(Engine):
                         # Read each vector line by line
                         modes_buffer = [[] for i in range(ncols)]
                         for _ in range(ncoords):
-
                             sline = file.readline().split()
 
                             for i, element in enumerate(sline[1::]):
@@ -834,13 +914,11 @@ class OrcaInput(Engine):
                         block += 1
 
                 elif "IR SPECTRUM" in line:
-
                     # Discard the following 5 lines to skip formatting
                     for i in range(5):
                         _ = file.readline()
 
                     while True:
-
                         # Read the table line by line
                         line = file.readline()
 
@@ -855,13 +933,11 @@ class OrcaInput(Engine):
                         vibrational_data.ir_transitions.append((int(sline[0]), float(sline[1].split()[2])))
 
                 elif "OVERTONES AND COMBINATION BANDS" in line:
-
                     # Discard the following 5 lines to skip formatting
                     for i in range(5):
                         _ = file.readline()
 
                     while True:
-
                         # Read the table line by line
                         line = file.readline()
 
@@ -881,13 +957,11 @@ class OrcaInput(Engine):
                         )
 
                 elif "RAMAN SPECTRUM" in line:
-
                     # Discard the following 4 lines to skip formatting
                     for i in range(4):
                         _ = file.readline()
 
                     while True:
-
                         # Read the table line by line
                         line = file.readline()
 
