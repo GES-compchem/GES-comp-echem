@@ -21,6 +21,7 @@ class OrcaJobInfo:
         self.__ncores: int = get_ncores()
         self.__maxcore: int = 750
         self.opt: bool = False
+        self.opt_ts: bool = False
         self.freq: bool = False
         self.nfreq: bool = False
         self.scan: Optional[str] = None
@@ -30,6 +31,7 @@ class OrcaJobInfo:
 
         self.cube_dim: Optional[int] = None
 
+        self.calc_hess: bool = False
         self.hirshfeld: bool = False
         self.nearir: bool = False
         self.raman: bool = False
@@ -38,6 +40,14 @@ class OrcaJobInfo:
         self.__optimization_level: Optional[str] = None
         self.__scf_convergence_level: Optional[str] = None
         self.__scf_convergence_strategy: Optional[str] = None
+
+    @property
+    def geom_block(self) -> bool:
+        
+        if self.calc_hess is True or self.constraints is not None or self.scan is not None:
+            return True
+        
+        return False
     
     @property
     def ncores(self) -> int:
@@ -224,7 +234,7 @@ class OrcaInput(Engine):
 
             if job_info.scf_convergence_level is not None:
                 input += job_info.scf_convergence_level
-                input += ""
+                input += " "
 
             if job_info.scf_convergence_strategy is not None:
                 input += job_info.scf_convergence_strategy
@@ -244,6 +254,12 @@ class OrcaInput(Engine):
 
         if job_info.opt is True:
             input += "! Opt\n" if job_info.optimization_level is None else f"! {job_info.optimization_level}\n"
+        
+        if job_info.scan is not None:
+            input += "! Opt\n"
+        
+        if job_info.opt_ts is True:
+            input += "! OptTS\n"
 
         if job_info.freq is True:
             if self.solvent:
@@ -257,21 +273,31 @@ class OrcaInput(Engine):
         if job_info.nearir is True:
             input += "! NearIR\n"       
 
-        if job_info.scan is not None:
+        if job_info.geom_block is True:     
+            input += "\n"       
+            input += "%geom\n"
 
-            input += "! Opt\n"
-            input += "%geom\n" "  scan\n" f"    {job_info.scan}\n" "  end\n"
+            if job_info.calc_hess is True:
+                input += "  Calc_Hess true\n"
+            
+            if job_info.scan is not None:
+                input += "  scan\n" 
+                input += f"    {job_info.scan}\n"
+                input += "  end\n"
+
             if job_info.constraints is not None:
                 input += "  constraints\n" f"    {{ {job_info.constraints} C }}\n" "  end\n"
+
             if job_info.invert_constraints is True:
                 input += "  invertConstraints true\n"
-            input += "end\n\n"
+            
+            input += "end\n"
 
         if self.solvent:
-            input += "%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n\n"
+            input += "\n%CPCM\n" "  SMD True\n" f'  SMDsolvent "{self.solvent}"\n' "end\n"
 
         if job_info.cube_dim is not None:
-            input += "%plots\n"
+            input += "\n%plots\n"
             input += "  Format Gaussian_Cube\n"
             input += f"  dim1 {job_info.cube_dim}\n"
             input += f"  dim2 {job_info.cube_dim}\n"
@@ -279,25 +305,26 @@ class OrcaInput(Engine):
             input += '  ElDens("eldens.cube");\n'
             if mol.spin != 1:
                 input += '  SpinDens("spindens.cube");\n'
-            input += "end\n\n"
+            input += "end\n"
 
         if job_info.hirshfeld is True:
-            input += "%output\n"
+            input += "\n%output\n"
             input += "  Print[P_Hirshfeld] 1\n"
-            input += "end\n\n"
+            input += "end\n"
 
         if self.scf_block != {}:
-            input += "%scf\n"
+            input += "\n%scf\n"
             for key, value in self.scf_block.items():
                 input += f"  {key} {value}\n"
-            input += "end\n\n"
+            input += "end\n"
 
         if job_info.raman is True:
-            input += "%elprop\n"
+            input += "\n%elprop\n"
             input += "  Polar 1\n"
-            input += "end\n\n"
+            input += "end\n"
 
-        input += f"* xyzfile {mol.charge} {mol.spin} {mol.name}.xyz\n"
+        input += "\n"
+        input += f"* xyzfile {mol.charge} {mol.spin} {mol.name}.xyz\n\n"
 
         with open("input.inp", "w") as inp:
             inp.writelines(input)
@@ -442,7 +469,7 @@ class OrcaInput(Engine):
             job_info.maxcore = maxcore
             job_info.opt = True
             job_info.freq = frequency_analysis
-            job_info.cube_dim = cube_dim
+            job_info.cube_dim = None if save_cubes is False else cube_dim
             job_info.hirshfeld = hirshfeld
             job_info.optimization_level = optimization_level
 
@@ -464,6 +491,104 @@ class OrcaInput(Engine):
                 self.parse_output(mol)
 
             process_output(mol, self.__output_suffix, "opt", mol.charge, mol.spin, save_cubes=save_cubes)
+
+            if remove_tdir:
+                shutil.rmtree(tdir)
+
+            if inplace is False:
+                return newmol
+    
+    def opt_ts(
+        self,
+        mol: System,
+        ncores: int = None,
+        maxcore: int = 750,
+        save_cubes: bool = False,
+        cube_dim: int = 250,
+        hirshfeld: bool = False,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+        scf_convergence_level: Optional[str] = "TIGHTSCF",
+        convergence_strategy: Optional[str] = "SLOWCONV",
+        calculate_hessian: bool = True,
+        frequency_analysis: bool = True,
+    ):
+        """Transition state optimization + frequency analysis.
+
+        Parameters
+        ----------
+        mol : System object
+            input molecule to use in the calculation
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : int, optional
+            memory per core, in MB, by default 750
+        save_cubes: bool, optional
+            if set to True, will save a cube file containing electronic and spin densities,
+            by default False.
+        cube_dim: int, optional
+            resolution for the cube files (default 250)
+        hirshfeld: bool
+            if set to true, will run the Hirshfeld population analysis. (default: False)
+        inplace : bool, optional
+            updates info for the input molecule instead of outputting a new molecule object,
+            by default False
+        remove_tdir : bool, optional
+            temporary work directory will be removed, by default True
+        scf_convergence_level: Optional[str]
+            The SCF level of convergence to be adopted during the transition state optimization (Default: TIGHTSCF)
+        convergence_strategy: Optional[str]
+            The SCF convergence strategy to be adopted during the transition state optimization (Default: SLOWCONV)
+        calculate_hessian: bool
+            If set to True (default) will compute the exact Hessian before the first optimization step.
+        frequency_analysis: bool
+            If set to True (default) will also compute the vibration modes of the molecule and the frequencies. If the
+            optimization is run in solvent, it will automatically switch to numerical frequencies.
+
+        Returns
+        -------
+        newmol : System object
+            Output molecule containing the new geometry and energies.
+        """
+
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT")
+
+        tdir = mkdtemp(
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_optTS",
+            dir=os.getcwd(),
+        )
+
+        with sh.pushd(tdir):
+            job_info = OrcaJobInfo()
+            job_info.ncores = ncores
+            job_info.maxcore = maxcore
+            job_info.opt_ts = True
+            job_info.freq = frequency_analysis
+            job_info.cube_dim = None if save_cubes is False else cube_dim
+            job_info.calc_hess = calculate_hessian
+            job_info.hirshfeld = hirshfeld
+            job_info.scf_convergence_level = scf_convergence_level
+            job_info.scf_convergence_strategy = convergence_strategy
+
+            self.write_input(mol=mol, job_info=job_info)
+
+            cmd = f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'"
+            logger.debug(f"Running Orca with command: {cmd}")
+            os.system(cmd)
+
+            if inplace is False:
+                newmol = System("input.xyz", charge=mol.charge, spin=mol.spin)
+                newmol.name = mol.name
+                newmol.geometry.level_of_theory_geometry = self.level_of_theory
+                self.parse_output(newmol)
+
+            else:
+                mol.geometry.load_xyz("input.xyz")
+                mol.geometry.level_of_theory_geometry = self.level_of_theory
+                self.parse_output(mol)
+
+            process_output(mol, self.__output_suffix, "optTS", mol.charge, mol.spin, save_cubes=save_cubes)
 
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -868,13 +993,24 @@ class OrcaInput(Engine):
                     while True:
                         # Read the line
                         buffer = file.readline()
-
+        
                         # Break if the line is empty
                         if buffer == "\n":
                             break
+                        
+                        # Strip the endline character
+                        buffer = buffer.rstrip("\n")
 
                         # Parse the frequency line and append it to the vibrational_data class
-                        frequency = float(buffer.split(":")[-1].rstrip("cm**-1\n"))
+                        substring = buffer.split(":")[-1]
+
+                        # Check if the mode is imaginary and strip the warning
+                        if substring.endswith(" ***imaginary mode***"):
+                            logger.info("Imaginary mode detected in frequency analysis.")
+                            substring = substring.rstrip(" ***imaginary mode***")
+
+                        # Parse the frequency value
+                        frequency = float(substring.rstrip("cm**-1"))
                         vibrational_data.frequencies.append(frequency)
 
                 elif "NORMAL MODES" in line:

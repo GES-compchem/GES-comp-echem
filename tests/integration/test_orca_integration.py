@@ -13,9 +13,9 @@ from numpy.testing import assert_array_almost_equal, assert_almost_equal
 # Get the path of the tests directory
 TEST_DIR = dirname(abspath(__file__))
 
+
 # Test the OrcaInput class constructor
 def test_OrcaInput___init__():
-
     try:
         engine = OrcaInput(method="HF", basis_set="def2-SVP", aux_basis="def2/J", solvent="water")
 
@@ -29,7 +29,6 @@ def test_OrcaInput___init__():
 
 # Test the spe() function on a radical cation water molecule in DMSO
 def test_OrcaInput_spe():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
@@ -56,7 +55,6 @@ def test_OrcaInput_spe():
 
 # Test the spe() function on a radical cation water molecule in DMSO without the inplace option
 def test_OrcaInput_spe_no_inplace():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="DMSO")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
@@ -89,7 +87,6 @@ def test_OrcaInput_spe_no_inplace():
 
 # Test the spe() function on a radical cation water molecule in DMSO without the inplace option
 def test_OrcaInput_spe_CCSD():
-
     engine = OrcaInput(method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="AutoAux")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
@@ -122,7 +119,6 @@ def test_OrcaInput_spe_CCSD():
 
 # Test that the correct suffix is generated when forbidden symbol is used
 def test_OrcaInput_forbidden():
-
     engine = OrcaInput(method="DLPNO-CCSD(T)", basis_set="6-311++G**", aux_basis="AutoAux")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=1, spin=2)
 
@@ -138,7 +134,6 @@ def test_OrcaInput_forbidden():
 
 # Test the opt() function on a water molecule in vacuum
 def test_OrcaInput_opt():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -170,7 +165,6 @@ def test_OrcaInput_opt():
 
 # Test the opt() function on a water molecule in vacuum with no inplace option
 def test_OrcaInput_opt_no_inplace():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -188,9 +182,7 @@ def test_OrcaInput_opt_no_inplace():
         assert_almost_equal(newmol.properties.gibbs_free_energy, -76.26967691, decimal=6)
 
         expected_mulliken_charges = np.array([-0.285546, 0.142772, 0.142773])
-        assert_array_almost_equal(
-            expected_mulliken_charges, newmol.properties.mulliken_charges, decimal=4
-        )
+        assert_array_almost_equal(expected_mulliken_charges, newmol.properties.mulliken_charges, decimal=4)
 
         expected_geometry = [
             np.array([-3.216653, -0.578663, -0.020175]),
@@ -202,9 +194,76 @@ def test_OrcaInput_opt_no_inplace():
         rmtree("output_files")
 
 
+# Test the opt_ts() function on a water molecule in vacuum
+def test_OrcaInput_opt_ts():
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis=None, solvent=None, optionals="D3BJ")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/distorted_TS.xyz", charge=-1, spin=1)
+
+    try:
+        engine.opt_ts(mol, ncores=4, inplace=True)
+    except:
+        assert False, "Unexpected exception raised during geometry optimization"
+
+    else:
+        assert mol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert mol.properties.level_of_theory_vibronic == engine.level_of_theory
+
+        assert_almost_equal(mol.properties.electronic_energy, -3073.197345858668, decimal=6)
+        assert_almost_equal(mol.properties.vibronic_energy, 0.00555863, decimal=6)
+        assert_almost_equal(mol.properties.gibbs_free_energy, -3073.19178723, decimal=6)
+
+        assert mol.geometry.atoms == ["C", "Br", "H", "H", "H", "Cl"]
+
+        expected_geometry = [
+            np.array([-4.34617809091678, 1.27270816667045, -0.02270271111085]),
+            np.array([-1.98899566021222, 1.23415086905524, -0.34984668381643]),
+            np.array([-4.34481452290603, 2.15880376231371, 0.61282000582466]),
+            np.array([-4.39967907294042, 0.28683948014245, 0.44022366168219]),
+            np.array([-4.59249939135688, 1.37737425228426, -1.07978840801401]),
+            np.array([-6.79011123501567, 1.31355200919188, 0.31585904587843]),
+        ]
+
+        assert_array_almost_equal(expected_geometry, mol.geometry.coordinates, decimal=6)
+
+        rmtree("output_files")
+
+
+# Test the opt_ts() function on a water molecule in vacuum with no inplace option
+def test_OrcaInput_opt_ts_no_inplace():
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis=None, solvent=None, optionals="D3BJ")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/distorted_TS.xyz", charge=-1, spin=1)
+
+    try:
+        newmol = engine.opt_ts(mol, ncores=4)
+    except:
+        assert False, "Unexpected exception raised during geometry optimization"
+
+    else:
+        assert newmol.properties.level_of_theory_electronic == engine.level_of_theory
+        assert newmol.properties.level_of_theory_vibronic == engine.level_of_theory
+
+        assert_almost_equal(newmol.properties.electronic_energy, -3073.197345858668, decimal=6)
+        assert_almost_equal(newmol.properties.vibronic_energy, 0.00555863, decimal=6)
+        assert_almost_equal(newmol.properties.gibbs_free_energy, -3073.19178723, decimal=6)
+
+        assert newmol.geometry.atoms == ["C", "Br", "H", "H", "H", "Cl"]
+
+        expected_geometry = [
+            np.array([-4.34617809091678, 1.27270816667045, -0.02270271111085]),
+            np.array([-1.98899566021222, 1.23415086905524, -0.34984668381643]),
+            np.array([-4.34481452290603, 2.15880376231371, 0.61282000582466]),
+            np.array([-4.39967907294042, 0.28683948014245, 0.44022366168219]),
+            np.array([-4.59249939135688, 1.37737425228426, -1.07978840801401]),
+            np.array([-6.79011123501567, 1.31355200919188, 0.31585904587843]),
+        ]
+
+        assert_array_almost_equal(expected_geometry, newmol.geometry.coordinates, decimal=6)
+
+        rmtree("output_files")
+
+
 # Test the freq() function on a water molecule in vacuum
 def test_OrcaInput_freq():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -243,7 +302,6 @@ def test_OrcaInput_freq():
         assert len(computed_modes) == 9
 
         for expected_mode, computed_mode in zip(expected_modes, computed_modes):
-
             try:
                 assert_array_almost_equal(expected_mode, computed_mode, decimal=4)
             except:
@@ -258,9 +316,9 @@ def test_OrcaInput_freq():
 
         rmtree("output_files")
 
+
 # Test the freq() function on a water molecule in vacuum with no inplace option
 def test_OrcaInput_freq_no_inplace():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -278,16 +336,13 @@ def test_OrcaInput_freq_no_inplace():
         assert_almost_equal(newmol.properties.gibbs_free_energy, -76.26928420, decimal=6)
 
         expected_mulliken_charges = np.array([-0.285593, 0.142795, 0.142798])
-        assert_array_almost_equal(
-            expected_mulliken_charges, newmol.properties.mulliken_charges, decimal=4
-        )
+        assert_array_almost_equal(expected_mulliken_charges, newmol.properties.mulliken_charges, decimal=4)
 
         rmtree("output_files")
 
 
 # Test the nfreq() function on a water molecule in ethanol
 def test_OrcaInput_nfreq():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="ethanol")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -326,7 +381,6 @@ def test_OrcaInput_nfreq():
         assert len(computed_modes) == 9
 
         for expected_mode, computed_mode in zip(expected_modes, computed_modes):
-
             try:
                 assert_array_almost_equal(expected_mode, computed_mode, decimal=4)
             except:
@@ -341,9 +395,9 @@ def test_OrcaInput_nfreq():
 
         rmtree("output_files")
 
+
 # Test the nfreq() function on a water molecule in ethanol with no inplace option
 def test_OrcaInput_nfreq_no_inplace():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent="ethanol")
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -382,7 +436,6 @@ def test_OrcaInput_nfreq_no_inplace():
         assert len(computed_modes) == 9
 
         for expected_mode, computed_mode in zip(expected_modes, computed_modes):
-
             try:
                 assert_array_almost_equal(expected_mode, computed_mode, decimal=4)
             except:
@@ -396,12 +449,11 @@ def test_OrcaInput_nfreq_no_inplace():
             assert_almost_equal(expected[1], computed[1], decimal=1)
 
         rmtree("output_files")
-        
+
 
 # Test the calculation of raman spectra and overtones in orca using a tight optimization
 @pytest.mark.xfail
 def test_OrcaInput_raman_nearir():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J")
     mol = System(f"{TEST_DIR}/utils/xyz_files/CO2.xyz")
 
@@ -427,7 +479,6 @@ def test_OrcaInput_raman_nearir():
     assert len(computed_modes) == 9
 
     for expected_mode, computed_mode in zip(expected_modes, computed_modes):
-
         try:
             assert_array_almost_equal(expected_mode, computed_mode, decimal=4)
         except:
@@ -461,10 +512,8 @@ def test_OrcaInput_raman_nearir():
         assert_almost_equal(expected[2], computed[2], decimal=1)
 
 
-
 # Test the scan() function on a water molecule in vacuum
 def test_OrcaInput_scan():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -500,7 +549,6 @@ def test_OrcaInput_scan():
 
 # Test the catching of runtime errors
 def test_OrcaInput_runtime_error_input():
-
     engine = OrcaInput(method="PBU", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -517,7 +565,6 @@ def test_OrcaInput_runtime_error_input():
 
 
 def test_OrcaInput_runtime_error_missing_basis():
-
     engine = OrcaInput(method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
 
@@ -534,7 +581,6 @@ def test_OrcaInput_runtime_error_missing_basis():
 
 
 def test_OrcaInput_runtime_error_scf_not_converged():
-
     engine = OrcaInput(
         method="PBE",
         basis_set="def2-SVP",
@@ -557,7 +603,6 @@ def test_OrcaInput_runtime_error_scf_not_converged():
 
 
 def test_OrcaInput_runtime_error_wrong_multiplicity():
-
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=0, spin=2)
 
