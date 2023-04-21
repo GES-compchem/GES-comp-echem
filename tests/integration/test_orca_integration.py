@@ -228,7 +228,7 @@ def test_OrcaInput_opt_ts():
         rmtree("output_files")
 
 
-# Test the opt_ts() function on a water molecule in vacuum with no inplace option
+# Test the opt_ts() function on the distorted TS of the SN2 reaction between bromo methane and the chloride ionin vacuum with no inplace option
 def test_OrcaInput_opt_ts_no_inplace():
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis=None, solvent=None, optionals="D3BJ")
     mol = System(f"{TEST_DIR}/utils/xyz_files/distorted_TS.xyz", charge=-1, spin=1)
@@ -543,6 +543,90 @@ def test_OrcaInput_scan():
         calculated_energies = np.array([system.properties.electronic_energy for system in ensemble.systems])
 
         assert_array_almost_equal(calculated_energies, expected_energies, decimal=6)
+
+        rmtree("output_files")
+
+
+# Test the scan_ts() function on a the SN2 reaction between bromo methane and the chloride ion in vacuum
+def test_OrcaInput_scan_ts():
+    engine = OrcaInput(method="PBE", basis_set="def2-TZVP", aux_basis="def2/J", solvent=None, optionals="D3BJ")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/SN2_scan_example.xyz", charge=-1, spin=1)
+
+    try:
+        newmol, ensemble = engine.scan_ts(mol, scan="B 0 5 = 3.0, 1.0, 30", ncores=4)
+    except:
+        assert False, "Unexpected exception raised during relaxed surface scan"
+
+    else:
+        assert len(ensemble.systems) == 10
+
+        expected_energies = np.array(
+            [
+                -3073.73733191,
+                -3073.73743862,
+                -3073.73738045,
+                -3073.73713524,
+                -3073.73669352,
+                -3073.73606818,
+                -3073.73531722,
+                -3073.73459907,
+                -3073.73419522,
+                -3073.73443766,
+            ]
+        )
+
+        calculated_energies = np.array([system.properties.electronic_energy for system in ensemble.systems])
+
+        assert_array_almost_equal(calculated_energies, expected_energies, decimal=6)
+
+        assert_almost_equal(newmol.properties.electronic_energy, -3073.738116597047, decimal=6)
+        assert_almost_equal(newmol.properties.vibronic_energy, 0.00626688, decimal=6)
+        assert_almost_equal(newmol.properties.gibbs_free_energy, -3073.73184972, decimal=6)
+
+        assert newmol.geometry.atoms == ["C", "Br", "H", "H", "H", "Cl"]
+
+        expected_geometry = [
+                np.array([-4.38574952925426, 1.26951963337438, 0.01156597638921]),
+                np.array([-2.01263300836393, 1.17617599984948, -0.30956874117580]),
+                np.array([-4.33458395795512, 2.16437759277285, 0.61263889436571]),
+                np.array([-4.42432267970508, 0.30449771678974, 0.49316656899693]),
+                np.array([-4.59103312695869, 1.34731367857036, -1.04506439211788]),
+                np.array([-6.79082769776280, 1.36494537864318, 0.33621169354182])
+        ]
+
+        assert_array_almost_equal(expected_geometry, newmol.geometry.coordinates, decimal=6)
+
+        rmtree("output_files")
+
+
+# Test the scan_ts() function on a the SN2 reaction between bromo methane and the chloride ion in vacuum with inplace option
+def test_OrcaInput_scan_ts_inplace():
+    engine = OrcaInput(method="PBE", basis_set="def2-TZVP", aux_basis="def2/J", solvent=None, optionals="D3BJ")
+    mol = System(f"{TEST_DIR}/utils/xyz_files/SN2_scan_example.xyz", charge=-1, spin=1)
+
+    try:
+        engine.scan_ts(mol, scan="B 0 5 = 3.0, 1.0, 30", ncores=4, inplace=True)
+    except:
+        assert False, "Unexpected exception raised during relaxed surface scan"
+
+    else:
+       
+        assert_almost_equal(mol.properties.electronic_energy, -3073.738116597047, decimal=6)
+        assert_almost_equal(mol.properties.vibronic_energy, 0.00626688, decimal=6)
+        assert_almost_equal(mol.properties.gibbs_free_energy, -3073.73184972, decimal=6)
+
+        assert mol.geometry.atoms == ["C", "Br", "H", "H", "H", "Cl"]
+
+        expected_geometry = [
+                np.array([-4.38574952925426, 1.26951963337438, 0.01156597638921]),
+                np.array([-2.01263300836393, 1.17617599984948, -0.30956874117580]),
+                np.array([-4.33458395795512, 2.16437759277285, 0.61263889436571]),
+                np.array([-4.42432267970508, 0.30449771678974, 0.49316656899693]),
+                np.array([-4.59103312695869, 1.34731367857036, -1.04506439211788]),
+                np.array([-6.79082769776280, 1.36494537864318, 0.33621169354182])
+        ]
+
+        assert_array_almost_equal(expected_geometry, mol.geometry.coordinates, decimal=6)
 
         rmtree("output_files")
 

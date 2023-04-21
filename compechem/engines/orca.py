@@ -25,9 +25,11 @@ class OrcaJobInfo:
         self.freq: bool = False
         self.nfreq: bool = False
         self.scan: Optional[str] = None
+        self.scan_ts: Optional[str] = None
 
         self.constraints: Optional[str] = None
         self.invert_constraints: bool = False
+        self.fullscan: bool = False
 
         self.cube_dim: Optional[int] = None
 
@@ -43,16 +45,21 @@ class OrcaJobInfo:
 
     @property
     def geom_block(self) -> bool:
-        
-        if self.calc_hess is True or self.constraints is not None or self.scan is not None:
+        if (
+            self.calc_hess is True
+            or self.constraints is not None
+            or self.scan is not None
+            or self.scan_ts is not None
+            or self.fullscan is True
+        ):
             return True
-        
+
         return False
-    
+
     @property
     def ncores(self) -> int:
         return self.__ncores
-    
+
     @ncores.setter
     def ncores(self, value: Optional[int]) -> None:
         self.__ncores = get_ncores() if value is None else value
@@ -60,7 +67,7 @@ class OrcaJobInfo:
     @property
     def maxcore(self) -> int:
         return self.__maxcore
-    
+
     @maxcore.setter
     def maxcore(self, value: Optional[int]) -> None:
         self.__maxcore = 750 if value is None else value
@@ -216,7 +223,6 @@ class OrcaInput(Engine):
         mol: System,
         job_info: OrcaJobInfo,
     ) -> None:
-        
         mol.geometry.write_xyz(f"{mol.name}.xyz")
 
         logger.debug(f"Running ORCA calculation on {job_info.ncores} cores and {job_info.maxcore} MB of RAM")
@@ -243,23 +249,26 @@ class OrcaInput(Engine):
 
         if self.aux_basis:
             input += f"! RIJCOSX {self.aux_basis}\n\n"
-        
+
         if job_info.print_level is not None:
             input += f"! {job_info.print_level}\n\n"
 
-        if job_info.opt is True and job_info.freq is True and self.solvent is not None:
+        if (job_info.opt is True or job_info.opt_ts is True) and job_info.freq is True and self.solvent is not None:
             logger.warning("Optimization with frequency in solvent was requested. Switching to numerical frequencies.")
             job_info.freq = False
             job_info.nfreq = True
 
         if job_info.opt is True:
             input += "! Opt\n" if job_info.optimization_level is None else f"! {job_info.optimization_level}\n"
-        
+
         if job_info.scan is not None:
             input += "! Opt\n"
-        
+
         if job_info.opt_ts is True:
             input += "! OptTS\n"
+
+        if job_info.scan_ts is not None:
+            input += "! ScanTS\n"
 
         if job_info.freq is True:
             if self.solvent:
@@ -271,18 +280,26 @@ class OrcaInput(Engine):
             input += "! NumFreq\n"
 
         if job_info.nearir is True:
-            input += "! NearIR\n"       
+            input += "! NearIR\n"
 
-        if job_info.geom_block is True:     
-            input += "\n"       
+        if job_info.geom_block is True:
+            input += "\n"
             input += "%geom\n"
 
             if job_info.calc_hess is True:
                 input += "  Calc_Hess true\n"
-            
+
+            if job_info.fullscan is True:
+                input += "  fullScan true\n"
+
             if job_info.scan is not None:
-                input += "  scan\n" 
+                input += "  scan\n"
                 input += f"    {job_info.scan}\n"
+                input += "  end\n"
+
+            if job_info.scan_ts is not None:
+                input += "  scan\n"
+                input += f"    {job_info.scan_ts}\n"
                 input += "  end\n"
 
             if job_info.constraints is not None:
@@ -290,7 +307,7 @@ class OrcaInput(Engine):
 
             if job_info.invert_constraints is True:
                 input += "  invertConstraints true\n"
-            
+
             input += "end\n"
 
         if self.solvent:
@@ -497,7 +514,7 @@ class OrcaInput(Engine):
 
             if inplace is False:
                 return newmol
-    
+
     def opt_ts(
         self,
         mol: System,
@@ -846,7 +863,145 @@ class OrcaInput(Engine):
 
             return ensemble
 
-    def parse_output(self, mol: System) -> None:
+    def scan_ts(
+        self,
+        mol: System,
+        scan: str = None,
+        fullscan: bool = False,
+        constraints: str = None,
+        invertconstraints: bool = False,
+        frequency_analysis: bool = True,
+        scf_convergence_level: Optional[str] = "TIGHTSCF",
+        convergence_strategy: Optional[str] = "SLOWCONV",
+        ncores: int = None,
+        maxcore: int = 750,
+        inplace: bool = False,
+        remove_tdir: bool = True,
+    ):
+        """
+        Relaxed surface scan based transition state search.
+
+        Parameters
+        ----------
+        mol : System object
+            input molecule to use in the calculation
+        scan : str
+            string for the scan section in the %geom block
+        fullscan: bool
+            If set to True will not stop the scan when the transition state has been located (default: False)
+        constraints : str
+            string for the constraints section in the %geom block
+        invertconstraints : bool, optional
+            if True, treats the constraints block as the only coordinate NOT to constrain
+        frequency_analysis: bool
+            If set to True (default) will also compute the vibration modes of the molecule and the frequencies. If the
+            optimization is run in solvent, it will automatically switch to numerical frequencies.
+        scf_convergence_level: Optional[str]
+            The SCF level of convergence to be adopted during the transition state optimization (Default: TIGHTSCF)
+        convergence_strategy: Optional[str]
+            The SCF convergence strategy to be adopted during the transition state optimization (Default: SLOWCONV)
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : int, optional
+            memory per core, in MB, by default 750
+        inplace : bool
+            If set to True will update the given `mol` System with the optimized transition state structure. If set to
+            False (default) will return a new system object with the optimized transition state structure together with
+            an Ensamble object encoding the explored scan steps.
+        remove_tdir : bool, optional
+            temporary work directory will be removed, by default True
+
+        Returns
+        -------
+        System
+            The optimized transition state structure. (only if inplace is False)
+        Ensemble
+            Output Ensemble containing the scan frames. (only if inplace is False)
+        """
+
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SCAN")
+
+        tdir = mkdtemp(
+            prefix=mol.name + "_",
+            suffix=f"_{self.__output_suffix}_scanTS",
+            dir=os.getcwd(),
+        )
+
+        with sh.pushd(tdir):
+            job_info = OrcaJobInfo()
+            job_info.ncores = ncores
+            job_info.maxcore = maxcore
+            job_info.scan_ts = scan
+            job_info.freq = frequency_analysis
+            job_info.fullscan = fullscan
+            job_info.constraints = constraints
+            job_info.invert_constraints = invertconstraints
+            job_info.scf_convergence_level = scf_convergence_level
+            job_info.scf_convergence_strategy = convergence_strategy
+
+            self.write_input(mol=mol, job_info=job_info)
+
+            cmd = f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'"
+            logger.debug(f"Running Orca with command: {cmd}")
+            os.system(cmd)
+
+            if inplace is True:
+                mol.geometry.load_xyz("input.xyz")
+                mol.geometry.level_of_theory_geometry = self.level_of_theory
+                self.parse_output(mol)
+
+                process_output(mol, self.__output_suffix, "scanTS", mol.charge, mol.spin)
+                if remove_tdir:
+                    shutil.rmtree(tdir)
+
+            else:
+                xyz_list = [
+                    xyz
+                    for xyz in os.listdir(".")
+                    if xyz.endswith(".xyz")
+                    and os.path.splitext(xyz)[0][:5] == "input"
+                    and xyz != "input.xyz"
+                    and xyz != "input_trj.xyz"
+                ]
+
+                energies = []
+                with open("output.out", "r") as f:
+                    read_energies = False
+                    for line in f:
+                        if "The Calculated Surface using the SCF energy" in line:
+                            read_energies = True
+                            continue
+                        if read_energies:
+                            if len(line.split()) == 2:
+                                energies.append(float(line.split()[-1]))
+                            else:
+                                break
+                
+                mol_list = []
+                for xyz in xyz_list:
+                    
+                    if xyz.endswith(".refined.xyz"):
+                        continue
+
+                    index = xyz.split(".")[1]
+                    shutil.copy(f"input.{index}.xyz", f"{mol.name}.{index}.xyz")
+                    system = System(f"{mol.name}.{index}.xyz", charge=mol.charge, spin=mol.spin)
+                    system.properties.set_electronic_energy(energies[int(index)-1], self)
+                    mol_list.append(system)
+
+                ensemble = Ensemble(mol_list)
+
+                shutil.move("input.xyz", f"{mol.name}_TS.xyz")
+                newmol = System(f"{mol.name}_TS.xyz", charge=mol.charge, spin=mol.spin)
+                self.parse_output(newmol)
+
+                process_output(mol, self.__output_suffix, "scanTS", mol.charge, mol.spin)
+                if remove_tdir:
+                    shutil.rmtree(tdir)
+
+                return newmol, ensemble
+
+    def parse_output(self, mol: System, offset: int = 0) -> None:
         """
         The function will parse an ORCA output file automatically looking for all the relevant
         numerical properties derived form a calculation. All the properties of the given molecule
@@ -993,11 +1148,11 @@ class OrcaInput(Engine):
                     while True:
                         # Read the line
                         buffer = file.readline()
-        
+
                         # Break if the line is empty
                         if buffer == "\n":
                             break
-                        
+
                         # Strip the endline character
                         buffer = buffer.rstrip("\n")
 
@@ -1006,7 +1161,7 @@ class OrcaInput(Engine):
 
                         # Check if the mode is imaginary and strip the warning
                         if substring.endswith(" ***imaginary mode***"):
-                            logger.info("Imaginary mode detected in frequency analysis.")
+                            logger.warning("Imaginary mode detected in frequency analysis.")
                             substring = substring.rstrip(" ***imaginary mode***")
 
                         # Parse the frequency value
