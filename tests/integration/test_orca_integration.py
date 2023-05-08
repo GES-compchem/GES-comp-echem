@@ -664,18 +664,39 @@ def test_OrcaInput_runtime_error_missing_basis():
             rmtree(filename)
 
 
-def test_OrcaInput_runtime_error_scf_not_converged():
+def test_OrcaInput_runtime_error_scf_not_converged_in_init():
     engine = OrcaInput(
         method="PBE",
         basis_set="def2-SVP",
         aux_basis="def2/J",
         solvent=None,
-        scf_block={"maxiter": 2},
+        blocks={"scf": {"maxiter": 2}},
     )
     mol = System(f"{TEST_DIR}/utils/xyz_files/europium-aquoion.xyz", charge=3, spin=7)
 
     try:
         engine.spe(mol, ncores=4)
+    except:
+        assert True
+    else:
+        assert False, "An exception was not raised on SCF not converged."
+
+    for filename in listdir("./"):
+        if filename.endswith("_spe"):
+            rmtree(filename)
+
+
+def test_OrcaInput_runtime_error_scf_not_converged_in_function():
+    engine = OrcaInput(
+        method="PBE",
+        basis_set="def2-SVP",
+        aux_basis="def2/J",
+        solvent=None,
+    )
+    mol = System(f"{TEST_DIR}/utils/xyz_files/europium-aquoion.xyz", charge=3, spin=7)
+
+    try:
+        engine.spe(mol, ncores=4, blocks={"scf": {"maxiter": 2}})
     except:
         assert True
     else:
