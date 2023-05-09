@@ -62,6 +62,8 @@ class OrcaJobInfo:
         If set to True, will trigger the polarizability calcualtion outputting also the raman spectra.
     neb_product: Optional[str]
         If not None, will encode the final endopoint to be used in the neb calculation.
+    neb_ts_guess: Optional[str]
+        In not None, will encode the xyz file to be used as a transition state guess.
     neb_images: Optional[int]
         If set to an integer value, will define the number of images to be used in the neb calculation (endpoints excluded)
     neb_preopt: bool
@@ -93,6 +95,7 @@ class OrcaJobInfo:
         self.raman: bool = False
 
         self.neb_product: Optional[str] = None
+        self.neb_ts_guess: Optional[str] = None
         self.neb_images: Optional[int] = None
         self.neb_preopt: bool = False
 
@@ -255,6 +258,9 @@ class OrcaJobInfo:
         if self.neb_ci is True or self.neb_ts is True:
 
             block["product"] = f'"{self.neb_product}"'
+            
+            if self.neb_ts_guess is not None:
+                block["ts"] = f'"{self.neb_ts_guess}"'
 
             if self.neb_images is not None:
                 block["nimages"] = self.neb_images
@@ -1418,6 +1424,7 @@ class OrcaInput(Engine):
         self,
         reactant: System,
         product: System,
+        guess: Optional[System] = None,
         nimages: Optional[int] = None,
         preoptimize: bool = False,
         ncores: int = None,
@@ -1432,22 +1439,24 @@ class OrcaInput(Engine):
         Arguments
         ---------
         reactant: System
-            The starting structure to be used in the calculation
+            The starting structure to be used in the calculation.
         product: System
-            The final structure to be used in the calculation
+            The final structure to be used in the calculation.
+        guess: Optional[System]
+            The guess for the transition state structure.
         nimages: int
-            The number of images (without the fixed endpoints) to be used in the calcluation (default: 8)
+            The number of images (without the fixed endpoints) to be used in the calcluation (default: 8).
         preoptimize: bool
             If set to True, will run a preoptimization in internal coordinates of the reactant and product structures.
         ncores : int, optional
-            number of cores, by default all available cores
+            number of cores, by default all available cores.
         maxcore : int, optional
-            memory per core, in MB, by default 750
+            memory per core, in MB, by default 750.
         remove_tdir : bool, optional
-            temporary work directory will be removed, by default True
+            temporary work directory will be removed, by default True.
         blocks : Dict[str, Dict[str, Any]]
             The dictionary of dictionaries encoding a series of custom blocks defined by the user. If set to a non-empty
-            value, will overvrite the block option eventually set on the `OrcaInput` class construction
+            value, will overvrite the block option eventually set on the `OrcaInput` class construction.
         
         Raises
         ------
@@ -1466,6 +1475,22 @@ class OrcaInput(Engine):
         logger.info(f"Running a NEB-TS calculation - {self.method}")
         logger.info(f"Reactant: {reactant.name}, charge {reactant.charge} spin {reactant.spin}")
         logger.info(f"Product:  {product.name}, charge {product.charge} spin {product.spin}")
+        
+        if guess is not None:
+            logger.info(f"TS guess:  {guess.name}, charge {guess.charge} spin {guess.spin}")
+
+            if reactant.name == guess.name:
+                logger.error("NEB-TS required with reactant and TS guess with the same name")
+                raise RuntimeError("Reactant and TS guess must have different names")
+
+            if reactant.spin != guess.spin:
+                logger.error("NEB-TS required with reactant and TS guess having different spin multiplicities.")
+                raise RuntimeError("Reactant and TS guess must have the same spin multiplicity")
+
+            if reactant.charge != guess.charge:
+                logger.error("NEB-TS required with reactant and TS guess having different charge.")
+                raise RuntimeError("Reactant and TS guess must have the same charge")
+
 
         if reactant.name == product.name:
             logger.error("NEB-TS required with reactant and product with the same name")
@@ -1489,6 +1514,9 @@ class OrcaInput(Engine):
 
             product.geometry.write_xyz(f"{product.name}.xyz")
 
+            if guess is not None:
+                guess.geometry.write_xyz(f"{guess.name}.xyz")
+
             job_info = OrcaJobInfo()
             job_info.ncores = ncores
             job_info.maxcore = maxcore
@@ -1496,6 +1524,7 @@ class OrcaInput(Engine):
             job_info.solvent = self.solvent
             job_info.neb_ts = True
             job_info.neb_product = f"{product.name}.xyz"
+            job_info.neb_ts_guess = f"{guess.name}.xyz" if guess is not None else None
             job_info.neb_images = nimages
             job_info.neb_preopt = preoptimize
             
