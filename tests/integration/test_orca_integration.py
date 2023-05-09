@@ -2,10 +2,12 @@ import pytest
 
 from compechem.engines.orca import OrcaInput
 from compechem.systems import System, Ensemble
+from compechem.tools.externalutilities import split_multixyz
 
 from os import listdir
 from os.path import dirname, abspath, isfile
 from shutil import rmtree
+from typing import List
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_almost_equal
@@ -586,12 +588,12 @@ def test_OrcaInput_scan_ts():
         assert newmol.geometry.atoms == ["C", "Br", "H", "H", "H", "Cl"]
 
         expected_geometry = [
-                np.array([-4.38574952925426, 1.26951963337438, 0.01156597638921]),
-                np.array([-2.01263300836393, 1.17617599984948, -0.30956874117580]),
-                np.array([-4.33458395795512, 2.16437759277285, 0.61263889436571]),
-                np.array([-4.42432267970508, 0.30449771678974, 0.49316656899693]),
-                np.array([-4.59103312695869, 1.34731367857036, -1.04506439211788]),
-                np.array([-6.79082769776280, 1.36494537864318, 0.33621169354182])
+            np.array([-4.38574952925426, 1.26951963337438, 0.01156597638921]),
+            np.array([-2.01263300836393, 1.17617599984948, -0.30956874117580]),
+            np.array([-4.33458395795512, 2.16437759277285, 0.61263889436571]),
+            np.array([-4.42432267970508, 0.30449771678974, 0.49316656899693]),
+            np.array([-4.59103312695869, 1.34731367857036, -1.04506439211788]),
+            np.array([-6.79082769776280, 1.36494537864318, 0.33621169354182]),
         ]
 
         assert_array_almost_equal(expected_geometry, newmol.geometry.coordinates, decimal=6)
@@ -610,7 +612,6 @@ def test_OrcaInput_scan_ts_inplace():
         assert False, "Unexpected exception raised during relaxed surface scan"
 
     else:
-       
         assert_almost_equal(mol.properties.electronic_energy, -3073.738116597047, decimal=6)
         assert_almost_equal(mol.properties.vibronic_energy, 0.00626688, decimal=6)
         assert_almost_equal(mol.properties.gibbs_free_energy, -3073.73184972, decimal=6)
@@ -618,12 +619,12 @@ def test_OrcaInput_scan_ts_inplace():
         assert mol.geometry.atoms == ["C", "Br", "H", "H", "H", "Cl"]
 
         expected_geometry = [
-                np.array([-4.38574952925426, 1.26951963337438, 0.01156597638921]),
-                np.array([-2.01263300836393, 1.17617599984948, -0.30956874117580]),
-                np.array([-4.33458395795512, 2.16437759277285, 0.61263889436571]),
-                np.array([-4.42432267970508, 0.30449771678974, 0.49316656899693]),
-                np.array([-4.59103312695869, 1.34731367857036, -1.04506439211788]),
-                np.array([-6.79082769776280, 1.36494537864318, 0.33621169354182])
+            np.array([-4.38574952925426, 1.26951963337438, 0.01156597638921]),
+            np.array([-2.01263300836393, 1.17617599984948, -0.30956874117580]),
+            np.array([-4.33458395795512, 2.16437759277285, 0.61263889436571]),
+            np.array([-4.42432267970508, 0.30449771678974, 0.49316656899693]),
+            np.array([-4.59103312695869, 1.34731367857036, -1.04506439211788]),
+            np.array([-6.79082769776280, 1.36494537864318, 0.33621169354182]),
         ]
 
         assert_array_almost_equal(expected_geometry, mol.geometry.coordinates, decimal=6)
@@ -631,7 +632,7 @@ def test_OrcaInput_scan_ts_inplace():
         rmtree("output_files")
 
 
-# Test the catching of runtime errors
+# Test the catching of runtime errors (invalid method)
 def test_OrcaInput_runtime_error_input():
     engine = OrcaInput(method="PBU", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
@@ -648,6 +649,7 @@ def test_OrcaInput_runtime_error_input():
             rmtree(filename)
 
 
+# Test the catching of runtime errors (missing basis)
 def test_OrcaInput_runtime_error_missing_basis():
     engine = OrcaInput(method="DLPNO-CCSD", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz")
@@ -664,6 +666,7 @@ def test_OrcaInput_runtime_error_missing_basis():
             rmtree(filename)
 
 
+# Test the catching of runtime errors while testing the block option in the engine init
 def test_OrcaInput_runtime_error_scf_not_converged_in_init():
     engine = OrcaInput(
         method="PBE",
@@ -686,6 +689,7 @@ def test_OrcaInput_runtime_error_scf_not_converged_in_init():
             rmtree(filename)
 
 
+# Test the catching of runtime errors while testing the block option in the engine function call
 def test_OrcaInput_runtime_error_scf_not_converged_in_function():
     engine = OrcaInput(
         method="PBE",
@@ -707,6 +711,7 @@ def test_OrcaInput_runtime_error_scf_not_converged_in_function():
             rmtree(filename)
 
 
+# Test the catching of runtime errors (wrong multiplicity)
 def test_OrcaInput_runtime_error_wrong_multiplicity():
     engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis="def2/J", solvent=None)
     mol = System(f"{TEST_DIR}/utils/xyz_files/water.xyz", charge=0, spin=2)
@@ -721,3 +726,43 @@ def test_OrcaInput_runtime_error_wrong_multiplicity():
     for filename in listdir("./"):
         if filename.endswith("_spe"):
             rmtree(filename)
+
+
+# Test the OrcaInput NEB-CI function
+def test_OrcaInput_neb_ci():
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis=None, solvent=None, optionals="D3BJ")
+    reactant = System(f"{TEST_DIR}/utils/xyz_files/NEB_reactant.xyz", charge=0, spin=1)
+    product = System(f"{TEST_DIR}/utils/xyz_files/NEB_product.xyz", charge=0, spin=1)
+
+    try:
+        MEP_ensemble: Ensemble = engine.neb_ci(reactant, product, nimages=5, ncores=4)
+    except:
+        assert False, "Exception raised during NEB-CI calculation"
+
+    obtained_systems: List[System] = [s for s in MEP_ensemble]
+    expected_systems: List[System] = split_multixyz(
+        reactant,
+        f"{TEST_DIR}/utils/orca_examples/NEB-CI_MEP_trj.xyz",
+        engine=engine,
+        remove_xyz_files=True,
+    )
+
+    assert len(MEP_ensemble) == 7
+
+    assert_array_almost_equal(
+        [s.properties.electronic_energy for s in obtained_systems],
+        [
+            -153.531198654272,
+            -153.499682766649,
+            -153.455008967825,
+            -153.434520027972,
+            -153.460090234535,
+            -153.492684796405,
+            -153.513745795335,
+        ],
+        decimal=6,
+    )
+
+    for obtained, expected in zip(obtained_systems, expected_systems):
+        assert obtained.geometry.atomcount == expected.geometry.atomcount
+        assert_array_almost_equal(obtained.geometry.coordinates, expected.geometry.coordinates, decimal=6)

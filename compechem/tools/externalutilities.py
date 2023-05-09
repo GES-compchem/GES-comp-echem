@@ -1,13 +1,23 @@
 import os
-from compechem.systems import System
 import logging
+
+from typing import List
+
+from compechem.systems import System
+from compechem.core.base import Engine
 
 logger = logging.getLogger(__name__)
 
 
 def split_multixyz(
-    mol: System, file: str, suffix: str = "", charge: int = None, spin: int = None
-):
+    mol: System,
+    file: str,
+    suffix: str = "",
+    charge: int = None,
+    spin: int = None,
+    engine: Engine = None,
+    remove_xyz_files: bool = False,
+) -> List[System]:
     """Splits a .xyz file containing multiple structures into individual structures.
 
     Parameters
@@ -22,6 +32,11 @@ def split_multixyz(
         Charge of the output molecules, by default the same as the input molecule
     spin : int, optional
         Spin of the output molecules, by default the same as the input molecule
+    engine: Engine, optional
+        The engine used to produce the multiple xyz file (If given and if available, the energies included in the comment
+        line will be added to each system parsed)
+    remove_xyz_files: bool
+        If set to True will remove the temporary .xyz files used in generating the System list
 
     Returns
     -------
@@ -42,14 +57,29 @@ def split_multixyz(
     num = 1
     with open(file, "r") as f:
         line = f.readline()
+
         while line:
             with open(f"{mol.name}_{suffix}{num}.xyz", "w") as out:
-                for _ in range(molsize + 2):
+                for i in range(molsize + 2):
+                    if i == 1 and engine is not None:
+                        energy = None
+
+                        # Parse energies from Orca <name>_trj.xyz output files
+                        if line.startswith("Coordinates from ORCA-job"):
+                            energy = float(line.split()[-1])
                     out.write(line)
                     line = f.readline()
-            molecules_list.append(
-                System(f"{mol.name}_{suffix}{num}.xyz", charge=charge, spin=spin)
-            )
+
+            system = System(f"{mol.name}_{suffix}{num}.xyz", charge=charge, spin=spin)
+
+            if engine is not None and energy is not None:
+                system.properties.set_electronic_energy(energy, engine)
+
+            molecules_list.append(system)
+
+            if remove_xyz_files:
+                os.remove(f"./{mol.name}_{suffix}{num}.xyz")
+
             num += 1
 
     return molecules_list
