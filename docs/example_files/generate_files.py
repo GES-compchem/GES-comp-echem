@@ -40,4 +40,5 @@ from shutil import rmtree
 
 rmtree("error_files", ignore_errors=True)
 rmtree("output_files", ignore_errors=True)
+rmtree("output_densities", ignore_errors=True)
 rmtree("packmol_files", ignore_errors=True)
