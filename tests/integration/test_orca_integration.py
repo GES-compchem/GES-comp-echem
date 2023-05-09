@@ -766,3 +766,56 @@ def test_OrcaInput_neb_ci():
     for obtained, expected in zip(obtained_systems, expected_systems):
         assert obtained.geometry.atomcount == expected.geometry.atomcount
         assert_array_almost_equal(obtained.geometry.coordinates, expected.geometry.coordinates, decimal=6)
+
+
+# Test the OrcaInput NEB-TS function
+def test_OrcaInput_neb_ts():
+    engine = OrcaInput(method="PBE", basis_set="def2-SVP", aux_basis=None, solvent=None, optionals="D3BJ")
+    reactant = System(f"{TEST_DIR}/utils/xyz_files/NEB_reactant.xyz", charge=0, spin=1)
+    product = System(f"{TEST_DIR}/utils/xyz_files/NEB_product.xyz", charge=0, spin=1)
+
+    try:
+        transition_state, MEP_ensemble = engine.neb_ts(reactant, product, nimages=5, ncores=4)
+    except:
+        assert False, "Exception raised during NEB-TS calculation"
+
+    obtained_systems: List[System] = [s for s in MEP_ensemble]
+    expected_systems: List[System] = split_multixyz(
+        reactant,
+        f"{TEST_DIR}/utils/orca_examples/NEB-TS_MEP_trj.xyz",
+        engine=engine,
+        remove_xyz_files=True,
+    )
+
+    assert len(MEP_ensemble) == 7
+
+    assert_array_almost_equal(
+        [s.properties.electronic_energy for s in obtained_systems],
+        [
+            -153.531198654272,
+            -153.500678708877,
+            -153.457297578306,
+            -153.434519231762,
+            -153.458457537182,
+            -153.493079403986,
+            -153.513745795335,
+        ],
+        decimal=6,
+    )
+
+    for obtained, expected in zip(obtained_systems, expected_systems):
+        assert obtained.geometry.atomcount == expected.geometry.atomcount
+        assert_array_almost_equal(obtained.geometry.coordinates, expected.geometry.coordinates, decimal=6)
+
+    expected_TS_geometry = [
+        [-0.66292173004488, 0.28020099391560, -0.09688510457409],
+        [0.50864138286520, -0.51262321034838, -0.16942824046659],
+        [0.84004819509531, -0.85971567980890, 0.82996893940146],
+        [0.74460764928771, 0.86471255892441, 0.38867735697469],
+        [0.69231701008033, -1.24596948472798, -0.97309427425665],
+        [-0.45629726852869, 1.36572468570753, 0.56620484824029],
+        [-1.66639523875499, 0.10767013633772, -0.54544352531911],
+    ]
+
+    assert_array_almost_equal(transition_state.geometry.coordinates, expected_TS_geometry, decimal=6)
+    assert_almost_equal(transition_state.properties.electronic_energy, -153.434523068242, decimal=6)

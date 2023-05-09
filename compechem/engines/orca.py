@@ -1,6 +1,6 @@
 import os, copy, shutil, sh, logging
 import numpy as np
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Tuple
 from tempfile import mkdtemp
 
 import compechem.config as cfg
@@ -79,6 +79,7 @@ class OrcaJobInfo:
         self.scan: Optional[str] = None
         self.scan_ts: Optional[str] = None
         self.neb_ci: bool = False
+        self.neb_ts: bool = False
 
         self.constraints: Optional[str] = None
         self.invert_constraints: bool = False
@@ -251,7 +252,7 @@ class OrcaJobInfo:
 
         block = {} if "neb" not in self.user_blocks else self.user_blocks["neb"]
 
-        if self.neb_ci is True:
+        if self.neb_ci is True or self.neb_ts is True:
 
             block["product"] = f'"{self.neb_product}"'
 
@@ -582,6 +583,11 @@ class OrcaInput(Engine):
         
         if job_info.neb_ci is True:
             input += "! NEB-CI\n"
+        
+        if job_info.neb_ts is True:
+            input += "! NEB-TS\n"
+        
+        input += "\n"
 
         if job_info.parsed_blocks != {}:
 
@@ -1209,7 +1215,7 @@ class OrcaInput(Engine):
         inplace : bool
             If set to True will update the given `mol` System with the optimized transition state structure. If set to
             False (default) will return a new system object with the optimized transition state structure together with
-            an Ensamble object encoding the explored scan steps.
+            an Ensemble object encoding the explored scan steps.
         remove_tdir : bool, optional
             temporary work directory will be removed, by default True
         blocks : Dict[str, Dict[str, Any]]
@@ -1320,7 +1326,7 @@ class OrcaInput(Engine):
         blocks: Dict[str, Dict[str, Any]] = {},
     ) -> Ensemble:
         """
-        Run a climbing image nudged elastic band calculation (NEB-CI) and output the ensamble encoding the optimized
+        Run a climbing image nudged elastic band calculation (NEB-CI) and output the ensemble encoding the optimized
         minimum energy path trajectory.
 
         Arguments
@@ -1351,8 +1357,8 @@ class OrcaInput(Engine):
 
         Returns
         -------
-        Ensamble
-            The ensamble object containing the structures along the minimum energy path.        
+        Ensemble
+            The ensemble object containing the structures along the minimum energy path.        
         """
 
         logger.info(f"Running a NEB-CI calculation - {self.method}")
@@ -1406,6 +1412,114 @@ class OrcaInput(Engine):
                 shutil.rmtree(tdir)
 
             return MEP_ensemble
+        
+    
+    def neb_ts(
+        self,
+        reactant: System,
+        product: System,
+        nimages: Optional[int] = None,
+        preoptimize: bool = False,
+        ncores: int = None,
+        maxcore: int = 750,
+        remove_tdir: bool = True,
+        blocks: Dict[str, Dict[str, Any]] = {},
+    ) -> Tuple[System, Ensemble]:
+        """
+        Run a climbing image nudged elastic band calculation (NEB-CI) and output the ensemble encoding the optimized
+        minimum energy path trajectory.
+
+        Arguments
+        ---------
+        reactant: System
+            The starting structure to be used in the calculation
+        product: System
+            The final structure to be used in the calculation
+        nimages: int
+            The number of images (without the fixed endpoints) to be used in the calcluation (default: 8)
+        preoptimize: bool
+            If set to True, will run a preoptimization in internal coordinates of the reactant and product structures.
+        ncores : int, optional
+            number of cores, by default all available cores
+        maxcore : int, optional
+            memory per core, in MB, by default 750
+        remove_tdir : bool, optional
+            temporary work directory will be removed, by default True
+        blocks : Dict[str, Dict[str, Any]]
+            The dictionary of dictionaries encoding a series of custom blocks defined by the user. If set to a non-empty
+            value, will overvrite the block option eventually set on the `OrcaInput` class construction
+        
+        Raises
+        ------
+        RuntimeError
+            Exception raised if the given `System` objects are not compatible with a NEB-CI calculation (e.g. same name 
+            or different charge or spin multiplicity)
+
+        Returns
+        -------
+        System
+            The optimized transition state structure obtained from the NEB-TS.
+        Ensemble
+            The ensemble object containing the structures along the minimum energy path.        
+        """
+
+        logger.info(f"Running a NEB-TS calculation - {self.method}")
+        logger.info(f"Reactant: {reactant.name}, charge {reactant.charge} spin {reactant.spin}")
+        logger.info(f"Product:  {product.name}, charge {product.charge} spin {product.spin}")
+
+        if reactant.name == product.name:
+            logger.error("NEB-TS required with reactant and product with the same name")
+            raise RuntimeError("Reactant and product must have different names")
+
+        if reactant.spin != product.spin:
+            logger.error("NEB-TS required with reactant and product having different spin multiplicities.")
+            raise RuntimeError("Reactant and product must have the same spin multiplicity")
+
+        if reactant.charge != product.charge:
+            logger.error("NEB-TS required with reactant and product having different charge.")
+            raise RuntimeError("Reactant and product must have the same charge")
+
+        tdir = mkdtemp(
+            prefix=reactant.name + "_" + product.name + "_",
+            suffix=f"_{self.__output_suffix}_NEB-TS",
+            dir=os.getcwd(),
+        )
+
+        with sh.pushd(tdir):
+
+            product.geometry.write_xyz(f"{product.name}.xyz")
+
+            job_info = OrcaJobInfo()
+            job_info.ncores = ncores
+            job_info.maxcore = maxcore
+            job_info.is_singlet = True if reactant.spin == 1 else False
+            job_info.solvent = self.solvent
+            job_info.neb_ts = True
+            job_info.neb_product = f"{product.name}.xyz"
+            job_info.neb_images = nimages
+            job_info.neb_preopt = preoptimize
+            
+            job_info.user_blocks = blocks if blocks != {} else self.blocks
+
+            self.write_input(mol=reactant, job_info=job_info)
+
+            cmd = f"{self.__ORCADIR}/orca input.inp > output.out '{cfg.MPI_FLAGS}'"
+            logger.debug(f"Running Orca with command: {cmd}")
+            os.system(cmd)
+
+            transition_state = System("input.xyz", charge=reactant.charge, spin=reactant.spin)
+            transition_state.name = f"{reactant.name}_TS"
+            self.parse_output(transition_state)
+
+            process_output(transition_state, self.__output_suffix, "neb-ts", transition_state.charge, transition_state.spin)
+         
+            MEP_systems = split_multixyz(reactant, "input_MEP_trj.xyz", suffix="MEP", engine=self)
+            MEP_ensemble = Ensemble(MEP_systems) 
+
+            if remove_tdir:
+                shutil.rmtree(tdir)
+
+            return transition_state, MEP_ensemble
             
 
     def parse_output(self, mol: System) -> None:
@@ -1462,44 +1576,46 @@ class OrcaInput(Engine):
             # Count the number of "MULLIKEN ATOMIC CHARGES" sections in the file
             sections = file.read().count("MULLIKEN ATOMIC CHARGES")
 
-            # Trace back to the beginning of the file
-            file.seek(0)
+            if sections != 0:
 
-            # Cycle over all the lines of the fuke
-            for line in file:
-                # If a "MULLIKEN ATOMIC CHARGES" section is found, increment the counter
-                if "MULLIKEN ATOMIC CHARGES" in line:
-                    counter += 1
+                # Trace back to the beginning of the file
+                file.seek(0)
 
-                # If the index of the "MULLIKEN ATOMIC CHARGES" correspond with the last one
-                # proceed with the file parsing else continue
-                if counter == sections:
-                    # Check if the section contains also the "SPIN" column (either "SPIN POPULATIONS" or "SPIN DENSITIES")
-                    if "SPIN" in line:
-                        spin_available = True
+                # Cycle over all the lines of the file
+                for line in file:
+                    # If a "MULLIKEN ATOMIC CHARGES" section is found, increment the counter
+                    if "MULLIKEN ATOMIC CHARGES" in line:
+                        counter += 1
 
-                    _ = file.readline()  # Skip the table line
+                    # If the index of the "MULLIKEN ATOMIC CHARGES" correspond with the last one
+                    # proceed with the file parsing else continue
+                    if counter == sections:
+                        # Check if the section contains also the "SPIN" column (either "SPIN POPULATIONS" or "SPIN DENSITIES")
+                        if "SPIN" in line:
+                            spin_available = True
 
-                    # Iterate over the whole section reading line by line
-                    while True:
-                        buffer = file.readline()
-                        if "Sum of atomic charges" in buffer:
-                            break
-                        else:
-                            data = buffer.replace(":", "").split()
-                            mulliken_charges.append(float(data[2]))
+                        _ = file.readline()  # Skip the table line
 
-                            if spin_available:
-                                mulliken_spins.append(float(data[3]))
+                        # Iterate over the whole section reading line by line
+                        while True:
+                            buffer = file.readline()
+                            if "Sum of atomic charges" in buffer:
+                                break
                             else:
-                                mulliken_spins.append(0.0)
-                else:
-                    continue
+                                data = buffer.replace(":", "").split()
+                                mulliken_charges.append(float(data[2]))
 
-                # If break has been called after mulliken has been modified the section end
-                # has been reached, as such, break also from the reading operation
-                if mulliken_charges != []:
-                    break
+                                if spin_available:
+                                    mulliken_spins.append(float(data[3]))
+                                else:
+                                    mulliken_spins.append(0.0)
+                    else:
+                        continue
+
+                    # If break has been called after mulliken has been modified the section end
+                    # has been reached, as such, break also from the reading operation
+                    if mulliken_charges != []:
+                        break
 
         if mulliken_charges != []:
             mol.properties.set_mulliken_charges(mulliken_charges, self)
