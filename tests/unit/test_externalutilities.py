@@ -3,7 +3,7 @@ import pytest, os
 from os.path import abspath, dirname, join, isfile
 
 from compechem.systems import System
-from compechem.engines.orca import OrcaInput
+from compechem.core.base import Engine
 from compechem.tools.externalutilities import split_multixyz
 
 import numpy as np
@@ -102,7 +102,7 @@ def test_split_multixyz_with_parsing_NEB_CI():
     jsonfile = join(TEST_DIR, "utils/json_examples/water.json")
     mol = System(jsonfile)
 
-    dummy_engine = OrcaInput(method="PBE")
+    dummy_engine = Engine("dummy")
 
     multixyz = join(TEST_DIR, "utils/xyz_examples/multiple_from_orca_trj.xyz")
 
