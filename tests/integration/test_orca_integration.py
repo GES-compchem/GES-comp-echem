@@ -838,7 +838,7 @@ def test_OrcaInput_neb_ts_with_guess():
     obtained_systems: List[System] = [s for s in MEP_ensemble]
     expected_systems: List[System] = split_multixyz(
         reactant,
-        f"{TEST_DIR}/utils/orca_examples/NEB-TS_MEP_trj.xyz",
+        f"{TEST_DIR}/utils/orca_examples/NEB-TS_with_guess_MEP_trj.xyz",
         engine=engine,
         remove_xyz_files=True,
     )
@@ -849,12 +849,12 @@ def test_OrcaInput_neb_ts_with_guess():
         [s.properties.electronic_energy for s in obtained_systems],
         [
             -153.531198654272,
-            -153.500678708877,
-            -153.457297578306,
-            -153.434519231762,
-            -153.458457537182,
-            -153.493079403986,
-            -153.513745795335,
+            -153.497043001606,
+            -153.452461191009,
+            -153.434512474274,
+            -153.462105880760,
+            -153.493181129378,
+            -153.513745715132,
         ],
         decimal=6,
     )
@@ -864,16 +864,16 @@ def test_OrcaInput_neb_ts_with_guess():
         assert_array_almost_equal(obtained.geometry.coordinates, expected.geometry.coordinates, decimal=6)
 
     expected_TS_geometry = [
-        [-0.66292173004488, 0.28020099391560, -0.09688510457409],
-        [0.50864138286520, -0.51262321034838, -0.16942824046659],
-        [0.84004819509531, -0.85971567980890, 0.82996893940146],
-        [0.74460764928771, 0.86471255892441, 0.38867735697469],
-        [0.69231701008033, -1.24596948472798, -0.97309427425665],
-        [-0.45629726852869, 1.36572468570753, 0.56620484824029],
-        [-1.66639523875499, 0.10767013633772, -0.54544352531911],
+        [-0.66258722569397, 0.28074415995905, -0.09803929449706],
+        [0.50878195281299, -0.51260563155265, -0.16941970531052],
+        [0.83808510670708, -0.85951988550587, 0.83075709824131],
+        [0.74423907203868, 0.86444249044971, 0.38945188613164],
+        [0.69340150942614, -1.24597256439708, -0.97273136984476],
+        [-0.45605583581555, 1.36528811387283, 0.56671312004464],
+        [-1.66586457947537, 0.10762331717400, -0.54673173476526],
     ]
 
     assert_array_almost_equal(transition_state.geometry.coordinates, expected_TS_geometry, decimal=6)
-    assert_almost_equal(transition_state.properties.electronic_energy, -153.434523068242, decimal=6)
+    assert_almost_equal(transition_state.properties.electronic_energy, -153.434522931481, decimal=6)
 
     rmtree("output_files")
