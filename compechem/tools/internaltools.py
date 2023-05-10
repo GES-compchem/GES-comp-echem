@@ -1,6 +1,5 @@
 import os
 import shutil
-import pickle
 from rdkit import Chem
 from copy import deepcopy
 from compechem.systems import System

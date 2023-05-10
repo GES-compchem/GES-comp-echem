@@ -4,7 +4,7 @@ from tempfile import mkdtemp
 from compechem.config import get_ncores
 from compechem.core.base import Engine
 from compechem.systems import System
-from compechem.tools import process_output, add_flag, dissociation_check, cyclization_check
+from compechem.tools import process_output, dissociation_check, cyclization_check
 from compechem.tools.internaltools import clean_suffix
 from compechem.core.dependency_finder import locate_xtb
 
@@ -37,7 +37,6 @@ class XtbInput(Engine):
         optionals: str = "",
         XTBPATH: str = None,
     ) -> None:
-
         super().__init__(method)
 
         self.solvent = solvent
@@ -50,7 +49,6 @@ class XtbInput(Engine):
         self.__output_suffix = clean_suffix(self.__output_suffix)
 
     def write_input(self, mol: System, job_info: dict) -> None:
-
         input = f"$chrg {mol.charge}\n"
         input += f"$spin {mol.spin-1}\n"
 
@@ -117,7 +115,6 @@ class XtbInput(Engine):
         )
 
         with sh.pushd(tdir):
-
             self.write_input(
                 mol,
                 job_info={
@@ -139,7 +136,6 @@ class XtbInput(Engine):
                 os.system(cmd)
 
             if inplace is False:
-
                 newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
                 newmol.properties = copy.copy(mol.properties)
                 self.parse_output(newmol)
@@ -208,7 +204,6 @@ class XtbInput(Engine):
         )
 
         with sh.pushd(tdir):
-
             self.write_input(
                 mol,
                 job_info={
@@ -231,22 +226,14 @@ class XtbInput(Engine):
 
             if dissociation_check() is True:
                 logger.error(f"Dissociation spotted for {mol.name}.")
-                add_flag(
-                    mol,
-                    f"Dissociation occurred during geometry optimization with {self.method}.",
-                )
+                mol.flags.append(f"Dissociation occurred during geometry optimization with {self.method}.")
                 return None
             elif cyclization_check(f"{mol.name}.xyz", "xtbopt.xyz") is True:
                 logger.error(f"Cyclization change spotted for {mol.name}.")
-                add_flag(
-                    mol,
-                    f"Cyclization change occurred during geometry optimization with {self.method}.",
-                )
+                mol.flags.append(f"Cyclization change occurred during geometry optimization with {self.method}.")
                 return None
             else:
-
                 if inplace is False:
-
                     newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
                     newmol.geometry.load_xyz("xtbopt.xyz")
                     newmol.geometry.level_of_theory_geometry = self.level_of_theory
@@ -317,7 +304,6 @@ class XtbInput(Engine):
         )
 
         with sh.pushd(tdir):
-
             self.write_input(
                 mol,
                 job_info={
@@ -339,7 +325,6 @@ class XtbInput(Engine):
                 os.system(cmd)
 
             if inplace is False:
-
                 newmol = System(f"{mol.name}.xyz", charge=mol.charge, spin=mol.spin)
 
                 newmol.properties = copy.copy(mol.properties)
@@ -402,9 +387,7 @@ class XtbInput(Engine):
         mulliken_charges, mulliken_spins = [], []
         spin_available = False
         with open("output.out", "r") as file:
-
             for line in file:
-
                 # read the file until the charges section is reached
                 if "#   Z          covCN" in line:
                     # Iterate over the whole section reading line by line
@@ -418,7 +401,6 @@ class XtbInput(Engine):
 
                 # Check if the section contains also the "(R)spin-density population" line
                 if "Mulliken population" in line:
-
                     spin_available = True
 
                     # Iterate over the whole section reading line by line

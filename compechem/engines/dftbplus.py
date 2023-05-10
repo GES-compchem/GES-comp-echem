@@ -159,7 +159,6 @@ class DFTBInput(Engine):
         mol: System,
         job_info: Dict,
     ) -> None:
-
         mol.write_gen(f"{mol.name}.gen")
 
         with open(f"{mol.name}.gen") as file:
@@ -336,7 +335,6 @@ class DFTBInput(Engine):
         )
 
         with sh.pushd(tdir):
-
             self.write_input(
                 mol=mol,
                 job_info={"type": "spe"},
@@ -414,7 +412,6 @@ class DFTBInput(Engine):
         )
 
         with sh.pushd(tdir):
-
             self.write_input(
                 mol=mol,
                 job_info={
@@ -436,14 +433,12 @@ class DFTBInput(Engine):
                 os.system(cmd)
 
             if inplace is False:
-
                 newmol = copy.deepcopy(mol)
                 newmol.geometry.load_xyz("geo_end.xyz")
                 newmol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(newmol)
 
             else:
-
                 mol.geometry.load_xyz("geo_end.xyz")
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
                 self.parse_output(mol)
@@ -520,7 +515,6 @@ class DFTBInput(Engine):
         )
 
         with sh.pushd(tdir):
-
             self.write_input(
                 mol=mol,
                 job_info={
@@ -647,7 +641,6 @@ class DFTBInput(Engine):
         )
 
         with sh.pushd(tdir):
-
             self.write_input(
                 mol=mol,
                 job_info={
@@ -674,13 +667,11 @@ class DFTBInput(Engine):
                 os.system(cmd)
 
             if inplace is False:
-
                 newmol = copy.deepcopy(mol)
                 newmol.geometry.load_xyz("geo_end.xyz")
                 newmol.geometry.level_of_theory_geometry = self.level_of_theory
 
             else:
-
                 mol.geometry.load_xyz("geo_end.xyz")
                 mol.geometry.level_of_theory_geometry = self.level_of_theory
 
