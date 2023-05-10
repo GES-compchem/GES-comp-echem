@@ -21,7 +21,7 @@
   * Added engine field to properly store computed properies in the output systems.
   * Added unit test to verify new functionalities.
 
-* Update to documentation to include new features.
+* Update to documentation to include new features and addition of examples to the `OrcaInput` docstrings.
 
 
 ## Version `0.3.1`

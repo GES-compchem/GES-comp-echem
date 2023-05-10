@@ -495,6 +495,14 @@ class OrcaInput(Engine):
     ORCADIR: str, optional
         the path or environment variable containing the path to the ORCA folder. If set
         to None (default) the orca executable will be loaded automatically.
+    
+    Examples
+    --------
+    An instance of an ``OrcaInput`` engine can be created by simply invoking the class constructor. As an example the
+    following command can be invoked to define an engine capable of running electronic structure calculations at the 
+    ``M06-2X/def2-TZVP`` level of theory.
+
+    >>> orca = OrcaInput(method="M062X", basis_set="def2-TZVP", aux_basis=None)
     """
 
     def __init__(
@@ -528,6 +536,16 @@ class OrcaInput(Engine):
         mol: System,
         job_info: OrcaJobInfo,
     ) -> None:
+        """
+        Function responsible of writing the orca input file.
+
+        Arguments
+        ---------
+        mol: System
+            The molecule subject to the calculation.
+        job_info: OrcaJobInfo
+            The helper class encoding the calculation type.
+        """
         mol.geometry.write_xyz(f"{mol.name}.xyz")
 
         logger.debug(f"Running ORCA calculation on {job_info.ncores} cores and {job_info.maxcore} MB of RAM")
@@ -631,7 +649,8 @@ class OrcaInput(Engine):
         remove_tdir: bool = True,
         blocks: Dict[str, Dict[str, Any]] = {},
     ):
-        f"""Single point energy calculation.
+        """
+        Single point energy calculation.
 
         Parameters
         ----------
@@ -661,6 +680,22 @@ class OrcaInput(Engine):
         -------
         newmol : System object
             Output molecule containing the new energies.
+        
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, a single point calculation on a molecule 
+        ``mol`` can be run using the command:
+
+        >>> newmol = orca.spe(mol)
+
+        The ``newmol`` object will contain the same geometry of the molecule ``mol`` and the ``electronic_energy`` 
+        property will be set according to the energy provided by the level of theory encoded into the ``orca`` engine.
+        If a new instance of the molecule ``mol`` is not wanted. The properties of the molecule can be set using the flag
+        ``inplace``.
+
+        >>> orca.spe(mol, inplace=True)
+
+        In doing so, the molecule ``mol`` will be updated with the computed energy without returning anything.
         """
 
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SPE")
@@ -717,7 +752,8 @@ class OrcaInput(Engine):
         frequency_analysis: bool = True,
         blocks: Dict[str, Dict[str, Any]] = {},
     ):
-        """Geometry optimization + frequency analysis.
+        """
+        Geometry optimization + frequency analysis.
 
         Parameters
         ----------
@@ -752,6 +788,26 @@ class OrcaInput(Engine):
         -------
         newmol : System object
             Output molecule containing the new geometry and energies.
+        
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, a geometry optimization of the molecule 
+        ``mol`` can be performed using the command:
+
+        >>> newmol = orca.opt(mol)
+
+        The ``newmol`` object will contain the optimized geometry of the molecule ``mol`` and the ``electronic_energy`` 
+        property will be set according to the energy provided by the level of theory encoded into the ``orca`` engine.
+        By default a frequency analysis will also be performed at the end of the optimization process. As such, vibrational
+        frequencies and normal modes will also be set among the properties of ``newmol``. If the frequency analysis is not
+        required,it can be avoided setting the proper ``frequency_analysis`` flag according to:
+
+        >>> newmol = orca.opt(mol, frequency_analysis=False)
+
+        If a new instance of the molecule ``mol`` is not wanted. The properties and geometry of the molecule can be 
+        updated inplace using the command:
+
+        >>> orca.opt(mol, inplace=True)
         """
 
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT")
@@ -816,7 +872,8 @@ class OrcaInput(Engine):
         frequency_analysis: bool = True,
         blocks: Dict[str, Dict[str, Any]] = {},
     ):
-        """Transition state optimization + frequency analysis.
+        """
+        Transition state optimization + frequency analysis.
 
         Parameters
         ----------
@@ -855,9 +912,33 @@ class OrcaInput(Engine):
         -------
         newmol : System object
             Output molecule containing the new geometry and energies.
+
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, a transition state optimization can be
+        performed, starting from a good transition state guess ``guess``, using the command:
+
+        >>> transition_state = orca.opt_ts(guess)
+
+        The ``transition_state`` object will contain the optimized geometry of the transition state and the corresponding
+        ``electronic_energy`` property will be set according to the energy provided by the level of theory encoded into the
+        ``orca`` engine. By default a frequency analysis will also be performed at the end of the optimization process.
+        As such, vibrational frequencies and normal modes will also be set among the properties of ``transition_state``. 
+        Keep in mind that the function computes a structure located on a first-order saddle point and, as such, an 
+        imaginary mode should be expected. If the frequency analysis is not required, it can be avoided setting the proper
+        ``frequency_analysis`` flag according to:
+
+        >>> transition_state = orca.opt(guess, frequency_analysis=False)
+
+        If a new instance of the molecule ``guess`` is not wanted. The properties and geometry of the transition state can be 
+        updated inplace using the command:
+
+        >>> orca.opt(guess, inplace=True)
+
+        The original ``guess`` will be updated with the newly defined transition state structure.
         """
 
-        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} OPT TS")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -916,7 +997,8 @@ class OrcaInput(Engine):
         overtones: bool = False,
         blocks: Dict[str, Dict[str, Any]] = {},
     ):
-        """Frequency analysis (analytical frequencies).
+        """
+        Frequency analysis (analytical frequencies).
 
         Note: if the SMD solvation model is detected, defaults to numerical frequencies
         (analytical frequencies are not currently supported)
@@ -947,6 +1029,23 @@ class OrcaInput(Engine):
         -------
         newmol : System object
             Output molecule containing the new energies.
+
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, an analytical frequency analysis of 
+        the molecule ``mol`` can be run using the command:
+
+        >>> newmol = orca.freq(mol)
+
+        **Warning:** Analytical frequencies are not supported during in-solvent calculations.
+
+        The ``newmol`` object will contain the same geometry of the molecule ``mol`` together with all the vibrational data
+        computed during the frequency analysis process. If a new instance of the molecule ``mol`` is not wanted. The 
+        properties of the molecule can be set using the flag ``inplace``.
+
+        >>> orca.freq(mol, inplace=True)
+
+        In doing so, the molecule ``mol`` will be updated with the computed properties without returning anything. 
         """
 
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} FREQ")
@@ -1001,7 +1100,8 @@ class OrcaInput(Engine):
         overtones: bool = False,
         blocks: Dict[str, Dict[str, Any]] = {},
     ):
-        """Frequency analysis (numerical frequencies).
+        """
+        Frequency analysis (numerical frequencies).
 
         Parameters
         ----------
@@ -1029,6 +1129,21 @@ class OrcaInput(Engine):
         -------
         newmol : System object
             Output molecule containing the new energies.
+
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, a numerical frequency analysis of 
+        the molecule ``mol`` can be run using the command:
+
+        >>> newmol = orca.nfreq(mol)
+
+        The ``newmol`` object will contain the same geometry of the molecule ``mol`` together with all the vibrational data
+        computed during the frequency analysis process. If a new instance of the molecule ``mol`` is not wanted. The 
+        properties of the molecule can be set using the flag ``inplace``.
+
+        >>> orca.nfreq(mol, inplace=True)
+
+        In doing so, the molecule ``mol`` will be updated with the computed properties without returning anything. 
         """
 
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} NFREQ")
@@ -1082,7 +1197,8 @@ class OrcaInput(Engine):
         remove_tdir: bool = True,
         blocks: Dict[str, Dict[str, Any]] = {},
     ):
-        """Relaxed surface scan.
+        """
+        Relaxed surface scan.
 
         Parameters
         ----------
@@ -1106,8 +1222,21 @@ class OrcaInput(Engine):
 
         Returns
         -------
-        scan_list : Ensemble object
+        scan_list : Ensemble
             Output Ensemble containing the scan frames.
+
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, a relaxed surface scan of one or more
+        coordinates of the molecule ``mol`` can be run passing a properly formatted scan instruction to the `scan` method.
+        As an example, the scan string ``"B 0 1 = 1.0, 3.0, 10"`` will scan the bond between the first two atoms in the
+        molecule ``mol`` dividing the range from 1Å to 3Å in 10 equal steps (extremes are included). The syntax of the 
+        command is:
+
+        >>> output = orca.scan(mol, scan="B 0 1 = 1.0, 3.0, 10")
+
+        The ``output`` object is of type ``Ensemble`` and will contain all the evaluated structures together with their 
+        electronic energies.
         """
 
         logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SCAN")
@@ -1234,9 +1363,24 @@ class OrcaInput(Engine):
             The optimized transition state structure. (only if inplace is False)
         Ensemble
             Output Ensemble containing the scan frames. (only if inplace is False)
+
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, a transition state search based on a 
+        relaxed surface scan of one coordinate of the molecule ``mol`` can be run passing a properly formatted scan 
+        instruction to the ``scan_ts`` method. The scan will be performed until a maximum in the energy profile is found.
+        The structure located at the local maximum will then be used as a guess in a transition state optimization procedure.
+        As an example, the scan string ``"B 0 1 = 1.0, 3.0, 10"`` will scan the bond between the first two atoms in the
+        molecule ``mol`` dividing the range from 1Å to 3Å in 10 equal steps (extremes are included). The syntax of the 
+        command is:
+
+        >>> transition_state, scan_ensemble = orca.scan_ts(mol, scan="B 0 1 = 1.0, 3.0, 10")
+
+        The ``transition_state`` object is of type ``System`` and encodes the optimized transition state structure while the
+        ``scan_ensemble`` object is of type ``Ensemble`` and will contain all the evaluated structures during the scan step.
         """
 
-        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SCAN")
+        logger.info(f"{mol.name}, charge {mol.charge} spin {mol.spin} - {self.method} SCAN TS")
 
         tdir = mkdtemp(
             prefix=mol.name + "_",
@@ -1364,7 +1508,18 @@ class OrcaInput(Engine):
         Returns
         -------
         Ensemble
-            The ensemble object containing the structures along the minimum energy path.        
+            The ensemble object containing the structures along the minimum energy path.
+
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, a climbing image nudged elastic band
+        calculation, returning the minimum energy path (MEP) connecting a ``reactant`` and a ``product`` structures, can
+        be run invoking the ``neb_ci`` command according to the syntax:
+
+        >>> ensemble = orca.neb_ci(reactant, product)
+         
+        The ``ensemble`` object is of type ``Ensemble`` and will contain all the evaluated structures alomng the computed
+        minimum energy path.
         """
 
         logger.info(f"Running a NEB-CI calculation - {self.method}")
@@ -1433,8 +1588,9 @@ class OrcaInput(Engine):
         blocks: Dict[str, Dict[str, Any]] = {},
     ) -> Tuple[System, Ensemble]:
         """
-        Run a climbing image nudged elastic band calculation (NEB-CI) and output the ensemble encoding the optimized
-        minimum energy path trajectory.
+        Run a climbing image nudged elastic band calculation (NEB-CI) followed by a transition state optimization
+        and output the optimized transition state structure together with the ensemble encoding the optimized minimum 
+        energy path trajectory.
 
         Arguments
         ---------
@@ -1469,7 +1625,28 @@ class OrcaInput(Engine):
         System
             The optimized transition state structure obtained from the NEB-TS.
         Ensemble
-            The ensemble object containing the structures along the minimum energy path.        
+            The ensemble object containing the structures along the minimum energy path.
+
+        Examples
+        --------
+        Starting from an initialized instance ``orca`` of the ``OrcaInput`` class, a transition state search based on a 
+        climbing image nudged elastic band calculation can be run invoking the ``neb_ts`` command. Starting from a 
+        ``reactant`` and a ``product`` structures, a NEB-CI calculation is performed. Starting from the transition state
+        located during the NEB-CI procedure a transition state optimization is carried out. The syntax to run the calculation
+        is the following: 
+
+        >>> transition_state, mep_ensemble = orca.neb_ts(reactant, product)
+         
+        The ``transition_state`` object is of type ``System`` and encodes the optimized transition state structure. The 
+        ``mep_ensemble`` object is of type ``Ensemble`` and will contain all the evaluated structures along the computed
+        minimum energy path.
+
+        For complex calculation a transition state ``guess`` can be provided to the routine by using the ``guess`` option:
+
+        >>> transition_state, mep_ensemble = orca.neb_ts(reactant, product, guess=guess)
+
+        **Note:** All the structures (``reactant``, ``product``, ``guess``) should have the same charge, spin multiplicity but
+        different names.
         """
 
         logger.info(f"Running a NEB-TS calculation - {self.method}")
