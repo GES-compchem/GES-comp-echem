@@ -4,7 +4,6 @@ from compechem.config import get_ncores
 from compechem.systems import System, Ensemble
 from compechem.tools import split_multixyz
 from compechem.tools import cyclization_check
-from compechem.tools import add_flag
 from compechem.tools import process_output
 from compechem.core.dependency_finder import locate_crest, locate_executable
 import logging
@@ -59,7 +58,6 @@ def tautomer_search(
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_TAUT", dir=os.getcwd())
 
     with sh.pushd(tdir):
-
         mol.geometry.write_xyz("geom.xyz")
 
         if solvent:
@@ -84,9 +82,8 @@ def tautomer_search(
                     logger.warning(
                         f"Cyclization change spotted for {tautomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
                     )
-                    add_flag(
-                        mol,
-                        f"Cyclization change occurred for {tautomer.name} during conformer search. Conformer was removed.",
+                    mol.flags.append(
+                        f"Cyclization change occurred for {tautomer.name} during conformer search. Conformer was removed."
                     )
                 else:
                     tautomers.append(tautomer)
@@ -100,7 +97,7 @@ def tautomer_search(
             logger.warning(
                 f"No tautomers possible for {mol.name}, charge {mol.charge} spin {mol.spin}. Ignoring tautomer search."
             )
-            add_flag(mol, "No possible tautomers. Tautomer search was ignored.")
+            mol.flags.append("No possible tautomers. Tautomer search was ignored.")
             process_output(mol, "CREST", "tautomers", mol.charge, mol.spin)
             if remove_tdir:
                 shutil.rmtree(tdir)
@@ -154,7 +151,6 @@ def conformer_search(
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_CONF", dir=os.getcwd())
 
     with sh.pushd(tdir):
-
         mol.geometry.write_xyz("geom.xyz")
 
         if solvent:
@@ -168,9 +164,7 @@ def conformer_search(
             os.system(cmd)
 
         if os.path.exists("crest_conformers.xyz"):
-            conformers_to_check = split_multixyz(
-                mol, file="crest_conformers.xyz", suffix="c"
-            )
+            conformers_to_check = split_multixyz(mol, file="crest_conformers.xyz", suffix="c")
 
             conformers = []
 
@@ -181,9 +175,8 @@ def conformer_search(
                     logger.warning(
                         f"Cyclization change spotted for {conformer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
                     )
-                    add_flag(
-                        mol,
-                        f"Cyclization change occurred for {conformer.name} during conformer search. Conformer was removed.",
+                    mol.flags.append(
+                        f"Cyclization change occurred for {conformer.name} during conformer search. Conformer was removed."
                     )
                 else:
                     conformers.append(conformer)
@@ -197,7 +190,7 @@ def conformer_search(
             logger.error(
                 f"{mol.name}, charge {mol.charge} spin {mol.spin}, conformer search failed. Reverting to original molecule."
             )
-            add_flag(mol, "Conformer search failed.")
+            mol.flags.append("Conformer search failed.")
             return Ensemble([mol])
 
 
@@ -261,9 +254,7 @@ def deprotonate(
             os.system(cmd)
 
         if os.path.exists("deprotonated.xyz"):
-            deprotomers_to_check = split_multixyz(
-                mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1
-            )
+            deprotomers_to_check = split_multixyz(mol, file="deprotonated.xyz", suffix="d", charge=mol.charge - 1)
 
             deprotomers = []
 
@@ -274,9 +265,8 @@ def deprotonate(
                     logger.warning(
                         f"Cyclization change spotted for {deprotomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
                     )
-                    add_flag(
-                        mol,
-                        f"Cyclization change occurred for {deprotomer.name} during deprotomer search. Deprotomer was removed.",
+                    mol.flags.append(
+                        f"Cyclization change occurred for {deprotomer.name} during deprotomer search. Deprotomer was removed."
                     )
                 else:
                     deprotomers.append(deprotomer)
@@ -288,17 +278,13 @@ def deprotonate(
             if deprotomers:
                 return Ensemble(deprotomers)
             else:
-                logger.error(
-                    f"{mol.name}, charge {mol.charge} spin {mol.spin}, no suitable deprotomers found."
-                )
-                add_flag(mol, "No suitable deprotomers.")
+                logger.error(f"{mol.name}, charge {mol.charge} spin {mol.spin}, no suitable deprotomers found.")
+                mol.flags.append("No suitable deprotomers.")
                 return None
 
         else:
-            logger.error(
-                f"{mol.name}, charge {mol.charge} spin {mol.spin}, deprotomer search failed."
-            )
-            add_flag(mol, "Deprotomer search failed.")
+            logger.error(f"{mol.name}, charge {mol.charge} spin {mol.spin}, deprotomer search failed.")
+            mol.flags.append("Deprotomer search failed.")
             return None
 
 
@@ -349,7 +335,6 @@ def protonate(
     tdir = mkdtemp(prefix=mol.name + "_", suffix="_PROT", dir=os.getcwd())
 
     with sh.pushd(tdir):
-
         mol.geometry.write_xyz("geom.xyz")
 
         if solvent:
@@ -363,9 +348,7 @@ def protonate(
             os.system(cmd)
 
         if os.path.exists("protonated.xyz"):
-            protomers_to_check = split_multixyz(
-                mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1
-            )
+            protomers_to_check = split_multixyz(mol, file="protonated.xyz", suffix="p", charge=mol.charge + 1)
 
             protomers = []
 
@@ -376,9 +359,8 @@ def protonate(
                     logger.warning(
                         f"Cyclization change spotted for {protomer.name}, charge {mol.charge} spin {mol.spin}. Removing from list."
                     )
-                    add_flag(
-                        mol,
-                        f"Cyclization change occurred for {protomer.name} during deprotomer search. Protomer was removed.",
+                    mol.flags.append(
+                        f"Cyclization change occurred for {protomer.name} during deprotomer search. Protomer was removed."
                     )
                 else:
                     protomers.append(protomer)
@@ -390,16 +372,12 @@ def protonate(
             if protomers:
                 return Ensemble(protomers)
             else:
-                logger.error(
-                    f"{mol.name}, charge {mol.charge} spin {mol.spin}, no suitable protomers found."
-                )
-                add_flag(mol, "No suitable protomers.")
+                logger.error(f"{mol.name}, charge {mol.charge} spin {mol.spin}, no suitable protomers found.")
+                mol.flags.append("No suitable protomers.")
                 return None
         else:
-            logger.error(
-                f"{mol.name}, charge {mol.charge} spin {mol.spin}, protomer search failed."
-            )
-            add_flag(mol, "Protomer search failed.")
+            logger.error(f"{mol.name}, charge {mol.charge} spin {mol.spin}, protomer search failed.")
+            mol.flags.append("Protomer search failed.")
             return None
 
 
@@ -473,15 +451,12 @@ def qcg_grow(
     if spin is None:
         spin = solute.spin
 
-    logger.info(
-        f"{solute.name}, charge {charge} spin {spin} - CREST QCG GROW - {nsolv} solvent molecules"
-    )
+    logger.info(f"{solute.name}, charge {charge} spin {spin} - CREST QCG GROW - {nsolv} solvent molecules")
     logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_G", dir=os.getcwd())
 
     with sh.pushd(tdir):
-
         solute.geometry.write_xyz("solute.xyz")
         solvent.geometry.write_xyz("solvent.xyz")
 
@@ -501,10 +476,8 @@ def qcg_grow(
         try:
             cluster.geometry.load_xyz("grow/cluster.xyz")
         except:
-            logger.error(
-                f"{solute.name}, charge {solute.charge} spin {solute.spin}, cluster growth failed."
-            )
-            add_flag(solute, "Cluster growth failed.")
+            logger.error(f"{solute.name}, charge {solute.charge} spin {solute.spin}, cluster growth failed.")
+            solute.flags.append("Cluster growth failed.")
             return None
 
         process_output(solute, "QCG", "grow", charge=charge, spin=spin)
@@ -598,15 +571,12 @@ def qcg_ensemble(
     if spin is None:
         spin = solute.spin
 
-    logger.info(
-        f"{solute.name}, charge {charge} spin {spin} - CREST QCG ENSEMBLE - {nsolv} solvent molecules"
-    )
+    logger.info(f"{solute.name}, charge {charge} spin {spin} - CREST QCG ENSEMBLE - {nsolv} solvent molecules")
     logger.debug(f"Running CREST calculation on {ncores} cores")
 
     tdir = mkdtemp(prefix=solute.name + "_", suffix="_QCG_E", dir=os.getcwd())
 
     with sh.pushd(tdir):
-
         solute.geometry.write_xyz("solute.xyz")
         solvent.geometry.write_xyz("solvent.xyz")
 
@@ -621,15 +591,11 @@ def qcg_ensemble(
             os.system(cmd)
 
         try:
-            ensemble = split_multixyz(
-                solute, file=f"ensemble/{ensemble_choice}.xyz", suffix="e"
-            )
+            ensemble = split_multixyz(solute, file=f"ensemble/{ensemble_choice}.xyz", suffix="e")
 
         except:
-            logger.error(
-                f"{solute.name}, charge {solute.charge} spin {solute.spin}, cluster growth failed."
-            )
-            add_flag(solute, "Cluster growth failed.")
+            logger.error(f"{solute.name}, charge {solute.charge} spin {solute.spin}, cluster growth failed.")
+            solute.flags.append("Cluster growth failed.")
             return None
 
         process_output(solute, "QCG", "ensemble", charge=charge, spin=spin)
