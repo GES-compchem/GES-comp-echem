@@ -66,7 +66,11 @@ def split_multixyz(
 
                         # Parse energies from Orca <name>_trj.xyz output files
                         if line.startswith("Coordinates from ORCA-job"):
-                            energy = float(line.split()[-1])
+                            # Note, not all .xyz have the energy, but can have the "Coordinates from ORCA-job" string
+                            try:
+                                energy = float(line.split()[-1])
+                            except:
+                                energy = None
                     out.write(line)
                     line = f.readline()
 

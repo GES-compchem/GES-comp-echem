@@ -9,41 +9,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def add_flag(mol: System, flag: str):
-    """Adds a warning flag to a System object.
-
-    Parameters
-    ----------
-    mol : System object
-        System object to which the flag will be added
-    flag : str
-        String representing the warning which needs to be added
-    """
-    mol.flags.append(flag)
-    return
-
-
-def dump(obj, filename: bool = None):
-    """Generates a pickle file containing an object
-
-    Parameters
-    ----------
-    obj : anything
-        Object to dump to pickle file. Can be anything, including individual System objects
-    filename : str
-        string containing the filename of the pickle file.
-
-    Returns
-    -------
-    Saves a pickle file containing the input object
-    """
-
-    if filename is None and type(obj) == System:
-        filename = f"{obj.name}.pickle"
-
-    pickle.dump(obj, open(filename, "wb"))
-
-
 def cyclization_check(start_file: str, end_file: str):
     """Checks if a cyclization has occurred (e.g., during a
     geometry optimization), or if a ring opening has occurred.
